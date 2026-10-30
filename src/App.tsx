@@ -28,46 +28,61 @@ export const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Normalize path
-  let normalized = currentPath.replace(/\/index\.html$/, '').replace(/\.html$/, '');
+  // Robust path normalization
+  const raw = currentPath.trim();
+  let normalized = raw
+    .replace(/\/index\.html$/i, '')
+    .replace(/\.html$/i, '')
+    .replace(/\/+$/, '');
   if (!normalized || normalized === '') normalized = '/';
-  if (normalized.endsWith('/') && normalized.length > 1) {
-    normalized = normalized.slice(0, -1);
-  }
+
+  // Helper to find project from any path format
+  const findProjectByPath = (path: string) => {
+    const clean = path.replace(/\/+$/, '');
+    
+    // 1. Direct slug match (e.g. /somtu -> 'somtu')
+    const directSlug = clean.replace(/^\//, '');
+    let p = projects.find(proj => proj.slug === directSlug || proj.id === directSlug || proj.route === clean);
+    if (p) return p;
+
+    // 2. Sub-path match (e.g. /projects/somtu, /project/somtu, /case-study/somtu)
+    const segments = clean.split('/').filter(Boolean);
+    if (segments.length >= 1) {
+      const lastSegment = segments[segments.length - 1];
+      p = projects.find(proj => proj.slug === lastSegment || proj.id === lastSegment || proj.route === `/${lastSegment}`);
+      if (p) return p;
+    }
+    return undefined;
+  };
+
+  const matchedProject = findProjectByPath(normalized);
+  const isCaseStudy = !!matchedProject;
+  const isAdminView = normalized.startsWith('/admin');
 
   const renderRoute = () => {
-    if (normalized === '/' || normalized === '') {
-      return <HomePage onNavigate={navigate} />;
+    if (isAdminView) {
+      return <AdminPage onNavigate={navigate} />;
     }
-    if (normalized === '/projects') {
+    if (matchedProject) {
+      return <DynamicCase project={matchedProject} onNavigate={navigate} />;
+    }
+    if (normalized === '/projects' || normalized === '/work') {
       return <ProjectsPage onNavigate={navigate} />;
     }
     if (normalized === '/about') {
       return <AboutPage onNavigate={navigate} />;
     }
-    if (normalized.startsWith('/admin')) {
-      return <AdminPage onNavigate={navigate} />;
-    }
-
-    // Check for dynamic projects created through CMS
-    const slug = normalized.replace(/^\//, '');
-    const foundProject = projects.find(p => p.slug === slug);
-    if (foundProject) {
-      return <DynamicCase project={foundProject} onNavigate={navigate} />;
-    }
 
     return <HomePage onNavigate={navigate} />;
   };
 
-  const isAdminView = normalized.startsWith('/admin');
-
   return (
     <div className="portfolio-app">
-      {!isAdminView && <Header currentPath={normalized} onNavigate={navigate} />}
+      {!isAdminView && !isCaseStudy && <Header currentPath={normalized} onNavigate={navigate} />}
       <div id="siteContent">
         {renderRoute()}
       </div>
-      {!isAdminView && <Footer onNavigate={navigate} />}
+      {!isAdminView && !isCaseStudy && <Footer onNavigate={navigate} />}
     </div>
   );
 };

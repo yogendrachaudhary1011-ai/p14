@@ -30,7 +30,7 @@ interface PortfolioContextType {
 
 const STORAGE_KEYS = {
   SETTINGS: 'yc_portfolio_settings',
-  PROJECTS: 'yc_portfolio_projects_v3', // unified to brand new case study design system
+  PROJECTS: 'yc_portfolio_projects_v4', // bumped to v4 to ensure all 8 projects load in the new design system
   EXPERIENCE: 'yc_portfolio_experience_v2',
   EDUCATION: 'yc_portfolio_education',
   MEDIA: 'yc_portfolio_media',
