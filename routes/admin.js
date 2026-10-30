@@ -1,5 +1,6 @@
 import express from 'express';
 import multer from 'multer';
+import crypto from 'crypto';
 import { 
   db, 
   doc, 
@@ -30,6 +31,12 @@ import {
   deleteMediaItem, 
   checkMediaUsage 
 } from '../lib/media.js';
+import {
+  completeGoogleDriveAuthorization,
+  createGoogleDriveState,
+  getGoogleDriveAuthorizationUrl,
+  getGoogleDriveStatus
+} from '../lib/google-drive.js';
 import { invalidateCache } from '../lib/renderer.js';
 
 const router = express.Router();
@@ -531,6 +538,48 @@ router.put('/admin/socials', requireAuthMiddleware, async (req, res) => {
 });
 
 // ==================== MEDIA LIBRARY ====================
+
+router.get('/admin/google-drive/status', requireAuthMiddleware, async (req, res) => {
+  try {
+    res.json(await getGoogleDriveStatus());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/admin/google-drive/connect', requireAuthMiddleware, (req, res) => {
+  try {
+    const state = createGoogleDriveState();
+    res.cookie('google_drive_oauth_state', state, {
+      httpOnly: true,
+      secure: req.secure,
+      sameSite: 'lax',
+      maxAge: 10 * 60 * 1000,
+      path: '/'
+    });
+    res.redirect(getGoogleDriveAuthorizationUrl(state));
+  } catch (err) {
+    res.status(503).send(`Google Drive setup required: ${err.message}`);
+  }
+});
+
+router.get('/admin/google-drive/callback', async (req, res) => {
+  const cookieState = req.cookies?.google_drive_oauth_state || '';
+  const returnedState = String(req.query.state || '');
+  res.clearCookie('google_drive_oauth_state', { path: '/', secure: req.secure, sameSite: 'lax' });
+  if (!cookieState || cookieState.length !== returnedState.length || !crypto.timingSafeEqual(Buffer.from(cookieState), Buffer.from(returnedState))) {
+    return res.redirect('/admin?googleDrive=invalid-state');
+  }
+  if (req.query.error) return res.redirect(`/admin?googleDrive=cancelled`);
+  if (!req.query.code) return res.redirect('/admin?googleDrive=missing-code');
+  try {
+    await completeGoogleDriveAuthorization(String(req.query.code));
+    res.redirect('/admin?googleDrive=connected');
+  } catch (err) {
+    console.error('[Google Drive] OAuth callback failed:', err.message);
+    res.redirect('/admin?googleDrive=error');
+  }
+});
 
 router.get('/admin/media', requireAuthMiddleware, async (req, res) => {
   try {
