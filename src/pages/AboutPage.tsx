@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
 
 interface AboutPageProps {
@@ -7,27 +7,17 @@ interface AboutPageProps {
 
 export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
   const { settings, experience, education } = usePortfolio();
+  const [activeAboutTab, setActiveAboutTab] = useState<'about-profile' | 'about-experience' | 'about-education'>('about-profile');
+
+  const handleScrollTo = (id: 'about-profile' | 'about-experience' | 'about-education') => {
+    setActiveAboutTab(id);
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div className="page-view route-entered" data-page="about" id="aboutView">
       <main id="aboutPage" style={{ paddingTop: '120px', minHeight: '80vh', paddingBottom: '80px' }}>
         <div className="shell">
-          <div className="case-backbar" style={{ marginBottom: '32px' }}>
-            <a
-              className="case-back"
-              href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigate('/');
-              }}
-            >
-              <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
-                arrow_back
-              </span>{' '}
-              Back to Overview
-            </a>
-          </div>
-
           <div className="about-journey">
             <div className="about-media-stack">
               <aside
@@ -47,7 +37,14 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                 >
                   <source src="/assets/media/about-profile-video.mp4" type="video/mp4" />
                 </video>
-                <div className="about-visual-caption">Yogendra / flows → interfaces → products</div>
+                <div className="about-visual-footer">
+                  <div className="about-visual-caption">Yogendra / flows → interfaces → products</div>
+                  <nav aria-label="About section shortcuts" className="about-visual-status">
+                    <button className={activeAboutTab === 'about-profile' ? 'is-active' : ''} onClick={() => handleScrollTo('about-profile')} type="button">01 / About</button>
+                    <button className={activeAboutTab === 'about-experience' ? 'is-active' : ''} onClick={() => handleScrollTo('about-experience')} type="button">02 / Experience</button>
+                    <button className={activeAboutTab === 'about-education' ? 'is-active' : ''} onClick={() => handleScrollTo('about-education')} type="button">03 / Education</button>
+                  </nav>
+                </div>
               </aside>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
@@ -96,21 +93,14 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
 
             <div className="about-scroll-content">
               <section className="about-panel about-profile-panel" id="about-profile">
-                <span className="eyebrow orange">About me</span>
-                <h1 className="display display-lg" style={{ marginTop: '19px' }}>
-                  A UI/UX and Product Designer focused on clear software experiences.
-                </h1>
-                <p className="lead" style={{ marginTop: '16px' }}>
+                <h1 className="display display-lg">ABOUT ME</h1>
+                <p className="lead">
                   I design intuitive software interfaces, reusable UI components, and user-centered workflows. My process combines interaction design, usability testing, and close developer collaboration to make complex products easier to understand and use.
-                </p>
-                <p style={{ marginTop: '16px', color: '#8e8ea0', lineHeight: 1.7 }}>
-                  Based in Kathmandu, Nepal, I work on multi-step workflows, enterprise software, service platforms, and responsive design systems. My focus is on making product states visible, actions safe, and component handoff precise.
                 </p>
               </section>
 
               <section className="about-panel about-experience-panel" id="about-experience" style={{ marginTop: '48px' }}>
                 <div className="about-panel-head">
-                  <span className="eyebrow">Work Experience</span>
                   <h2 className="display display-md">Experience</h2>
                 </div>
                 <div className="timeline about-timeline" style={{ marginTop: '24px' }}>
@@ -152,8 +142,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
 
               <section className="about-panel about-education-panel" id="about-education" style={{ marginTop: '48px' }}>
                 <div className="about-panel-head">
-                  <span className="eyebrow orange">Education &amp; Languages</span>
-                  <h2 className="display display-md">Education &amp; Languages</h2>
+                  <h2 className="display display-md">EDUCATION</h2>
                 </div>
                 <div className="education-list" style={{ marginTop: '24px' }}>
                   {education.filter(e => e.visible).map((edu) => (
@@ -185,3 +174,4 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
+
