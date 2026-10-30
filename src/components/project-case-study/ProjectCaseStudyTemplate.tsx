@@ -1,0 +1,181 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { Project } from '../../types';
+import { normalizeProjectSections } from '../../utils/caseStudyUtils';
+import { CaseStudyHero } from './CaseStudyHero';
+import { ProjectOverview } from './ProjectOverview';
+import { SectionNavigation } from './SectionNavigation';
+import { CaseStudySection } from './CaseStudySection';
+
+interface ProjectCaseStudyTemplateProps {
+  project: Project;
+  onNavigate?: (path: string) => void;
+  isAdminPreview?: boolean;
+}
+
+export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> = ({
+  project,
+  onNavigate,
+  isAdminPreview = false
+}) => {
+  // Normalize project sections
+  const sections = useMemo(() => normalizeProjectSections(project), [project]);
+
+  // Dynamic navigation items computed from visible sections
+  const navSections = useMemo(
+    () =>
+      sections
+        .filter((s) => s.visible)
+        .map((s) => ({
+          id: s.id,
+          label: s.navigationLabel
+        })),
+    [sections]
+  );
+
+  const [activeSection, setActiveSection] = useState<string>(() => {
+    return navSections[0]?.id || '';
+  });
+
+  // Track active section on scroll
+  useEffect(() => {
+    if (navSections.length === 0) return;
+
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 200;
+      for (let i = navSections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(navSections[i].id);
+        if (el && el.offsetTop <= scrollPos) {
+          setActiveSection(navSections[i].id);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [navSections]);
+
+  const scrollToSection = (id: string) => {
+    setActiveSection(id);
+    const element = document.getElementById(id);
+    if (element) {
+      const yOffset = -90;
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
+
+  const heroImageSrc = project.heroImage?.url || project.coverImage || '/assets/media/home-media-04-f775f2921176.webp';
+  const heroImageAlt = project.heroImage?.alt || project.title;
+  const subtitle = project.heroSubtitle || project.shortSummary;
+  const introText = project.introduction || project.summary;
+
+  // Status check: if draft and not admin preview
+  if (project.status === 'draft' && !isAdminPreview) {
+    return (
+      <div className="w-full min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 text-center font-['Plus_Jakarta_Sans']">
+        <div className="p-8 rounded-[10px] bg-zinc-950 border border-white/10 max-w-md flex flex-col items-center gap-4">
+          <span className="material-symbols-rounded text-4xl text-[#ff853a]">lock</span>
+          <h2 className="text-2xl font-bold">Project Under Review</h2>
+          <p className="text-zinc-400 text-sm">
+            This project case study is currently saved as a draft and is undergoing refinement.
+          </p>
+          <button
+            onClick={() => onNavigate && onNavigate('/projects')}
+            className="px-6 py-2.5 rounded bg-white text-black font-medium text-sm hover:bg-zinc-200 cursor-pointer"
+          >
+            Back to All Projects
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full bg-black text-white font-['Plus_Jakarta_Sans'] flex flex-col items-center overflow-x-hidden selection:bg-[#ff853a] selection:text-white">
+      {/* Admin preview banner */}
+      {isAdminPreview && (
+        <div className="w-full bg-[#ff853a]/20 border-b border-[#ff853a]/40 text-[#ff853a] text-xs font-mono py-2 px-4 text-center tracking-wider sticky top-0 z-50 backdrop-blur-md">
+          PREVIEW MODE · This is a live preview of &ldquo;{project.title}&rdquo; ({project.status})
+        </div>
+      )}
+
+      {/* Main Container matching w-[1521px] from provided Figma design */}
+      <div className="w-full max-w-[1521px] relative bg-black flex flex-col justify-start items-center">
+        {/* Decorative Grid Lines matching Figma spec */}
+        <div className="w-full h-[735.20px] left-0 top-[1px] absolute opacity-5 pointer-events-none select-none overflow-hidden">
+          <div className="w-px h-[735.20px] left-[7%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
+          <div className="w-px h-[735.20px] left-[21%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
+          <div className="w-px h-[735.20px] left-[35%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
+          <div className="w-px h-[735.20px] left-[50%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
+          <div className="w-px h-[735.20px] left-[64%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
+          <div className="w-px h-[735.20px] left-[78%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
+          <div className="w-px h-[735.20px] left-[92%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
+          <div className="w-full h-px left-0 top-[52px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
+          <div className="w-full h-px left-0 top-[157px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
+          <div className="w-full h-px left-0 top-[262px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
+          <div className="w-full h-px left-0 top-[367px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
+          <div className="w-full h-px left-0 top-[472px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
+          <div className="w-full h-px left-0 top-[577px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
+          <div className="w-full h-px left-0 top-[682px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
+        </div>
+
+        {/* Hero Section */}
+        <CaseStudyHero
+          title={project.title}
+          subtitle={subtitle}
+          year={project.year}
+          onNavigate={onNavigate}
+        />
+
+        {/* Project Overview (Hero Image + Metadata + Links) */}
+        <ProjectOverview
+          heroImage={heroImageSrc}
+          heroImageAlt={heroImageAlt}
+          introduction={introText}
+          role={project.role}
+          duration={project.duration}
+          deliverables={project.deliverables}
+          figmaUrl={project.figmaUrl}
+          figmaButtonText={project.figmaButtonText}
+          externalProjectUrl={project.externalProjectUrl}
+        />
+
+        {/* Two-Column Case Study Section with Left Sticky Navigation */}
+        <div className="w-full max-w-[1399.13px] px-4 md:px-0 flex flex-col lg:flex-row justify-between items-start gap-12 lg:gap-16 relative pb-28 pt-4">
+          {/* Left Table of Contents Nav */}
+          <SectionNavigation
+            sections={navSections}
+            activeSection={activeSection}
+            onSelectSection={scrollToSection}
+          />
+
+          {/* Right Column: Case Study Sections */}
+          <main className="w-full lg:w-[1079.30px] max-w-[1200px] flex flex-col gap-20">
+            {sections.map((section, idx) => (
+              <CaseStudySection key={section.id} section={section} index={idx} />
+            ))}
+
+            {/* Bottom Footer Navigation Bar inside Case Study */}
+            <div className="pt-12 pb-16 border-t border-white/20 flex flex-col sm:flex-row justify-between items-center gap-6">
+              <button
+                onClick={() => (onNavigate ? onNavigate('/projects') : window.history.back())}
+                className="inline-flex items-center gap-2 text-white hover:text-[#ff853a] transition-colors text-base font-medium cursor-pointer"
+              >
+                <span className="material-symbols-rounded">arrow_back</span>
+                <span>Explore all projects</span>
+              </button>
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm cursor-pointer"
+              >
+                <span>Back to top</span>
+                <span className="material-symbols-rounded">arrow_upward</span>
+              </button>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+};

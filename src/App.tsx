@@ -78,11 +78,11 @@ export const App: React.FC = () => {
 
   return (
     <div className="portfolio-app">
-      {!isAdminView && !isCaseStudy && <Header currentPath={normalized} onNavigate={navigate} />}
+      {!isAdminView && <Header currentPath={normalized} onNavigate={navigate} />}
       <div id="siteContent">
         {renderRoute()}
       </div>
-      {!isAdminView && !isCaseStudy && <Footer onNavigate={navigate} />}
+      {!isAdminView && <Footer onNavigate={navigate} />}
     </div>
   );
 };

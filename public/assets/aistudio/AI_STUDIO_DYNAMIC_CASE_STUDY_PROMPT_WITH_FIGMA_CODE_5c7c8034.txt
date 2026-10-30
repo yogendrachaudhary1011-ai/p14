@@ -1,0 +1,1246 @@
+You are working inside my EXISTING portfolio project. There is already a project/case-study detail page, backend/database, and admin panel. Your task is to COMPLETELY REPLACE ONLY the existing project-detail/case-study page design with the Figma-exported JSX/Tailwind design included at the end of this prompt, then convert that design into a reusable, responsive, database-driven case-study template that can be fully managed from the existing admin panel. Do NOT redesign or change the portfolio homepage, About page, navigation, footer, global visual identity, animations outside project pages, or any other unrelated page. Do not create a second admin panel or a separate database if the project already has them; inspect the current architecture first and extend the existing backend/admin/data layer cleanly. If the existing project uses Firebase/Firestore/Storage, continue using that same production data source. Never use localStorage, sessionStorage, hardcoded JSON, or browser-only state as the permanent project database.
+
+IMPORTANT DESIGN RULE: the Figma code below is the authoritative visual reference for ALL project detail pages. Preserve its black background, white/zinc typography, Plus Jakarta Sans, large project-title hero, right-side project summary, thin white dividers, wide hero/media areas, left sticky section navigation, large uppercase section titles, dark information cards, two-column decision layouts, image galleries/carousels, product showcase, learning cards, constraints, spacing rhythm, border radii, hierarchy, and overall editorial appearance. Do not use the text inside the supplied SOMTU code as permanent hardcoded content. The content is sample content only; the LAYOUT and VISUAL SYSTEM are the design source. Replace hardcoded text, lists, links, images and repeated sections with dynamic fields from the database/admin panel.
+
+FIRST inspect the repository and locate: current project routes, project database/schema, current admin project editor, image/media storage, authentication, project-card links, and current case-study page. Back up the current project-detail implementation before replacing it. Then create ONE reusable ProjectCaseStudyTemplate/component that renders every project from dynamic data. Every existing project detail route must use this new design. Preserve existing project slugs/URLs and project-card links. Do not make a separate manually coded page for every project.
+
+Convert the supplied fixed 1521px Figma code into clean production code. At desktop widths around 1440–1521px it should visually match the supplied design very closely. Remove unnecessary absolute positioning where it would break responsiveness, but preserve the same visible geometry and hierarchy. Build proper responsive layouts for desktop, tablet and mobile. The left case-study navigation should be sticky on desktop and transform into an appropriate compact/mobile navigation without losing access to sections. Images must remain responsive and preserve their intended crop/aspect ratio. Do not simply scale the entire desktop canvas down on mobile.
+
+The dynamic project model must support at least: id, title, slug, shortSummary, introduction, heroImage, role, duration, deliverables[], figmaUrl, externalProjectUrl, featured, status (draft/published), displayOrder, SEO title/description/image, createdAt, updatedAt, and an ordered array/subcollection of caseStudySections. The admin must be able to CREATE, READ, UPDATE and DELETE projects. It must also support publish/unpublish, hide/show, reorder, duplicate if practical, preview, and delete with confirmation.
+
+The case study must be flexible rather than hardcoded specifically for SOMTU. Support ordered section types such as: problem, challenge, insights, keyDecisions, solution, whyItWorks, whatDidNotWork, designSystem, product, learnings, whatIdDoDifferently, constraints, plus generic custom sections. Each section should support fields such as id, type, navigationLabel, heading, intro/body, visible, order, and blocks. Blocks should support common patterns required by the supplied design: paragraph, heading, bullet list, metric/list group, two-column comparison, three/four-column cards, constraint/what-I-did/why card, image, full-width image, image gallery, carousel, product showcase, quote, CTA/button, divider, and spacer. The admin must let me add, edit, delete, duplicate, hide/show and reorder sections and blocks. Use drag-and-drop ordering if the current stack supports it reliably; otherwise use move up/down/order controls.
+
+The left navigation must be generated automatically from visible case-study sections and scroll to the correct section. Active-section highlighting should update while scrolling. Clicking a nav item should smooth-scroll to that section. Do not hardcode labels like “The Problem” or “Insights”; they must come from each project's section data.
+
+Make ALL project-page media editable from admin. Every hero image, section image, gallery item, carousel slide, design-system image and product screenshot must be selectable/uploadable/replacable from the existing media system. If Firebase Storage is already used, use Firebase Storage. Store only media references/metadata in the database, not base64 blobs. Preserve the visual containers from the Figma design after an image is changed.
+
+Update the EXISTING admin panel rather than building a disconnected new one. Add/upgrade a Projects area with: All Projects, Add Project, Edit Project, Basic Info, Hero/Overview, Metadata, Links, Case Study Builder, Media, SEO, Preview, Save Draft, Publish, Reorder and Delete. The case-study builder should visually show the ordered sections and their blocks. Normal Save/Update should save directly; only destructive actions need confirmation. Every successful edit must persist to the real database and remain after refresh/restart/redeployment.
+
+Migrate the current existing projects into the new schema without losing their content or routes. Existing project cards on the portfolio homepage/listing must continue opening the correct project. Do not modify the homepage card design unless a tiny data-binding change is required. Do not invent or rewrite existing project content during migration. Map existing content into the new fields as faithfully as possible.
+
+The exact structure represented by the provided design includes: project title + summary hero; large hero image; overview/introduction; metadata table for role/duration/deliverables; project links; sticky section navigation; Problem; Challenge; Insights; Key Decisions & Why; Solution; Why this approach works; What needed work/failed attempt; Design System; Product showcase; Learnings; What I'd do differently; Project Constraints. Recreate these visual patterns as reusable section/block renderers, not as one hardcoded SOMTU page.
+
+Use semantic components and keep the implementation maintainable. Example architecture (adapt it to the existing stack instead of blindly creating duplicate folders):
+
+components/project-case-study/ProjectCaseStudyTemplate
+components/project-case-study/CaseStudyHero
+components/project-case-study/ProjectOverview
+components/project-case-study/SectionNavigation
+components/project-case-study/CaseStudySection
+components/project-case-study/blocks/TextBlock
+components/project-case-study/blocks/CardGridBlock
+components/project-case-study/blocks/DecisionBlock
+components/project-case-study/blocks/ImageBlock
+components/project-case-study/blocks/GalleryBlock
+components/project-case-study/blocks/CarouselBlock
+components/project-case-study/blocks/ProductShowcaseBlock
+admin/projects/ProjectEditor
+admin/projects/CaseStudyBuilder
+
+Example data shape (adapt to the existing DB conventions):
+
+{
+  "id": "project-id",
+  "title": "Project title",
+  "slug": "project-slug",
+  "shortSummary": "Short project summary",
+  "introduction": "Project introduction",
+  "heroImage": { "url": "...", "alt": "..." },
+  "role": "UI/UX Designer",
+  "duration": "1 Month",
+  "deliverables": ["Deliverable one", "Deliverable two"],
+  "figmaUrl": "",
+  "externalProjectUrl": "",
+  "featured": true,
+  "status": "published",
+  "displayOrder": 1,
+  "sections": [
+    {
+      "id": "problem",
+      "type": "problem",
+      "navigationLabel": "The Problem",
+      "heading": "THE PROBLEM",
+      "intro": "",
+      "visible": true,
+      "order": 1,
+      "blocks": [
+        { "type": "paragraph", "text": "..." },
+        { "type": "cardGrid", "columns": 2, "items": [] },
+        { "type": "image", "mediaId": "...", "alt": "..." }
+      ]
+    }
+  ],
+  "seo": { "title": "", "description": "", "image": "" }
+}
+
+Do not store the supplied JSX code itself in the database. The code should become reusable frontend components/styles; only actual project content and media references belong in the database.
+
+Add validation so slugs are unique, required fields cannot be empty when publishing, section order is stable, invalid block data cannot crash the page, and missing images show a safe fallback. Draft projects must not be publicly accessible unless using admin preview. Published projects must be accessible by slug. Ensure direct URL refresh works.
+
+Keep the new case-study page performant. Lazy-load heavy project images below the fold, preserve image aspect ratios to prevent layout shift, and do not load every gallery image at full resolution before needed. Keep accessibility: semantic headings, alt text, keyboard-accessible carousel controls/navigation, visible focus states, and sufficient contrast.
+
+After implementation test: existing project links; direct project URL refresh; create project; edit project; delete test project; draft/publish; project reorder; add/delete/reorder sections; add/delete/reorder blocks; replace images; Figma/external links; desktop/tablet/mobile layouts; sticky/active section navigation; galleries/carousels; missing-data states; database persistence after refresh; admin preview; and ensure no unrelated public page design changed.
+
+Do not stop after generating a visual mockup. Actually replace the old case-study implementation, connect it to the real project database and admin CRUD, migrate existing projects, and test the entire workflow. Fix errors until it works. The Figma-exported code below is the visual design specification you must implement and transform into the dynamic template.
+
+==================== FIGMA-EXPORTED DESIGN CODE — USE THIS AS THE VISUAL SOURCE OF TRUTH ====================
+
+```jsx
+<div className="w-[1521px] relative bg-black inline-flex flex-col justify-start items-start">
+  <div className="self-stretch bg-black flex flex-col justify-start items-center">
+    <div className="w-[1520.80px] h-px" />
+    <div className="w-[1520.80px] h-20 relative" />
+    <div className="w-[1520.80px] h-96 relative" />
+    <div className="w-[1521px] h-[11015px] relative" />
+  </div>
+  <div className="w-[1520.80px] h-[735.20px] left-0 top-[1px] absolute opacity-5">
+    <div className="w-px h-[735.20px] left-[108.63px] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-px h-[735.20px] left-[325.88px] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-px h-[735.20px] left-[543.14px] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-px h-[735.20px] left-[760.40px] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-px h-[735.20px] left-[977.65px] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-px h-[735.20px] left-[1194.91px] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-px h-[735.20px] left-[1412.16px] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-[1520.80px] h-px left-0 top-[52.51px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-[1520.80px] h-px left-0 top-[157.54px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-[1520.80px] h-px left-0 top-[262.56px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-[1520.80px] h-px left-0 top-[367.60px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-[1520.80px] h-px left-0 top-[472.63px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-[1520.80px] h-px left-0 top-[577.65px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0 rounded-xs" />
+    <div className="w-[1520.80px] h-px left-0 top-[682.67px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0 rounded-xs" />
+  </div>
+  <div className="w-[1520.80px] h-96 py-6 left-0 top-[77px] absolute flex flex-col justify-between items-center overflow-hidden">
+    <div className="w-[1399.13px] h-60 flex flex-col justify-center items-center gap-2 overflow-hidden">
+      <div className="w-[1399.13px] h-44 inline-flex justify-between items-end overflow-hidden">
+        <div className="w-[699.56px] h-44 inline-flex flex-col justify-center items-start">
+          <div className="w-[699.56px] flex flex-col justify-start items-start">
+            <div className="justify-start text-white text-9xl font-bold font-['Plus_Jakarta_Sans'] leading-[179.20px]">SOMTU</div>
+          </div>
+        </div>
+        <div className="w-[559.65px] h-32 pb-5 inline-flex flex-col justify-start items-start">
+          <div className="w-[560px] justify-start text-white text-xl font-normal font-['Plus_Jakarta_Sans'] leading-7">A case study on designing the complete School of Management, Tribhuvan University website, from landing page to registration, across desktop and mobile, as a design intern at Aarawan Media &amp; Tech.</div>
+        </div>
+      </div>
+      <div className="w-[1399.13px] h-12 flex flex-col justify-start items-end gap-3 overflow-hidden">
+        <div className="w-[1399.13px] h-0.5 relative bg-white" />
+      </div>
+    </div>
+  </div>
+  <div className="w-[1520.80px] pb-36 left-0 top-[445px] absolute flex flex-col justify-center items-center gap-20">
+    <div className="w-[1399.13px] flex flex-col justify-center items-center gap-36">
+      <div className="w-[1399.13px] h-[1433.47px] flex flex-col justify-center items-center gap-20">
+        <div className="w-[1399.13px] h-[661.67px] inline-flex justify-center items-center overflow-hidden">
+          <img className="w-[1539.04px] h-[727.84px] relative" src="https://placehold.co/1539x728" />
+        </div>
+        <div className="w-[1399.13px] h-[691.80px] inline-flex justify-end items-center gap-24">
+          <div className="w-[1399px] h-[691px] inline-flex flex-col justify-center items-start gap-16">
+            <div className="self-stretch h-28 inline-flex justify-start items-center overflow-hidden">
+              <div className="flex-1 inline-flex flex-col justify-start items-start">
+                <div className="self-stretch justify-start text-white text-xl font-normal font-['Plus_Jakarta_Sans'] leading-7">The School of Management at Tribhuvan University (SOMTU) is a Kathmandu-based management school. I designed its public website: how people discover programs, apply, read notices, join events, explore research, and find official documents.</div>
+              </div>
+            </div>
+            <div className="w-[699.56px] flex flex-col justify-center items-start gap-10">
+              <div className="w-[699.56px] flex flex-col justify-center items-center gap-5 overflow-hidden">
+                <div className="w-[699.56px] h-11 flex flex-col justify-center items-center gap-5">
+                  <div className="w-[700px] h-6 inline-flex justify-between items-start">
+                    <div className="w-52 inline-flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">My Role:</div>
+                    </div>
+                    <div className="w-80 inline-flex flex-col justify-start items-start">
+                      <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">UI/UX Design Intern</div>
+                    </div>
+                  </div>
+                  <div className="w-[699.56px] h-0.5 relative opacity-20 bg-black" />
+                </div>
+                <div className="w-[699.56px] flex flex-col justify-center items-center gap-5">
+                  <div className="w-[700px] inline-flex justify-between items-start">
+                    <div className="w-52 inline-flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Duration:</div>
+                    </div>
+                    <div className="w-80 inline-flex flex-col justify-start items-center gap-3.5 overflow-hidden">
+                      <div className="w-80 flex flex-col justify-start items-start">
+                        <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">1 Month</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="w-[699.56px] h-0.5 relative opacity-20 bg-black" />
+                </div>
+                <div className="w-[699.56px] flex flex-col justify-center items-center gap-5">
+                  <div className="w-[700px] inline-flex justify-between items-start">
+                    <div className="w-52 inline-flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Deliverables</div>
+                    </div>
+                    <div className="w-80 inline-flex flex-col justify-start items-center gap-3.5 overflow-hidden">
+                      <div className="w-80 justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">87 screens and states in Figma</div>
+                      <div className="w-80 justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">81 component variants</div>
+                      <div className="w-80 justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Desktop (1440 px) and mobile (428 px)</div>
+                      <div className="w-80 justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">A design reference document for developers</div>
+                    </div>
+                  </div>
+                  <div className="w-[699.56px] h-0.5 relative opacity-20 bg-black" />
+                </div>
+              </div>
+              <div className="w-[519.70px] h-16 inline-flex justify-start items-center gap-2.5 overflow-hidden">
+                <div className="h-16 px-6 py-4 relative rounded-sm inline-flex flex-col justify-center items-center gap-2.5 overflow-hidden">
+                  <div className="w-56 h-60 left-[-38px] top-[104px] absolute">
+                    <div className="size-72 left-[-39px] top-[-34px] absolute inline-flex flex-col justify-start items-start">
+                      <div className="self-stretch h-72 relative" />
+                    </div>
+                  </div>
+                  <div className="w-24 h-6 flex flex-col justify-start items-start gap-[5px] overflow-hidden">
+                    <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">View Figma File</div>
+                    <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Check Perro</div>
+                  </div>
+                  <div className="w-36 h-16 left-0 top-0 absolute rounded-sm border-[1.60px] border-white" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="w-[1399.13px] inline-flex justify-center items-start gap-10">
+        <div className="w-72 h-[474px] inline-flex flex-col justify-center items-start gap-2.5 overflow-hidden">
+          <div className="self-stretch h-8 relative inline-flex justify-start items-center gap-2 overflow-hidden">
+            <div className="size- inline-flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">The Problem</div>
+            </div>
+            <div className="w-24 h-0.5 left-[-100px] top-[32px] absolute bg-white" />
+          </div>
+          <div className="w-72 h-8 relative inline-flex justify-start items-center gap-2 overflow-hidden">
+            <div className="size- inline-flex flex-col justify-start items-start">
+              <div className="self-stretch justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">My Challenge</div>
+            </div>
+            <div className="w-24 h-0.5 left-[-100px] top-[32px] absolute bg-white" />
+          </div>
+          <div className="w-72 h-8 relative inline-flex justify-start items-center gap-2 overflow-hidden">
+            <div className="size- inline-flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Insights</div>
+            </div>
+            <div className="w-24 h-0.5 left-[-100px] top-[32px] absolute bg-white" />
+          </div>
+          <div className="self-stretch h-8 relative inline-flex justify-start items-center gap-2 overflow-hidden">
+            <div className="size- inline-flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Key Decisions &amp; Why?</div>
+            </div>
+            <div className="w-24 h-0.5 left-[-100px] top-[32px] absolute bg-white" />
+          </div>
+          <div className="self-stretch h-8 relative inline-flex justify-start items-center gap-2 overflow-hidden">
+            <div className="size- inline-flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Solutions</div>
+            </div>
+            <div className="w-24 h-0.5 left-[-100px] top-[32px] absolute bg-white" />
+          </div>
+          <div className="self-stretch h-8 relative inline-flex justify-start items-center gap-2 overflow-hidden">
+            <div className="size- inline-flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">What didn’t work</div>
+            </div>
+            <div className="w-24 h-0.5 left-[-100px] top-[32px] absolute bg-white" />
+          </div>
+          <div className="self-stretch h-8 relative inline-flex justify-start items-center gap-2 overflow-hidden">
+            <div className="size- inline-flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Design System</div>
+            </div>
+            <div className="w-24 h-0.5 left-[-100px] top-[32px] absolute bg-white" />
+          </div>
+          <div className="self-stretch h-8 relative inline-flex justify-start items-center gap-2 overflow-hidden">
+            <div className="size- inline-flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">The Product</div>
+            </div>
+            <div className="w-24 h-0.5 left-[-100px] top-[32px] absolute bg-white" />
+          </div>
+          <div className="self-stretch h-8 relative inline-flex justify-start items-center gap-2 overflow-hidden">
+            <div className="size- inline-flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Learnings</div>
+            </div>
+            <div className="w-24 h-0.5 left-[-100px] top-[32px] absolute bg-white" />
+          </div>
+          <div className="self-stretch h-8 relative inline-flex justify-start items-center gap-2 overflow-hidden">
+            <div className="size- inline-flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Constraints</div>
+            </div>
+            <div className="w-24 h-0.5 left-[-100px] top-[32px] absolute bg-white" />
+          </div>
+        </div>
+        <div className="flex-1 inline-flex flex-col justify-center items-end gap-16 overflow-hidden">
+          <div className="w-[1079.30px] h-[1172.40px] max-w-[1200px] flex flex-col justify-start items-center gap-7 overflow-hidden">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">THE PROBLEM</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] flex flex-col justify-start items-start">
+              <div className="w-[1080px] justify-start text-white text-xl font-normal font-['Plus_Jakarta_Sans'] leading-6">Existing pet tracking apps had less than 20% weekly retention. Dog owners were downloading them, logging a few activities, then abandoning them within days.</div>
+            </div>
+            <div className="w-[1079.30px] h-36 max-w-[1200px] inline-flex justify-start items-start gap-24">
+              <div className="flex-1 h-36 inline-flex flex-col justify-center items-start gap-3.5">
+                <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Applicants need a clear path</div>
+                <div className="w-[489.65px] h-24 flex flex-col justify-center items-center gap-2.5">
+                  <div className="w-[489.65px] flex flex-col justify-start items-start">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[469px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Which program fits, and when does it close?</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Long application forms are easy to abandon</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Admission status must be easy to trust</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 self-stretch inline-flex flex-col justify-start items-start gap-7">
+                <div className="w-[489.65px] h-32 flex flex-col justify-start items-start gap-3.5">
+                  <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Students return for tasks</div>
+                  <div className="w-[489.65px] h-20 flex flex-col justify-center items-center gap-2.5">
+                    <div className="w-[489.65px] flex flex-col justify-start items-start">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Exam notices, results, and official documents</div>
+                      </div>
+                    </div>
+                    <div className="w-[489.65px] flex flex-col justify-start items-start">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Searching a long list is slow</div>
+                      </div>
+                    </div>
+                    <div className="w-[489.65px] flex flex-col justify-start items-start">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Most visits happen on a phone</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] h-36 max-w-[1200px] inline-flex justify-start items-start gap-24">
+              <div className="flex-1 h-36 inline-flex flex-col justify-center items-start gap-3.5">
+                <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">The school needs credibility</div>
+                <div className="w-[489.65px] h-24 flex flex-col justify-center items-center gap-2.5">
+                  <div className="w-[489.65px] flex flex-col justify-start items-start">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Research, events, and news must feel current</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Official content in Nepali and English</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[469px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">One consistent brand across every page</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079px] h-[660px] bg-neutral-100 inline-flex justify-center items-center gap-2.5 overflow-hidden">
+              <img className="flex-1 h-[660px] relative" src="https://placehold.co/1079x660" />
+            </div>
+          </div>
+          <div className="w-[1079.30px] h-0.5 relative bg-white" />
+          <div className="w-[1079.30px] max-w-[1200px] flex flex-col justify-start items-center gap-7">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">MY CHALLENGE</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] flex flex-col justify-start items-start">
+              <div className="w-[1080px] justify-start text-white text-xl font-normal font-['Plus_Jakarta_Sans'] leading-6">Design one connected website where every audience can reach their task in a few taps, on desktop and mobile, while keeping the School of Management’s brand consistent across more than ten feature areas.</div>
+            </div>
+            <div className="w-[1079.30px] max-w-[1200px] flex flex-col justify-center items-start gap-3.5">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Constraints:</div>
+              <div className="w-[1079.30px] flex flex-col justify-center items-center gap-2.5">
+                <div className="w-[1079.30px] flex flex-col justify-start items-start">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Many content types: programs, news, notices, events, research, forms, documents</div>
+                  </div>
+                </div>
+                <div className="w-[1079.30px] flex flex-col justify-start items-start">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">An established blue and orange brand to extend, not replace</div>
+                  </div>
+                </div>
+                <div className="w-[1079.30px] flex flex-col justify-start items-start">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Real content, long lists, and PDF-based notices</div>
+                  </div>
+                </div>
+                <div className="w-[1079.30px] flex flex-col justify-start items-start">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Two target sizes, 1440 px and 428 px, designed as equals</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-[1079.30px] h-0.5 relative bg-white" />
+          <div className="w-[1079.30px] h-60 max-w-[1200px] flex flex-col justify-start items-center gap-7">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">The aha moment - insights</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-xl font-normal font-['Plus_Jakarta_Sans'] leading-6">Consistency is emotional, not functional.</div>
+            </div>
+            <div className="w-[1079.30px] h-28 max-w-[1200px] inline-flex justify-center items-start gap-[5px]">
+              <div className="flex-1 p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">People come to do one thing.</div>
+                </div>
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="w-80 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Apply, check a result, find a notice. Every page should make its main action obvious.</div>
+                </div>
+              </div>
+              <div className="flex-1 p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Lists are the website.</div>
+                </div>
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="self-stretch justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">News, notices, events, research, and documents are all lists, so one search and filter pattern can serve them all.</div>
+                </div>
+              </div>
+              <div className="flex-1 p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Long forms need a map.</div>
+                </div>
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="self-stretch justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">A stepper, a review step, and a confirmation turn a heavy application into a guided path.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-[1079.30px] h-0.5 relative bg-white" />
+          <div className="w-[1079.30px] max-w-[1200px] flex flex-col justify-start items-center gap-7">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">KEY DECISIONS &amp; WHY?</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079px] h-[660px] bg-neutral-100 inline-flex justify-center items-center gap-2.5 overflow-hidden">
+              <img className="flex-1 h-[660px] relative" src="https://placehold.co/1079x660" />
+            </div>
+            <div className="w-[1079.30px] h-80 max-w-[1200px] inline-flex justify-start items-start gap-24">
+              <div className="w-[489.65px] h-72 inline-flex flex-col justify-center items-start gap-3.5 overflow-hidden">
+                <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">One shell for every page</div>
+                <div className="w-[489.65px] flex flex-col justify-center items-center gap-2.5">
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Constraint:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">More than ten feature areas, each with its own audience.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">What I did:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Built a shared header: an announcement bar for live admissions news, utility links for SOMAT Result, Resources, Research, and Publications, a main menu with dropdowns, and a persistent Apply Now button.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] h-4 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Why</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="self-stretch justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">People always know where they are and where the next action is, and every page inherits the same structure.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="w-[489.65px] h-72 inline-flex flex-col justify-start items-start gap-3.5 overflow-hidden">
+                <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">A landing page that leads with two actions</div>
+                <div className="w-[489.65px] flex flex-col justify-center items-center gap-2.5">
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Constraint:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">A university home page can say everything and help no one.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">What I did:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">A full-width “Knowledge Without Borders” hero with Explore Programs and Apply Now, then programs, milestones, and faculty.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] h-4 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Why</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="self-stretch justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Browsers and ready-to-apply visitors both get an obvious first tap.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] h-80 max-w-[1200px] inline-flex justify-start items-start gap-24">
+              <div className="w-[489.65px] h-72 inline-flex flex-col justify-start items-start gap-3.5 overflow-hidden">
+                <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Program pages from one template</div>
+                <div className="w-[489.65px] flex flex-col justify-center items-center gap-2.5">
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Constraint:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">A university home page can say everything and help no one.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">What I did:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">A full-width “Knowledge Without Borders” hero with Explore Programs and Apply Now, then programs, milestones, and faculty.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] h-4 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Why</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="self-stretch justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Browsers and ready-to-apply visitors both get an obvious first tap.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="w-[489.65px] h-72 inline-flex flex-col justify-start items-start gap-3.5 overflow-hidden">
+                <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Updates and notices as two different experiences</div>
+                <div className="w-[489.65px] flex flex-col justify-center items-center gap-2.5">
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Problem:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Stories are browsed, notices are looked up.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">What I did:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Two tabs with shared search and filters. Updates lead with a featured story. Notices use date-first cards, category chips with counts, and a mobile filter sheet. Notice pages add status, dates, Share, and Download PDF.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] h-4 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Why</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="self-stretch justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Each content type gets the layout that suits how it is read.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] h-80 max-w-[1200px] inline-flex justify-start items-start gap-24">
+              <div className="w-[489.65px] inline-flex flex-col justify-start items-start gap-3.5 overflow-hidden">
+                <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Event pages that change with the event</div>
+                <div className="w-[489.65px] flex flex-col justify-center items-center gap-2.5">
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">What I did:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Designed detail pages for upcoming, registered, ended, and completed events, with  status card such as “This event has not started yet” and a separate registration page.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] h-4 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Why</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="self-stretch justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Visitors see the right action at the right time instead of a button that no longer works.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="w-[489.65px] inline-flex flex-col justify-start items-start gap-3.5 overflow-hidden">
+                <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Registration as a guided path</div>
+                <div className="w-[489.65px] flex flex-col justify-center items-center gap-2.5">
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Problem:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">An admission application asks for a lot of information.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">What I did:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Split it into seven steps (general details, academic report, financial support, referees, Why SOMTU, required documents, review and submit) with a numbered stepper, the selected program beside the form, and a confirmation with an application ID and help contacts.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] h-4 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Why</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="self-stretch justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">People always see how far they are, can check everything before sending, and finish with proof that it worked.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] max-w-[1200px] inline-flex justify-start items-start gap-24">
+              <div className="w-[489.65px] inline-flex flex-col justify-start items-start gap-3.5 overflow-hidden">
+                <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Event pages that change with the event</div>
+                <div className="w-[489.65px] flex flex-col justify-center items-center gap-2.5">
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">What I did:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Designed detail pages for upcoming, registered, ended, and completed events, with  status card such as “This event has not started yet” and a separate registration page.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] h-4 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Why</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="self-stretch justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Visitors see the right action at the right time instead of a button that no longer works.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="w-[489.65px] inline-flex flex-col justify-start items-start gap-3.5 overflow-hidden">
+                <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Research that reads like a publication</div>
+                <div className="w-[489.65px] flex flex-col justify-center items-center gap-2.5">
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">What I did:</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-[490px] justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">A featured study, filters for publications, research projects, working projects, and case studies, a sort control, pagination, and detail pages with Download PDF and an accordion for long content on mobile.</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] h-4 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Why</div>
+                    </div>
+                  </div>
+                  <div className="w-[489.65px] flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="self-stretch justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Academic content gets credibility and depth without overwhelming a small screen.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-[1079.30px] h-0.5 relative bg-white" />
+          <div className="w-[1079.30px] max-w-[1200px] flex flex-col justify-start items-center gap-7">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">SOLUTION</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] flex flex-col justify-start items-start">
+              <div className="justify-start text-white text-xl font-normal font-['Plus_Jakarta_Sans'] leading-6">Six ideas held the whole website together.</div>
+            </div>
+            <div className="w-[1079.30px] h-56 max-w-[1200px] flex flex-col justify-start items-start gap-[5px]">
+              <div className="w-[1079.30px] h-32 inline-flex justify-center items-start gap-[5px] overflow-hidden">
+                <div className="flex-1 self-stretch p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                  <div className="w-80 h-6 inline-flex justify-center items-center gap-2.5">
+                    <div className="flex-1 inline-flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">One shell</div>
+                    </div>
+                  </div>
+                  <div className="w-80 h-8 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-80 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Shared header, footer, and Apply Now on every page.</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 self-stretch p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                  <div className="w-80 h-6 inline-flex justify-center items-center gap-2.5">
+                    <div className="flex-1 inline-flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Action-first pages</div>
+                    </div>
+                  </div>
+                  <div className="w-80 h-8 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-80 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Each page makes its main action obvious.</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 self-stretch p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                  <div className="w-80 h-6 inline-flex justify-center items-center gap-2.5">
+                    <div className="flex-1 inline-flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">One list pattern</div>
+                    </div>
+                  </div>
+                  <div className="w-80 h-12 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-80 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Search, chips, and pagination reused for news, notices,<br/>events, research, and resources.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="w-[1079.30px] h-28 inline-flex justify-start items-start gap-[5px] overflow-hidden">
+                <div className="flex-1 self-stretch p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                  <div className="w-80 h-6 inline-flex justify-center items-center gap-2.5">
+                    <div className="flex-1 inline-flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Guided forms</div>
+                    </div>
+                  </div>
+                  <div className="w-80 h-8 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-80 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Steppers, review, and<br/>confirmation for long tasks.</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 self-stretch p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                  <div className="w-80 h-6 inline-flex justify-center items-center gap-2.5">
+                    <div className="flex-1 inline-flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">State-aware screens</div>
+                    </div>
+                  </div>
+                  <div className="w-80 h-8 flex flex-col justify-start items-start overflow-hidden">
+                    <div className="self-stretch flex flex-col justify-start items-start">
+                      <div className="w-80 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Upcoming, ended, empty, and success states designed, not left to chance.</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 h-28 p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                  <div className="w-80 h-6 inline-flex justify-center items-center gap-2.5">
+                    <div className="flex-1 inline-flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Mobile as an equal</div>
+                    </div>
+                  </div>
+                  <div className="w-80 flex flex-col justify-start items-start">
+                    <div className="w-80 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Every chapter designed at 428 px with its own patterns.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079px] h-[660px] bg-neutral-100 inline-flex justify-center items-center gap-2.5 overflow-hidden">
+              <img className="flex-1 h-[660px] relative" src="https://placehold.co/1079x660" />
+            </div>
+          </div>
+          <div className="w-[1079px] h-0.5 relative flex flex-col justify-start items-start">
+            <div className="w-[1079px] h-0.5 left-[-1920px] top-0 absolute bg-white" />
+          </div>
+          <div className="w-[1079.30px] h-44 max-w-[1200px] flex flex-col justify-start items-center gap-7">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">Why this approach works?</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] max-w-[1200px] inline-flex justify-center items-start gap-[5px]">
+              <div className="flex-1 h-28 p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Familiar everywhere</div>
+                </div>
+                <div className="w-80 h-4 flex flex-col justify-start items-start overflow-hidden">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Learn one page and you know the rest.</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 h-28 p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Faster tasks</div>
+                </div>
+                <div className="w-80 h-4 flex flex-col justify-start items-start overflow-hidden">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Search and filters reach any item in a few taps.</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Easier to build</div>
+                </div>
+                <div className="w-80 flex flex-col justify-start items-start overflow-hidden">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="self-stretch justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Repeated patterns and a documented library cut handoff questions.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-[1079px] h-0.5 relative flex flex-col justify-start items-start">
+            <div className="w-[1079px] h-0.5 left-[-1920px] top-0 absolute bg-white" />
+          </div>
+          <div className="w-[1079.30px] max-w-[1200px] flex flex-col justify-start items-center gap-7">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">but.. WHAT NEEDED WORK?</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] h-32 inline-flex justify-center items-center gap-[5px] overflow-hidden">
+              <div className="flex-1 flex justify-center items-center gap-[5px] overflow-hidden">
+                <div className="flex-1 h-36 p-5 bg-zinc-900 rounded-[5px] flex justify-center items-start gap-2.5">
+                  <div className="flex-1 inline-flex flex-col justify-start items-start gap-2.5">
+                    <div className="w-56 flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">First Attempt:</div>
+                    </div>
+                    <div className="w-56 flex flex-col justify-start items-start overflow-hidden">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="self-stretch justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Show every category chip on mobile, as on desktop.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 h-36 p-5 bg-zinc-900 rounded-[5px] flex justify-center items-start gap-2.5">
+                  <div className="flex-1 inline-flex flex-col justify-start items-start gap-2.5">
+                    <div className="w-56 flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Problem</div>
+                    </div>
+                    <div className="w-56 flex flex-col justify-start items-start overflow-hidden">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="w-56 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Seven chips with counts overflowed a 428 px screen and pushed results out of sight.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 flex justify-center items-center gap-[5px] overflow-hidden">
+                <div className="flex-1 p-5 bg-zinc-900 rounded-[5px] flex justify-center items-start gap-2.5">
+                  <div className="flex-1 inline-flex flex-col justify-start items-start gap-2.5">
+                    <div className="w-56 flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Fix:</div>
+                    </div>
+                    <div className="w-56 flex flex-col justify-start items-start overflow-hidden">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="self-stretch justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Moved the full set into a Filter Content sheet with sort, reset, and apply, and kept the main screen focused on results.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 h-36 p-5 bg-zinc-900 rounded-[5px] flex justify-center items-start gap-2.5">
+                  <div className="flex-1 inline-flex flex-col justify-start items-start gap-2.5">
+                    <div className="w-52 flex flex-col justify-start items-start">
+                      <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Learning:</div>
+                    </div>
+                    <div className="w-52 h-12 flex flex-col justify-start items-start overflow-hidden">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="w-52 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Desktop patterns do not shrink. They have to be redesigned for thumbs.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-[1079px] h-0.5 relative flex flex-col justify-start items-start">
+            <div className="w-[1079px] h-0.5 left-[-1920px] top-0 absolute bg-white" />
+          </div>
+          <div className="w-[1079.30px] h-[954px] max-w-[1200px] flex flex-col justify-start items-center gap-7">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">DESIGN SYSTEM</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] flex flex-col justify-start items-start">
+              <div className="self-stretch justify-start text-white text-xl font-normal font-['Plus_Jakarta_Sans'] leading-6">I extended the School of Management’s blue and orange brand into a system for content-heavy pages: a campus-photo banner under the header, white cards on a pale surface, and orange reserved for actions. All 81 component variants are documented.</div>
+            </div>
+            <div className="w-[1079px] h-[660px] bg-neutral-200 inline-flex justify-center items-center gap-2.5 overflow-hidden">
+              <div className="w-[1020px] h-[660px] relative">
+                <div className="w-[1020px] h-[660px] px-16 left-0 top-0 absolute inline-flex flex-col justify-start items-start overflow-hidden">
+                  <div className="self-stretch h-[660px] relative flex flex-col justify-start items-start">
+                    <div className="w-[884px] h-[660px] left-[-5364px] top-0 absolute inline-flex justify-start items-center gap-2.5">
+                      <img className="w-[884px] h-[660px] relative" src="https://placehold.co/884x660" />
+                      <img className="w-[884px] h-[660px] relative" src="https://placehold.co/884x660" />
+                      <img className="w-[884px] h-[660px] relative" src="https://placehold.co/884x660" />
+                      <img className="w-[884px] h-[660px] relative" src="https://placehold.co/884x660" />
+                      <img className="w-[884px] h-[660px] relative" src="https://placehold.co/884x660" />
+                    </div>
+                  </div>
+                </div>
+                <div className="w-[980px] h-[620px] left-[20px] top-[20px] absolute inline-flex justify-between items-center">
+                  <div className="size-10 relative bg-black/20 rounded-[40px] overflow-hidden">
+                    <div className="size-10 left-0 top-0 absolute overflow-hidden">
+                      <div className="w-2 h-3.5 left-[15px] top-[12.50px] absolute outline outline-2 outline-offset-[-1px] outline-white" />
+                    </div>
+                  </div>
+                  <div className="size-10 relative bg-black/20 rounded-[40px] overflow-hidden">
+                    <div className="size-10 left-0 top-0 absolute overflow-hidden">
+                      <div className="w-2 h-3.5 left-[17.50px] top-[12.50px] absolute outline outline-2 outline-offset-[-1px] outline-white" />
+                    </div>
+                  </div>
+                </div>
+                <div className="w-32 h-7 left-[445px] top-[610px] absolute bg-black/20 rounded-[50px] inline-flex justify-center items-center overflow-hidden">
+                  <div className="w-6 h-7 pl-2.5 pr-[5px] py-2.5 flex justify-center items-center overflow-hidden">
+                    <div className="size-2.5 relative bg-white rounded-[5px]" />
+                  </div>
+                  <div className="w-5 h-7 px-[5px] py-2.5 flex justify-center items-center overflow-hidden">
+                    <div className="size-2.5 relative opacity-50 bg-white rounded-[5px]" />
+                  </div>
+                  <div className="w-5 h-7 px-[5px] py-2.5 flex justify-center items-center overflow-hidden">
+                    <div className="size-2.5 relative opacity-50 bg-white rounded-[5px]" />
+                  </div>
+                  <div className="w-5 h-7 px-[5px] py-2.5 flex justify-center items-center overflow-hidden">
+                    <div className="size-2.5 relative opacity-50 bg-white rounded-[5px]" />
+                  </div>
+                  <div className="w-5 h-7 px-[5px] py-2.5 flex justify-center items-center overflow-hidden">
+                    <div className="size-2.5 relative opacity-50 bg-white rounded-[5px]" />
+                  </div>
+                  <div className="w-6 h-7 pl-[5px] pr-2.5 py-2.5 flex justify-center items-center overflow-hidden">
+                    <div className="size-2.5 relative opacity-50 bg-white rounded-[5px]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-[1079px] h-0.5 relative flex flex-col justify-start items-start">
+            <div className="w-[1079px] h-0.5 left-[-1920px] top-0 absolute bg-white" />
+          </div>
+          <div className="w-[1079.30px] flex flex-col justify-start items-start gap-7">
+            <div className="self-stretch flex flex-col justify-start items-start gap-7">
+              <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+                <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                  <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">THE PRODUCT</div>
+                </div>
+                <div className="w-16 h-6 relative opacity-25">
+                  <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                    <div className="self-stretch h-px relative" />
+                  </div>
+                  <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                    <div className="self-stretch h-5 relative" />
+                  </div>
+                </div>
+              </div>
+              <div className="w-[1079.30px] flex flex-col justify-start items-start">
+                <div className="self-stretch justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Eleven feature areas, each designed for desktop and mobile. Scroll inside any frame to see the full screen.</div>
+              </div>
+            </div>
+            <div className="self-stretch h-[660px] inline-flex justify-center items-center gap-2.5 overflow-hidden">
+              <div className="flex-1 h-[660px] relative inline-flex flex-col justify-start items-start">
+                <div className="w-[1358.86px] h-[4105.94px] left-[-139.92px] top-[-1572.97px] absolute rounded-[18.97px] flex flex-col justify-center items-center gap-6">
+                  <div className="w-[1358.86px] flex-1 px-14 pt-14 pb-24 inline-flex justify-start items-center overflow-hidden">
+                    <div className="w-[1275.68px] h-[3701.57px] relative inline-flex flex-col justify-start items-start">
+                      <div className="w-[1275.68px] h-[3701.57px] left-[-19.25px] top-0 absolute inline-flex justify-start items-center gap-6">
+                        <img className="w-[554.55px] h-[3365.63px] relative" src="https://placehold.co/555x3366" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[554.55px] h-[3365.63px] relative" src="https://placehold.co/555x3366" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[554.55px] h-[3365.63px] relative" src="https://placehold.co/555x3366" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[554.55px] h-[3365.63px] relative" src="https://placehold.co/555x3366" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[554.55px] h-[3365.63px] relative" src="https://placehold.co/555x3366" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[554.55px] h-[3365.63px] relative" src="https://placehold.co/555x3366" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[554.55px] h-[3365.63px] relative" src="https://placehold.co/555x3366" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[554.55px] h-[3365.63px] relative" src="https://placehold.co/555x3366" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                        <img className="w-[553.06px] h-[3359.41px] relative" src="https://placehold.co/553x3359" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-[1079.30px] h-0.5 relative bg-white" />
+          <div className="w-[1079.30px] h-52 max-w-[1200px] flex flex-col justify-start items-center gap-7 overflow-hidden">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">LEARNINGS</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] h-32 inline-flex justify-center items-center gap-[5px] overflow-hidden">
+              <div className="flex-1 self-stretch flex justify-center items-center gap-[5px] overflow-hidden">
+                <div className="flex-1 h-32 p-5 bg-zinc-900 rounded-[5px] flex justify-center items-start gap-2.5">
+                  <div className="flex-1 h-20 inline-flex flex-col justify-start items-start gap-2.5">
+                    <div className="w-56 flex flex-col justify-start items-start">
+                      <div className="w-56 justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Systems beat pages</div>
+                    </div>
+                    <div className="w-56 flex flex-col justify-start items-start overflow-hidden">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="w-56 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">A shared shell and list pattern made ten feature areas feel like one product.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 h-32 p-5 bg-zinc-900 rounded-[5px] flex justify-center items-start gap-2.5">
+                  <div className="flex-1 h-20 inline-flex flex-col justify-start items-start gap-2.5">
+                    <div className="w-56 flex flex-col justify-start items-start">
+                      <div className="w-56 justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Design every state</div>
+                    </div>
+                    <div className="w-56 flex flex-col justify-start items-start overflow-hidden">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="w-56 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Upcoming, ended, empty, and success states are part of the experience.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 h-32 flex justify-center items-center gap-[5px] overflow-hidden">
+                <div className="flex-1 self-stretch p-5 bg-zinc-900 rounded-[5px] flex justify-center items-start gap-2.5">
+                  <div className="flex-1 h-20 inline-flex flex-col justify-start items-start gap-2.5">
+                    <div className="w-56 flex flex-col justify-start items-start">
+                      <div className="w-56 justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Match layout to reading</div>
+                    </div>
+                    <div className="w-56 flex flex-col justify-start items-start overflow-hidden">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="w-56 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Stories, notices, and research each needed their own layout.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 h-32 p-5 bg-zinc-900 rounded-[5px] flex justify-center items-start gap-2.5">
+                  <div className="flex-1 h-20 inline-flex flex-col justify-start items-start gap-2.5">
+                    <div className="w-52 justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Mobile is its own design</div>
+                    <div className="w-52 flex flex-col justify-start items-start overflow-hidden">
+                      <div className="self-stretch flex flex-col justify-start items-start">
+                        <div className="w-52 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Filters, forms, and long pages needed new patterns, not smaller ones.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-[1079.30px] h-52 max-w-[1200px] flex flex-col justify-start items-center gap-7 overflow-hidden">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">WHAT I&apos;D DO DIFFERENTLY</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] h-28 max-w-[1200px] inline-flex justify-center items-start gap-[5px]">
+              <div className="flex-1 h-28 p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Test with real users</div>
+                </div>
+                <div className="w-80 flex flex-col justify-start items-start overflow-hidden">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="w-80 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Run quick tests on applying and finding a notice.</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 h-28 p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Document rationale</div>
+                </div>
+                <div className="w-80 flex flex-col justify-start items-start overflow-hidden">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="w-80 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Write short decision notes beside each chapter.</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 h-28 p-5 bg-zinc-900 rounded-[5px] inline-flex flex-col justify-start items-start gap-2.5">
+                <div className="w-80 flex flex-col justify-start items-start">
+                  <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">Plan for language</div>
+                </div>
+                <div className="w-80 flex flex-col justify-start items-start overflow-hidden">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="w-80 justify-start text-zinc-500 text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4">Design an English and Nepali toggle for notices and forms.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-[1079.30px] max-w-[1200px] flex flex-col justify-start items-center gap-7">
+            <div className="w-[1079.30px] h-14 inline-flex justify-between items-center">
+              <div className="w-[1017.30px] inline-flex flex-col justify-start items-start">
+                <div className="justify-start text-white text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-[57.20px]">PROJECT CONSTRAINTS</div>
+              </div>
+              <div className="w-16 h-6 relative opacity-25">
+                <div className="w-16 h-px left-0 top-[12px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-px relative" />
+                </div>
+                <div className="size-5 left-[20px] top-[1px] absolute inline-flex flex-col justify-start items-start">
+                  <div className="self-stretch h-5 relative" />
+                </div>
+              </div>
+            </div>
+            <div className="w-[1079.30px] h-44 max-w-[1200px] flex flex-col justify-center items-start gap-3.5">
+              <div className="justify-start text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">What shaped the work:</div>
+              <div className="w-[1079.30px] h-36 flex flex-col justify-center items-center gap-2.5">
+                <div className="w-[1079.30px] flex flex-col justify-start items-start">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Internship project at Aarawan Media &amp; Tech</div>
+                  </div>
+                </div>
+                <div className="w-[1079.30px] flex flex-col justify-start items-start">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">An existing School of Management brand</div>
+                  </div>
+                </div>
+                <div className="w-[1079.30px] flex flex-col justify-start items-start">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Real content, including Nepali notices and PDFs</div>
+                  </div>
+                </div>
+                <div className="w-[1079.30px] flex flex-col justify-start items-start">
+                  <div className="self-stretch flex flex-col justify-start items-start">
+                    <div className="justify-start text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">Desktop at 1440 px and mobile at 428 px as the two target sizes</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="w-[1399.13px] h-0.5 relative bg-white" />
+  </div>
+</div>
+```
+
+==================== END FIGMA DESIGN CODE ====================
+
+Final acceptance criteria: every project detail page uses this new visual system; project content is database-driven; projects and their case-study sections/blocks can be created, edited, reordered and deleted from the existing admin panel; all images are replaceable; changes persist; existing public routes work; and no unrelated part of the portfolio is redesigned.

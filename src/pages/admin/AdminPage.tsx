@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { Project, ExperienceItem, EducationItem } from '../../types';
+import { ProjectEditor } from '../../components/admin/ProjectEditor';
 
 interface AdminPageProps {
   onNavigate: (path: string) => void;
@@ -21,6 +22,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     addProject,
     updateProject,
     deleteProject,
+    duplicateProject,
+    reorderProjects,
+    toggleProjectStatus,
     addExperience,
     updateExperience,
     deleteExperience,
@@ -311,285 +315,272 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
         {/* TAB 2: PROJECTS */}
         {activeTab === 'projects' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <div>
-                <h1 style={{ fontSize: '24px', fontWeight: 700 }}>Projects &amp; Case Studies</h1>
-                <p style={{ color: '#8e8ea0', fontSize: '14px', marginTop: '4px' }}>
-                  Manage portfolio case studies, visibility, metadata, and custom routes.
-                </p>
-              </div>
-              {!isCreatingProject && !editingProject && (
-                <button
-                  onClick={() => {
-                    setIsCreatingProject(true);
-                    setProjectFormData({
-                      title: '',
-                      slug: '',
-                      category: 'product',
-                      categoryLabel: 'Product Case Study',
-                      mediaNote: 'Product design',
-                      coverImage: '/assets/media/home-media-03-d6c887bed8af.webp',
-                      year: '2026',
-                      order: projects.length + 1,
-                      status: 'published',
-                      featured: true,
-                      summary: ''
-                    });
-                  }}
-                  style={{ padding: '10px 18px', background: '#f37021', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  + Create New Project
-                </button>
-              )}
-            </div>
-
-            {/* CREATE / EDIT FORM */}
-            {(isCreatingProject || editingProject) && (
-              <div style={{ padding: '28px', background: '#131418', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', marginBottom: '32px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>
-                  {editingProject ? `Edit: ${editingProject.title}` : 'Add New Portfolio Project'}
-                </h2>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Project Title</label>
-                    <input
-                      type="text"
-                      value={projectFormData.title || ''}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, title: e.target.value })}
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>URL Slug</label>
-                    <input
-                      type="text"
-                      value={projectFormData.slug || ''}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, slug: e.target.value })}
-                      placeholder="e.g. mobile-banking-redesign"
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Category</label>
-                    <select
-                      value={projectFormData.category || 'product'}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, category: e.target.value as any })}
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    >
-                      <option value="product">Product Design</option>
-                      <option value="archive">Design Practice</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Category Label</label>
-                    <input
-                      type="text"
-                      value={projectFormData.categoryLabel || ''}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, categoryLabel: e.target.value })}
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Cover Image URL</label>
-                    <input
-                      type="text"
-                      value={projectFormData.coverImage || ''}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, coverImage: e.target.value })}
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Year</label>
-                    <input
-                      type="text"
-                      value={projectFormData.year || '2026'}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, year: e.target.value })}
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                  <div style={{ gridColumn: 'span 2' }}>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Hero Subtitle (Appears beside large title)</label>
-                    <textarea
-                      rows={2}
-                      value={projectFormData.heroSubtitle || ''}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, heroSubtitle: e.target.value })}
-                      placeholder="e.g. A case study on designing the complete web and mobile experience..."
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>My Role</label>
-                    <input
-                      type="text"
-                      value={projectFormData.role || ''}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, role: e.target.value })}
-                      placeholder="e.g. UI/UX & Product Designer"
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Duration</label>
-                    <input
-                      type="text"
-                      value={projectFormData.duration || ''}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, duration: e.target.value })}
-                      placeholder="e.g. 1 Month"
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Figma File URL</label>
-                    <input
-                      type="text"
-                      value={projectFormData.figmaUrl || ''}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, figmaUrl: e.target.value })}
-                      placeholder="https://www.figma.com/file/..."
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Deliverables (1 per line)</label>
-                    <textarea
-                      rows={3}
-                      value={Array.isArray(projectFormData.deliverables) ? projectFormData.deliverables.join('\n') : (projectFormData.deliverables || '')}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, deliverables: e.target.value.split('\n').filter(Boolean) as any })}
-                      placeholder="87 screens and states in Figma&#10;81 component variants&#10;Desktop (1440 px) and mobile (428 px)"
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                  <div style={{ gridColumn: 'span 2' }}>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Lead Summary / Project Overview</label>
-                    <textarea
-                      rows={3}
-                      value={projectFormData.summary || ''}
-                      onChange={(e) => setProjectFormData({ ...projectFormData, summary: e.target.value })}
-                      placeholder="Overview paragraph describing the organization, goals, and design scope..."
-                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-                  <button
-                    onClick={() => {
-                      if (!projectFormData.title || !projectFormData.slug) {
-                        alert('Title and Slug are required');
-                        return;
-                      }
-                      if (editingProject) {
-                        updateProject(editingProject.id, projectFormData);
-                        showNotice(`Updated project: ${projectFormData.title}`);
-                        setEditingProject(null);
-                      } else {
-                        addProject(projectFormData as any);
-                        showNotice(`Created new project: ${projectFormData.title}`);
-                        setIsCreatingProject(false);
-                      }
-                    }}
-                    style={{ padding: '10px 20px', background: '#f37021', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}
-                  >
-                    Save Project
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsCreatingProject(false);
-                      setEditingProject(null);
-                    }}
-                    style={{ padding: '10px 20px', background: '#1a1b22', color: '#8e8ea0', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', cursor: 'pointer' }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* PROJECTS LIST TABLE */}
-            {projects.length === 0 ? (
-              <div style={{ padding: '40px', background: '#131418', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', textAlign: 'center' }}>
-                <p style={{ color: '#8e8ea0', fontSize: '14px' }}>No projects in CMS. All projects were removed.</p>
-                <button
-                  onClick={() => setIsCreatingProject(true)}
-                  style={{ marginTop: '12px', padding: '8px 16px', background: '#f37021', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  + Create First Project
-                </button>
-              </div>
+            {(isCreatingProject || editingProject) ? (
+              <ProjectEditor
+                initialProject={editingProject}
+                existingProjects={projects}
+                mediaLibrary={media}
+                onSave={(payload) => {
+                  if (editingProject) {
+                    updateProject(editingProject.id, payload);
+                    showNotice(`Saved changes to "${payload.title}"`);
+                  } else {
+                    const created = addProject(payload);
+                    showNotice(`Created new project "${created.title}"`);
+                  }
+                  setIsCreatingProject(false);
+                  setEditingProject(null);
+                }}
+                onCancel={() => {
+                  setIsCreatingProject(false);
+                  setEditingProject(null);
+                }}
+              />
             ) : (
-            <div style={{ background: '#131418', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', overflow: 'hidden' }}>
-              <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                <button
-                  onClick={() => {
-                    if (window.confirm('Permanently delete all projects? This cannot be undone.')) {
-                      deleteAllProjects();
-                      showNotice('All projects permanently deleted.');
-                    }
-                  }}
-                  style={{ padding: '6px 12px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}
-                >
-                  Delete All Projects Permanently
-                </button>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <h1 style={{ fontSize: '24px', fontWeight: 700 }}>Projects &amp; Case Studies</h1>
+                    <p style={{ color: '#8e8ea0', fontSize: '14px', marginTop: '4px' }}>
+                      Build, reorder, publish, and customize responsive case studies with the visual block builder.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      onClick={() => {
+                        setIsCreatingProject(true);
+                        setEditingProject(null);
+                      }}
+                      style={{ padding: '10px 18px', background: '#f37021', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <span className="material-symbols-rounded" style={{ fontSize: '18px' }}>add</span>
+                      <span>Add New Case Study</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Status KPI summary row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+                  <div style={{ padding: '12px 16px', background: '#131418', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#8e8ea0', textTransform: 'uppercase', fontFamily: 'monospace' }}>Total Case Studies</span>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#f0f0f4', marginTop: '2px' }}>{projects.length}</div>
+                  </div>
+                  <div style={{ padding: '12px 16px', background: '#131418', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#10b981', textTransform: 'uppercase', fontFamily: 'monospace' }}>Published (Public)</span>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#10b981', marginTop: '2px' }}>{projects.filter(p => p.status === 'published').length}</div>
+                  </div>
+                  <div style={{ padding: '12px 16px', background: '#131418', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#f59e0b', textTransform: 'uppercase', fontFamily: 'monospace' }}>Drafts (Preview only)</span>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#f59e0b', marginTop: '2px' }}>{projects.filter(p => p.status === 'draft').length}</div>
+                  </div>
+                  <div style={{ padding: '12px 16px', background: '#131418', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#f37021', textTransform: 'uppercase', fontFamily: 'monospace' }}>Featured Work</span>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#f37021', marginTop: '2px' }}>{projects.filter(p => p.featured).length}</div>
+                  </div>
+                </div>
+
+                {/* Projects Table */}
+                {projects.length === 0 ? (
+                  <div style={{ padding: '48px', background: '#131418', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', textAlign: 'center' }}>
+                    <span className="material-symbols-rounded" style={{ fontSize: '36px', color: '#8e8ea0', marginBottom: '8px' }}>folder_open</span>
+                    <p style={{ color: '#8e8ea0', fontSize: '14px' }}>No projects found in database.</p>
+                    <button
+                      onClick={() => setIsCreatingProject(true)}
+                      style={{ marginTop: '16px', padding: '10px 20px', background: '#f37021', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      + Create First Case Study
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ background: '#131418', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', overflow: 'hidden' }}>
+                    <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <span style={{ fontSize: '12px', color: '#8e8ea0', fontFamily: 'monospace' }}>
+                        ALL CASE STUDIES ({projects.length})
+                      </span>
+                      <button
+                        onClick={() => {
+                          if (window.confirm('Permanently delete all projects? This action cannot be undone.')) {
+                            projects.forEach(p => deleteProject(p.id));
+                            showNotice('All projects removed.');
+                          }
+                        }}
+                        style={{ padding: '4px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' }}
+                      >
+                        Delete All Projects
+                      </button>
+                    </div>
+
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: '#181920', color: '#8e8ea0' }}>
+                          <th style={{ padding: '12px 18px', width: '50px' }}>Order</th>
+                          <th style={{ padding: '12px 18px' }}>Project</th>
+                          <th style={{ padding: '12px 18px' }}>Category</th>
+                          <th style={{ padding: '12px 18px' }}>Route</th>
+                          <th style={{ padding: '12px 18px' }}>Status</th>
+                          <th style={{ padding: '12px 18px', textAlign: 'right' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {projects.map((proj, pIdx) => (
+                          <tr key={proj.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            {/* Order reordering */}
+                            <td style={{ padding: '12px 18px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#8e8ea0', minWidth: '16px' }}>
+                                  {pIdx + 1}
+                                </span>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                  <button
+                                    onClick={() => {
+                                      if (pIdx === 0) return;
+                                      const ids = projects.map(p => p.id);
+                                      const temp = ids[pIdx];
+                                      ids[pIdx] = ids[pIdx - 1];
+                                      ids[pIdx - 1] = temp;
+                                      reorderProjects(ids);
+                                    }}
+                                    disabled={pIdx === 0}
+                                    style={{ border: 'none', background: 'none', color: pIdx === 0 ? '#333' : '#8e8ea0', cursor: pIdx === 0 ? 'default' : 'pointer', padding: 0, lineHeight: 1 }}
+                                    title="Move Up"
+                                  >
+                                    ▲
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (pIdx === projects.length - 1) return;
+                                      const ids = projects.map(p => p.id);
+                                      const temp = ids[pIdx];
+                                      ids[pIdx] = ids[pIdx + 1];
+                                      ids[pIdx + 1] = temp;
+                                      reorderProjects(ids);
+                                    }}
+                                    disabled={pIdx === projects.length - 1}
+                                    style={{ border: 'none', background: 'none', color: pIdx === projects.length - 1 ? '#333' : '#8e8ea0', cursor: pIdx === projects.length - 1 ? 'default' : 'pointer', padding: 0, lineHeight: 1 }}
+                                    title="Move Down"
+                                  >
+                                    ▼
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Project visual & title */}
+                            <td style={{ padding: '12px 18px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <img
+                                  alt={proj.title}
+                                  src={proj.heroImage?.url || proj.coverImage || '/assets/media/home-media-04-f775f2921176.webp'}
+                                  style={{ width: '48px', height: '34px', objectFit: 'cover', borderRadius: '4px', background: '#000', border: '1px solid rgba(255,255,255,0.08)' }}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/assets/media/home-media-04-f775f2921176.webp';
+                                  }}
+                                />
+                                <div>
+                                  <div style={{ fontWeight: 600, color: '#f0f0f4', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span>{proj.title}</span>
+                                    {proj.featured && (
+                                      <span title="Featured Work" style={{ color: '#f37021', fontSize: '14px' }}>★</span>
+                                    )}
+                                  </div>
+                                  <div style={{ fontSize: '11px', color: '#8e8ea0' }}>
+                                    {proj.year || '2026'} · {proj.sections?.length || 11} sections
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td style={{ padding: '12px 18px', color: '#8e8ea0' }}>
+                              <span style={{ padding: '2px 8px', borderRadius: '4px', background: '#1c1d24', fontSize: '11px' }}>
+                                {proj.categoryLabel || 'Case Study'}
+                              </span>
+                            </td>
+
+                            {/* Route slug */}
+                            <td style={{ padding: '12px 18px' }}>
+                              <button
+                                onClick={() => onNavigate(proj.route || `/${proj.slug}`)}
+                                style={{ background: 'none', border: 'none', fontFamily: 'monospace', color: '#f37021', cursor: 'pointer', textAlign: 'left', padding: 0 }}
+                                title="Open project detail route"
+                              >
+                                {proj.route || `/${proj.slug}`}
+                              </button>
+                            </td>
+
+                            {/* Status toggle */}
+                            <td style={{ padding: '12px 18px' }}>
+                              <button
+                                onClick={() => {
+                                  toggleProjectStatus(proj.id);
+                                  showNotice(`Toggled status for "${proj.title}"`);
+                                }}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  background: proj.status === 'published' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)',
+                                  color: proj.status === 'published' ? '#10b981' : '#f59e0b',
+                                  border: 'none',
+                                  cursor: 'pointer'
+                                }}
+                                title="Click to toggle publish status"
+                              >
+                                {proj.status === 'published' ? 'Published' : 'Draft'}
+                              </button>
+                            </td>
+
+                            {/* Actions toolbar */}
+                            <td style={{ padding: '12px 18px', textAlign: 'right' }}>
+                              <div style={{ display: 'inline-flex', gap: '6px' }}>
+                                <button
+                                  onClick={() => onNavigate(proj.route || `/${proj.slug}`)}
+                                  style={{ padding: '6px 10px', background: '#1a1b22', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f4', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                                  title="View Public Page"
+                                >
+                                  View
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingProject(proj);
+                                    setIsCreatingProject(false);
+                                  }}
+                                  style={{ padding: '6px 10px', background: '#f37021', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+                                  title="Edit Project and Case Study Builder"
+                                >
+                                  Edit &amp; Build
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const dup = duplicateProject(proj.id);
+                                    if (dup) showNotice(`Duplicated as "${dup.title}"`);
+                                  }}
+                                  style={{ padding: '6px 10px', background: '#1a1b22', border: '1px solid rgba(255,255,255,0.08)', color: '#8e8ea0', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                                  title="Duplicate Project"
+                                >
+                                  Copy
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (window.confirm(`Delete project "${proj.title}" permanently?`)) {
+                                      deleteProject(proj.id);
+                                      showNotice(`Deleted ${proj.title}`);
+                                    }
+                                  }}
+                                  style={{ padding: '6px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                                  title="Delete Project"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: '#181920', color: '#8e8ea0' }}>
-                    <th style={{ padding: '14px 20px' }}>Project</th>
-                    <th style={{ padding: '14px 20px' }}>Category</th>
-                    <th style={{ padding: '14px 20px' }}>Slug / Route</th>
-                    <th style={{ padding: '14px 20px' }}>Status</th>
-                    <th style={{ padding: '14px 20px', textAlign: 'right' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {projects.map((proj) => (
-                    <tr key={proj.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                      <td style={{ padding: '14px 20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <img
-                            alt=""
-                            src={proj.coverImage}
-                            style={{ width: '44px', height: '32px', objectFit: 'cover', borderRadius: '4px' }}
-                          />
-                          <div>
-                            <div style={{ fontWeight: 600, color: '#f0f0f4' }}>{proj.title}</div>
-                            <div style={{ fontSize: '11px', color: '#8e8ea0' }}>{proj.year}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={{ padding: '14px 20px', color: '#8e8ea0' }}>{proj.categoryLabel}</td>
-                      <td style={{ padding: '14px 20px', fontFamily: 'monospace', color: '#f37021' }}>{proj.route}</td>
-                      <td style={{ padding: '14px 20px' }}>
-                        <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: proj.status === 'published' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)', color: proj.status === 'published' ? '#10b981' : '#f59e0b' }}>
-                          {proj.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: '14px 20px', textAlign: 'right' }}>
-                        <button
-                          onClick={() => {
-                            setEditingProject(proj);
-                            setProjectFormData(proj);
-                            setIsCreatingProject(false);
-                          }}
-                          style={{ padding: '6px 12px', background: '#1a1b22', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f4', borderRadius: '4px', cursor: 'pointer', marginRight: '8px' }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (window.confirm(`Delete project "${proj.title}"?`)) {
-                              deleteProject(proj.id);
-                              showNotice(`Deleted ${proj.title}`);
-                            }
-                          }}
-                          style={{ padding: '6px 12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', borderRadius: '4px', cursor: 'pointer' }}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
             )}
           </div>
         )}
