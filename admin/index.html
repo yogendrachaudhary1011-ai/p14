@@ -253,6 +253,8 @@ body {
   font-size: 18px;
   font-weight: 700;
 }
+.topbar-heading { display:flex; flex-direction:column; gap:2px; }
+.topbar-description { color:var(--text-muted); font-size:12px; }
 .topbar-actions {
   display: flex;
   align-items: center;
@@ -283,9 +285,44 @@ body {
 }
 .content-area {
   padding: 32px;
-  max-width: 1200px;
+  max-width: 1440px;
   width: 100%;
 }
+.dashboard-intro {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding:28px;
+  margin-bottom:22px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  background:linear-gradient(120deg,rgba(243,112,33,.14),rgba(19,20,24,.92) 55%);
+}
+.dashboard-intro h1 { margin:5px 0 6px; font-size:26px; line-height:1.2; }
+.dashboard-intro p { color:var(--text-muted); font-size:13px; }
+.dashboard-eyebrow { color:var(--primary); font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+.quick-action-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.quick-action {
+  min-height:90px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:16px;
+  text-align:left;
+  color:var(--text-main);
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+}
+.quick-action:hover { border-color:var(--primary); background:var(--bg-elevated); }
+.quick-action > .material-symbols-rounded { color:var(--primary); font-size:22px; }
+.quick-action strong { display:block; font-size:13px; }
+.quick-action small { display:block; margin-top:3px; color:var(--text-muted); font-size:11px; }
+.metric-card { width:100%; cursor:pointer; font:inherit; }
+.metric-card:hover { border-color:var(--primary); }
+.text-link { padding:0; border:0; background:none; color:var(--primary); font:inherit; cursor:pointer; text-decoration:underline; }
 
 /* Cards & Sections */
 .admin-card {
@@ -454,10 +491,32 @@ body {
 .media-sub-text { font-size: 11px; color: var(--text-dim); }
 
 @media (max-width: 900px) {
-  .sidebar { width: 70px; }
-  .sidebar .nav-item span:not(.material-symbols-rounded), .sidebar-header span, .sidebar-footer .user-info, .nav-section-title { display: none; }
-  .main-wrapper { margin-left: 70px; }
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  :root { --sidebar-w: 228px; }
+  .grid-2 { grid-template-columns:1fr; }
+  .grid-3, .grid-4 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .topbar { padding:0 22px; }
+  .content-area { padding:22px; }
+}
+@media (max-width: 640px) {
+  .sidebar { top:auto; right:0; bottom:0; width:100%; height:auto; border-right:0; border-top:1px solid var(--border); }
+  .sidebar-header, .sidebar-footer { display:none; }
+  .sidebar-nav { flex:0 0 auto; flex-direction:row; gap:4px; overflow-x:auto; overflow-y:hidden; padding:8px; scrollbar-width:thin; }
+  .nav-section-title { display:none; }
+  .sidebar .nav-item { flex:0 0 auto; width:auto; gap:7px; padding:9px 11px; white-space:nowrap; }
+  .sidebar .nav-item span:not(.material-symbols-rounded) { display:inline; font-size:11px; }
+  .main-wrapper { margin-left:0; padding-bottom:60px; }
+  .topbar { min-height:64px; height:auto; padding:12px 16px; gap:12px; }
+  .topbar-title { font-size:16px; }
+  .topbar-description { max-width:56vw; font-size:10px; }
+  .topbar-actions { gap:6px; }
+  .topbar-actions .status-pill { display:none; }
+  .topbar-actions .btn { padding:8px 10px; font-size:11px; }
+  .content-area { padding:14px; }
+  .grid-2, .grid-3, .grid-4, .quick-action-grid { grid-template-columns:1fr; }
+  .dashboard-intro { align-items:flex-start; flex-direction:column; padding:20px; }
+  .dashboard-intro h1 { font-size:22px; }
+  .admin-card { padding:18px; }
+  .data-table { display:block; overflow-x:auto; white-space:nowrap; }
 }
 </style>
 </head>
@@ -496,58 +555,63 @@ body {
     <div class="sidebar-header">
       <div class="sidebar-brand">
         <span class="material-symbols-rounded" style="color:var(--primary)">dashboard</span>
-        <span>YOGENDRA CMS</span>
+        <span>PORTFOLIO CMS</span>
       </div>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-section-title">Overview</div>
-      <button class="nav-item active" onclick="switchTab('dashboard')">
+      <div class="nav-section-title">Start</div>
+      <button class="nav-item active" data-tab="dashboard" title="Overview" onclick="switchTab('dashboard')">
         <span class="material-symbols-rounded">analytics</span>
-        <span>Dashboard</span>
+        <span>Overview</span>
       </button>
-      
-      <div class="nav-section-title">Content</div>
-      <button class="nav-item" onclick="switchTab('homepage')">
+
+      <div class="nav-section-title">Website Content</div>
+      <button class="nav-item" data-tab="homepage" title="Homepage" onclick="switchTab('homepage')">
         <span class="material-symbols-rounded">home</span>
-        <span>Homepage & Hero</span>
+        <span>Homepage</span>
       </button>
-      <button class="nav-item" onclick="switchTab('projects')">
+      <button class="nav-item" data-tab="projects" title="Projects and case studies" onclick="switchTab('projects')">
         <span class="material-symbols-rounded">work</span>
-        <span>Projects & Case Studies</span>
+        <span>Projects</span>
       </button>
-      <button class="nav-item" onclick="switchTab('experience')">
+      <div class="nav-section-title">About You</div>
+      <button class="nav-item" data-tab="experience" title="Work experience" onclick="switchTab('experience')">
         <span class="material-symbols-rounded">business_center</span>
         <span>Experience</span>
       </button>
-      <button class="nav-item" onclick="switchTab('education')">
+      <button class="nav-item" data-tab="education" title="Education and languages" onclick="switchTab('education')">
         <span class="material-symbols-rounded">school</span>
-        <span>Education & Languages</span>
+        <span>Education</span>
       </button>
-      
-      <div class="nav-section-title">Assets & Settings</div>
-      <button class="nav-item" onclick="switchTab('media')">
+
+      <div class="nav-section-title">Images & Files</div>
+      <button class="nav-item" data-tab="media" title="Media library" onclick="switchTab('media')">
         <span class="material-symbols-rounded">photo_library</span>
-        <span>Media Library</span>
+        <span>Media</span>
       </button>
-      <button class="nav-item" onclick="switchTab('resume')">
+      <button class="nav-item" data-tab="resume" title="Resume PDF" onclick="switchTab('resume')">
         <span class="material-symbols-rounded">description</span>
-        <span>Resume PDF</span>
+        <span>Resume</span>
       </button>
-      <button class="nav-item" onclick="switchTab('navigation')">
+
+      <div class="nav-section-title">Site Settings</div>
+      <button class="nav-item" data-tab="navigation" title="Navigation and contact details" onclick="switchTab('navigation')">
         <span class="material-symbols-rounded">navigation</span>
-        <span>Navigation & Footer</span>
+        <span>Contact & Footer</span>
       </button>
-      <button class="nav-item" onclick="switchTab('seo')">
+      <button class="nav-item" data-tab="seo" title="SEO and social sharing" onclick="switchTab('seo')">
         <span class="material-symbols-rounded">travel_explore</span>
-        <span>SEO & Meta</span>
+        <span>SEO & Sharing</span>
       </button>
-      <button class="nav-item" onclick="switchTab('backups')">
+
+      <div class="nav-section-title">Administration</div>
+      <button class="nav-item" data-tab="backups" title="Backups and version history" onclick="switchTab('backups')">
         <span class="material-symbols-rounded">history</span>
-        <span>Version History</span>
+        <span>Backups</span>
       </button>
-      <button class="nav-item" onclick="switchTab('security')">
+      <button class="nav-item" data-tab="security" title="Account and security" onclick="switchTab('security')">
         <span class="material-symbols-rounded">lock</span>
-        <span>Security</span>
+        <span>Account</span>
       </button>
     </nav>
     <div class="sidebar-footer">
@@ -567,7 +631,10 @@ body {
   <!-- Main Area -->
   <div class="main-wrapper">
     <header class="topbar">
-      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-heading">
+        <div class="topbar-title" id="pageTitle">Overview</div>
+        <div class="topbar-description" id="pageDescription">Manage your portfolio website from one place.</div>
+      </div>
       <div class="topbar-actions">
         <div class="status-pill" id="dbStatusPill">
           <span class="status-dot"></span>
@@ -747,23 +814,25 @@ async function handleLogout() {
 function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => b.classList.remove('active'));
-  const activeBtn = document.querySelector(`.sidebar-nav .nav-item[onclick*="${tab}"]`);
+  const activeBtn = document.querySelector(`.sidebar-nav .nav-item[data-tab="${tab}"]`);
   if (activeBtn) activeBtn.classList.add('active');
 
   const titles = {
-    dashboard: 'Dashboard',
-    homepage: 'Homepage & Hero Content',
-    projects: 'Projects & Case Studies',
-    experience: 'Experience Timeline',
-    education: 'Education & Languages',
-    media: 'Media Library',
-    resume: 'Resume PDF Management',
-    navigation: 'Navigation & Links',
-    seo: 'SEO & Social Meta',
-    backups: 'Version History & Snapshots',
-    security: 'Account & Security'
+    dashboard: ['Overview', 'See what is on your site and start a common update.'],
+    homepage: ['Homepage', 'Edit the words and profile details visitors see first.'],
+    projects: ['Projects', 'Add, edit, publish, or remove case studies and design practice.'],
+    experience: ['Experience', 'Manage the roles shown in your work history.'],
+    education: ['Education', 'Update your education and language credentials.'],
+    media: ['Media Library', 'Upload, replace, and organize images and files used by the site.'],
+    resume: ['Resume', 'Replace the PDF visitors can view or download.'],
+    navigation: ['Contact & Footer', 'Update your brand details, contact links, and footer text.'],
+    seo: ['SEO & Sharing', 'Control search previews and the image shown when your site is shared.'],
+    backups: ['Backups', 'Create a restore point before larger edits or restore an earlier snapshot.'],
+    security: ['Account', 'Change the password used to sign in to this CMS.']
   };
-  document.getElementById('pageTitle').textContent = titles[tab] || 'CMS';
+  const heading = titles[tab] || ['CMS', 'Manage your portfolio website.'];
+  document.getElementById('pageTitle').textContent = heading[0];
+  document.getElementById('pageDescription').textContent = heading[1];
   renderTabContent(tab);
 }
 
@@ -774,51 +843,48 @@ async function renderTabContent(tab) {
   if (tab === 'dashboard') {
     const data = await apiFetch('/api/admin/overview');
     container.innerHTML = `
-      <div class="grid-4" style="margin-bottom:24px;">
-        <div class="admin-card" style="margin:0;">
-          <div class="form-label">Projects</div>
-          <div style="font-size:28px;font-weight:700;color:var(--primary);">${data.stats.projectsCount}</div>
-          <div style="font-size:12px;color:var(--text-dim)">Case studies & practice</div>
+      <section class="dashboard-intro">
+        <div>
+          <div class="dashboard-eyebrow">Portfolio workspace</div>
+          <h1>Manage your website</h1>
+          <p>Edit content, images, and contact details. Changes go live when you save.</p>
         </div>
-        <div class="admin-card" style="margin:0;">
-          <div class="form-label">Experience</div>
-          <div style="font-size:28px;font-weight:700;color:var(--text-main);">${data.stats.experienceCount}</div>
-          <div style="font-size:12px;color:var(--text-dim)">Timeline positions</div>
-        </div>
-        <div class="admin-card" style="margin:0;">
-          <div class="form-label">Media Assets</div>
-          <div style="font-size:28px;font-weight:700;color:var(--text-main);">${data.stats.mediaCount}</div>
-          <div style="font-size:12px;color:var(--text-dim)">In media library</div>
-        </div>
-        <div class="admin-card" style="margin:0;">
-          <div class="form-label">Backups</div>
-          <div style="font-size:28px;font-weight:700;color:var(--text-main);">${data.stats.backupsCount}</div>
-          <div style="font-size:12px;color:var(--text-dim)">Snapshots saved</div>
-        </div>
+        <button class="btn btn-secondary" onclick="createBackupSnapshot()"><span class="material-symbols-rounded">history</span> Save a backup</button>
+      </section>
+
+      <div class="grid-4" style="margin-bottom:20px;">
+        <button class="admin-card metric-card" style="margin:0;text-align:left;color:inherit;" onclick="switchTab('projects')">
+          <div class="form-label">Projects</div><div style="font-size:28px;font-weight:700;color:var(--primary);">${data.stats.projectsCount}</div><div style="font-size:12px;color:var(--text-dim)">Case studies and practice</div>
+        </button>
+        <button class="admin-card metric-card" style="margin:0;text-align:left;color:inherit;" onclick="switchTab('experience')">
+          <div class="form-label">Experience</div><div style="font-size:28px;font-weight:700;">${data.stats.experienceCount}</div><div style="font-size:12px;color:var(--text-dim)">Roles in your timeline</div>
+        </button>
+        <button class="admin-card metric-card" style="margin:0;text-align:left;color:inherit;" onclick="switchTab('media')">
+          <div class="form-label">Images and files</div><div style="font-size:28px;font-weight:700;">${data.stats.mediaCount}</div><div style="font-size:12px;color:var(--text-dim)">Items in the media library</div>
+        </button>
+        <button class="admin-card metric-card" style="margin:0;text-align:left;color:inherit;" onclick="switchTab('backups')">
+          <div class="form-label">Backups</div><div style="font-size:28px;font-weight:700;">${data.stats.backupsCount}</div><div style="font-size:12px;color:var(--text-dim)">Saved restore points</div>
+        </button>
       </div>
 
-      <div class="admin-card">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="material-symbols-rounded">verified_user</span>
-            System & Storage Health
+      <div class="grid-2">
+        <section class="admin-card">
+          <div class="card-header"><div><div class="card-title">Quick actions</div><div style="color:var(--text-muted);font-size:12px;margin-top:4px;">Jump straight to a common update.</div></div></div>
+          <div class="quick-action-grid">
+            <button class="quick-action" onclick="switchTab('homepage')"><span class="material-symbols-rounded">home</span><span><strong>Edit homepage</strong><small>Headlines, intro, and profile</small></span></button>
+            <button class="quick-action" onclick="openProjectModal()"><span class="material-symbols-rounded">add_box</span><span><strong>Add a project</strong><small>Create a case study or practice</small></span></button>
+            <button class="quick-action" onclick="switchTab('media')"><span class="material-symbols-rounded">upload_file</span><span><strong>Manage images</strong><small>Upload and replace site media</small></span></button>
+            <button class="quick-action" onclick="switchTab('navigation')"><span class="material-symbols-rounded">contact_page</span><span><strong>Update contact details</strong><small>Email, availability, and footer</small></span></button>
           </div>
-          <button class="btn btn-secondary btn-sm" onclick="createBackupSnapshot()">
-            <span class="material-symbols-rounded">history</span> Create Snapshot
-          </button>
-        </div>
-        <div class="grid-2">
-          <div>
-            <div style="font-weight:600;margin-bottom:8px;">Database State</div>
-            <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Cloud Firestore is the active production data store. All changes are written directly to Firestore and confirmed before returning success.</p>
-            <div class="status-pill"><span class="status-dot"></span> Firestore: Online & Active</div>
+        </section>
+        <section class="admin-card">
+          <div class="card-header"><div><div class="card-title">Publishing and site status</div><div style="color:var(--text-muted);font-size:12px;margin-top:4px;">Your edits are saved to the live site.</div></div></div>
+          <div style="display:grid;gap:14px;">
+            <div><div style="font-weight:600;margin-bottom:7px;">Content database</div><span class="status-pill ${data.health.firestoreConnected ? '' : 'error'}"><span class="status-dot"></span>${data.health.firestoreConnected ? 'Connected' : 'Unavailable'}</span></div>
+            <div><div style="font-weight:600;margin-bottom:7px;">File storage</div><span class="status-pill ${data.health.storageConnected ? '' : 'error'}"><span class="status-dot"></span>${data.health.storageConnected ? 'Connected' : 'Using backup storage'}</span></div>
+            <p style="color:var(--text-muted);font-size:12px;">For a larger set of changes, save a backup first. You can restore it from <button class="text-link" type="button" onclick="switchTab('backups')">Backups</button>.</p>
           </div>
-          <div>
-            <div style="font-weight:600;margin-bottom:8px;">Media Storage State</div>
-            <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Uploaded images, PDFs, and assets are stored in Firebase Storage or resilient Firestore binary blobs with immediate live serving.</p>
-            <div class="status-pill"><span class="status-dot"></span> Storage: Online & Active</div>
-          </div>
-        </div>
+        </section>
       </div>
     `;
   }
@@ -1797,4 +1863,5 @@ checkAuth();
 </script>
 </body>
 </html>
+
 
