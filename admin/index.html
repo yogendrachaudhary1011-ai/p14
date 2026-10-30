@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Portfolio Admin CMS — Yogendra Chaudhary</title>
+<link href="/assets/media/home-media-01-a8072a2c986d.png" rel="icon" type="image/png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg-dark: #0a0a0c;
+  --bg-card: #131418;
+  --bg-elevated: #1a1b22;
+  --bg-input: #101115;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-focus: #f37021;
+  --primary: #f37021;
+  --primary-hover: #ff853a;
+  --primary-glow: rgba(243, 112, 33, 0.18);
+  --text-main: #f0f0f4;
+  --text-muted: #8e8ea0;
+  --text-dim: #5c5c6e;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --sidebar-w: 260px;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  line-height: 1.5;
+  font-size: 14px;
+  min-height: 100vh;
+}
+/* Layout */
+#loginView {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 20%, rgba(243, 112, 33, 0.06), transparent 70%), var(--bg-dark);
+}
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+.login-brand {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+.login-brand span { color: var(--primary); }
+.login-sub { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.form-input, .form-textarea, .form-select {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.08); }
+.btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.btn-danger:hover { background: var(--danger); color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-block { width: 100%; }
+
+/* Admin App Shell */
+#adminApp {
+  display: flex;
+  min-height: 100vh;
+}
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+}
+.sidebar-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sidebar-brand {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+}
+.nav-item.active {
+  background: var(--primary-glow);
+  color: var(--primary);
+  font-weight: 600;
+}
+.nav-item .material-symbols-rounded { font-size: 18px; }
+.nav-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 12px 14px 4px;
+  letter-spacing: 0.08em;
+}
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  font-size: 13px;
+}
+.user-name { font-size: 13px; font-weight: 600; }
+.user-role { font-size: 11px; color: var(--text-muted); }
+
+/* Main Content */
+.main-wrapper {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  height: 64px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  background: rgba(10, 10, 12, 0.8);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+.topbar-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.status-pill.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.content-area {
+  padding: 32px;
+  max-width: 1200px;
+  width: 100%;
+}
+
+/* Cards & Sections */
+.admin-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+/* Tables & Lists */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.05em;
+}
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+  font-size: 13px;
+  vertical-align: middle;
+}
+.data-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.badge-published { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+.badge-draft { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+
+/* Notifications / Toasts */
+#toastBox {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+.toast {
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.25s ease;
+}
+.toast.success { border-color: rgba(16, 185, 129, 0.4); border-left: 4px solid var(--success); }
+.toast.error { border-color: rgba(239, 68, 68, 0.4); border-left: 4px solid var(--danger); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.modal-card {
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-title { font-size: 16px; font-weight: 700; }
+.close-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; }
+
+/* Media Grid */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+.media-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.2s ease;
+}
+.media-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+.media-thumb-box {
+  width: 100%;
+  height: 120px;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.media-thumb-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.media-meta-box {
+  padding: 10px;
+}
+.media-title-text {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.media-sub-text { font-size: 11px; color: var(--text-dim); }
+
+@media (max-width: 900px) {
+  .sidebar { width: 70px; }
+  .sidebar .nav-item span:not(.material-symbols-rounded), .sidebar-header span, .sidebar-footer .user-info, .nav-section-title { display: none; }
+  .main-wrapper { margin-left: 70px; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Login View -->
+<div id="loginView">
+  <div class="login-card">
+    <div class="login-brand">YOGENDRA <span>CMS</span></div>
+    <div class="login-sub">Sign in to manage portfolio content and case studies</div>
+    
+    <div id="loginError" style="display:none; padding:10px 14px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:var(--radius-sm); color:var(--danger); font-size:13px; margin-bottom:18px;"></div>
+    
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Username or Email</label>
+        <input class="form-input" id="loginUsername" type="text" value="Zane Wick" required autofocus autocomplete="username" placeholder="Zane Wick or zanewick2084@gmail.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="loginPassword" type="password" value="Zane@123" required autocomplete="current-password" placeholder="Zane@123"/>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit" id="loginSubmitBtn">
+        <span>Sign In</span>
+        <span class="material-symbols-rounded">arrow_forward</span>
+      </button>
+
+      <div style="margin-top:16px;padding:12px;background:rgba(255,255,255,0.03);border:1px dashed var(--border);border-radius:var(--radius-sm);font-size:12px;color:var(--text-muted);">
+        <div style="font-weight:600;color:var(--text-main);margin-bottom:4px;">Authorized Credentials</div>
+        <div>Username: <code style="color:var(--primary);font-family:'DM Mono',monospace;">Zane Wick</code> or <code style="color:var(--primary);font-family:'DM Mono',monospace;">zanewick2084@gmail.com</code></div>
+        <div>Password: <code style="color:var(--primary);font-family:'DM Mono',monospace;">Zane@123</code></div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Admin App Shell -->
+<div id="adminApp" style="display:none;">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <span class="material-symbols-rounded" style="color:var(--primary)">dashboard</span>
+        <span>YOGENDRA CMS</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Overview</div>
+      <button class="nav-item active" onclick="switchTab('dashboard')">
+        <span class="material-symbols-rounded">analytics</span>
+        <span>Dashboard</span>
+      </button>
+      
+      <div class="nav-section-title">Content</div>
+      <button class="nav-item" onclick="switchTab('homepage')">
+        <span class="material-symbols-rounded">home</span>
+        <span>Homepage & Hero</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('projects')">
+        <span class="material-symbols-rounded">work</span>
+        <span>Projects & Case Studies</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('experience')">
+        <span class="material-symbols-rounded">business_center</span>
+        <span>Experience</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('education')">
+        <span class="material-symbols-rounded">school</span>
+        <span>Education & Languages</span>
+      </button>
+      
+      <div class="nav-section-title">Assets & Settings</div>
+      <button class="nav-item" onclick="switchTab('media')">
+        <span class="material-symbols-rounded">photo_library</span>
+        <span>Media Library</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('resume')">
+        <span class="material-symbols-rounded">description</span>
+        <span>Resume PDF</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('navigation')">
+        <span class="material-symbols-rounded">navigation</span>
+        <span>Navigation & Footer</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('seo')">
+        <span class="material-symbols-rounded">travel_explore</span>
+        <span>SEO & Meta</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('backups')">
+        <span class="material-symbols-rounded">history</span>
+        <span>Version History</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('security')">
+        <span class="material-symbols-rounded">lock</span>
+        <span>Security</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="avatarInitial">Z</div>
+        <div class="user-info">
+          <div class="user-name" id="displayUsername">Zane Wick</div>
+          <div class="user-role">Administrator</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="handleLogout()" title="Sign Out">
+        <span class="material-symbols-rounded">logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-actions">
+        <div class="status-pill" id="dbStatusPill">
+          <span class="status-dot"></span>
+          <span id="dbStatusText">Firestore Connected</span>
+        </div>
+        <a class="btn btn-secondary btn-sm" href="/" target="_blank">
+          <span>View Public Site</span>
+          <span class="material-symbols-rounded">open_in_new</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="content-area" id="mainContent">
+      <!-- Dynamic Tab Content Injected Here -->
+    </div>
+  </div>
+</div>
+
+<!-- Modal Container -->
+<div id="modalContainer" style="display:none;"></div>
+
+<!-- Toast Box -->
+<div id="toastBox"></div>
+
+<script>
+// State
+let currentTab = 'dashboard';
+let cachedData = {};
+
+// Helpers
+function showToast(msg, type = 'success') {
+  const box = document.getElementById('toastBox');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="material-symbols-rounded">${type === 'success' ? 'check_circle' : 'error'}</span><span>${msg}</span>`;
+  box.appendChild(t);
+  setTimeout(() => {
+    t.style.opacity = '0';
+    setTimeout(() => t.remove(), 300);
+  }, 4000);
+}
+
+function getAuthToken() {
+  try {
+    return sessionStorage.getItem('cms_token') || localStorage.getItem('cms_token') || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function setAuthToken(token) {
+  try {
+    if (token) {
+      sessionStorage.setItem('cms_token', token);
+      localStorage.setItem('cms_token', token);
+    } else {
+      sessionStorage.removeItem('cms_token');
+      localStorage.removeItem('cms_token');
+    }
+  } catch (e) {}
+}
+
+async function apiFetch(endpoint, options = {}) {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...(options.headers || {})
+    };
+    const res = await fetch(endpoint, {
+      credentials: 'include',
+      ...options,
+      headers
+    });
+    if (res.status === 401) {
+      setAuthToken('');
+      document.getElementById('loginView').style.display = 'flex';
+      document.getElementById('adminApp').style.display = 'none';
+      throw new Error('Session expired or authentication required');
+    }
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Server error occurred');
+    }
+    return data;
+  } catch (err) {
+    showToast(err.message, 'error');
+    throw err;
+  }
+}
+
+// Authentication
+async function checkAuth() {
+  try {
+    const token = getAuthToken();
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch('/api/admin/me', {
+      credentials: 'include',
+      headers
+    });
+    const data = await res.json();
+    if (data.authenticated && data.user) {
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('adminApp').style.display = 'flex';
+      document.getElementById('displayUsername').textContent = data.user.username;
+      document.getElementById('avatarInitial').textContent = (data.user.username || 'Z').charAt(0);
+      switchTab(currentTab || 'dashboard');
+    } else {
+      setAuthToken('');
+      document.getElementById('loginView').style.display = 'flex';
+      document.getElementById('adminApp').style.display = 'none';
+    }
+  } catch (e) {
+    document.getElementById('loginView').style.display = 'flex';
+    document.getElementById('adminApp').style.display = 'none';
+  }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const u = (document.getElementById('loginUsername').value || '').trim();
+  const p = (document.getElementById('loginPassword').value || '').trim();
+  const btn = document.getElementById('loginSubmitBtn');
+  const errBox = document.getElementById('loginError');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span>Signing in...</span>';
+  errBox.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ username: u, password: p })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Invalid credentials');
+    }
+    if (data.token) {
+      setAuthToken(data.token);
+    }
+    showToast('Signed in successfully!');
+    await checkAuth();
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>Sign In</span><span class="material-symbols-rounded">arrow_forward</span>';
+  }
+}
+
+async function handleLogout() {
+  try {
+    const token = getAuthToken();
+    await fetch('/api/admin/logout', { 
+      method: 'POST',
+      credentials: 'include',
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    });
+  } catch (e) {
+    // proceed
+  }
+  setAuthToken('');
+  showToast('Logged out');
+  await checkAuth();
+}
+
+// Tabs
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.sidebar-nav .nav-item[onclick*="${tab}"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  const titles = {
+    dashboard: 'Dashboard',
+    homepage: 'Homepage & Hero Content',
+    projects: 'Projects & Case Studies',
+    experience: 'Experience Timeline',
+    education: 'Education & Languages',
+    media: 'Media Library',
+    resume: 'Resume PDF Management',
+    navigation: 'Navigation & Links',
+    seo: 'SEO & Social Meta',
+    backups: 'Version History & Snapshots',
+    security: 'Account & Security'
+  };
+  document.getElementById('pageTitle').textContent = titles[tab] || 'CMS';
+  renderTabContent(tab);
+}
+
+async function renderTabContent(tab) {
+  const container = document.getElementById('mainContent');
+  container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted)">Loading CMS data from Firestore...</div>';
+
+  if (tab === 'dashboard') {
+    const data = await apiFetch('/api/admin/overview');
+    container.innerHTML = `
+      <div class="grid-4" style="margin-bottom:24px;">
+        <div class="admin-card" style="margin:0;">
+          <div class="form-label">Projects</div>
+          <div style="font-size:28px;font-weight:700;color:var(--primary);">${data.stats.projectsCount}</div>
+          <div style="font-size:12px;color:var(--text-dim)">Case studies & practice</div>
+        </div>
+        <div class="admin-card" style="margin:0;">
+          <div class="form-label">Experience</div>
+          <div style="font-size:28px;font-weight:700;color:var(--text-main);">${data.stats.experienceCount}</div>
+          <div style="font-size:12px;color:var(--text-dim)">Timeline positions</div>
+        </div>
+        <div class="admin-card" style="margin:0;">
+          <div class="form-label">Media Assets</div>
+          <div style="font-size:28px;font-weight:700;color:var(--text-main);">${data.stats.mediaCount}</div>
+          <div style="font-size:12px;color:var(--text-dim)">In media library</div>
+        </div>
+        <div class="admin-card" style="margin:0;">
+          <div class="form-label">Backups</div>
+          <div style="font-size:28px;font-weight:700;color:var(--text-main);">${data.stats.backupsCount}</div>
+          <div style="font-size:12px;color:var(--text-dim)">Snapshots saved</div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="material-symbols-rounded">verified_user</span>
+            System & Storage Health
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="createBackupSnapshot()">
+            <span class="material-symbols-rounded">history</span> Create Snapshot
+          </button>
+        </div>
+        <div class="grid-2">
+          <div>
+            <div style="font-weight:600;margin-bottom:8px;">Database State</div>
+            <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Cloud Firestore is the active production data store. All changes are written directly to Firestore and confirmed before returning success.</p>
+            <div class="status-pill"><span class="status-dot"></span> Firestore: Online & Active</div>
+          </div>
+          <div>
+            <div style="font-weight:600;margin-bottom:8px;">Media Storage State</div>
+            <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Uploaded images, PDFs, and assets are stored in Firebase Storage or resilient Firestore binary blobs with immediate live serving.</p>
+            <div class="status-pill"><span class="status-dot"></span> Storage: Online & Active</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  else if (tab === 'homepage') {
+    const [settings, home] = await Promise.all([
+      apiFetch('/api/admin/settings'),
+      apiFetch('/api/admin/pages/home')
+    ]);
+    cachedData.settings = settings;
+    cachedData.home = home;
+
+    container.innerHTML = `
+      <form onsubmit="saveHomepage(event)">
+        <div class="admin-card">
+          <div class="card-header">
+            <div class="card-title"><span class="material-symbols-rounded">title</span> Hero Copy & Headlines</div>
+            <button type="submit" class="btn btn-primary btn-sm"><span class="material-symbols-rounded">save</span> Save Changes</button>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Hero Kicker</label>
+              <input class="form-input" id="heroKicker" value="${home.heroKicker || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Subtitle / Roles</label>
+              <input class="form-input" id="heroSubtitle" value="${home.heroSubtitle || ''}"/>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input class="form-input" id="heroNameFirst" value="${home.heroNameFirst || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input class="form-input" id="heroNameLast" value="${home.heroNameLast || ''}"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hero Copy Paragraph</label>
+            <textarea class="form-textarea" id="heroCopy" rows="4">${home.heroCopy || ''}</textarea>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Primary Button Text</label>
+              <input class="form-input" id="heroPrimaryBtnText" value="${home.heroPrimaryBtnText || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Secondary Button Text</label>
+              <input class="form-input" id="heroSecondaryBtnText" value="${home.heroSecondaryBtnText || ''}"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-header">
+            <div class="card-title"><span class="material-symbols-rounded">badge</span> Hanging ID Badge Card</div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Badge Top Tag</label>
+              <input class="form-input" id="badgeTag" value="${home.idCard?.tag || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Badge Name</label>
+              <input class="form-input" id="badgeName" value="${home.idCard?.name || ''}"/>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Badge Role</label>
+              <input class="form-input" id="badgeRole" value="${home.idCard?.role || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Badge Photo URL</label>
+              <input class="form-input" id="badgePhoto" value="${home.idCard?.photo || ''}"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Badge Micro Text</label>
+            <textarea class="form-textarea" id="badgeMicro" rows="2">${home.idCard?.micro || ''}</textarea>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-header">
+            <div class="card-title"><span class="material-symbols-rounded">person</span> About Profile Section</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Section Eyebrow</label>
+            <input class="form-input" id="aboutKicker" value="${home.aboutSection?.kicker || ''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Section Headline</label>
+            <input class="form-input" id="aboutTitle" value="${home.aboutSection?.title || ''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lead Story</label>
+            <textarea class="form-textarea" id="aboutLead" rows="3">${home.aboutSection?.lead || ''}</textarea>
+          </div>
+          <button type="submit" class="btn btn-primary"><span class="material-symbols-rounded">save</span> Save All Homepage Changes</button>
+        </div>
+      </form>
+    `;
+  }
+
+  else if (tab === 'projects') {
+    const projects = await apiFetch('/api/admin/projects');
+    cachedData.projects = projects;
+
+    let rows = projects.map(p => `
+      <tr>
+        <td style="width:40px;text-align:center;font-weight:700;color:var(--text-dim);">${p.order || 0}</td>
+        <td style="width:80px;">
+          <img src="${p.coverImage || '/assets/media/home-media-03-d6c887bed8af.webp'}" style="width:64px;height:42px;object-fit:cover;border-radius:4px;border:1px solid var(--border);"/>
+        </td>
+        <td>
+          <div style="font-weight:600;">${p.title}</div>
+          <div style="font-size:12px;color:var(--text-muted)">/${p.slug} · ${p.category}</div>
+        </td>
+        <td>
+          <span class="badge ${p.status === 'published' ? 'badge-published' : 'badge-draft'}">${p.status || 'published'}</span>
+        </td>
+        <td style="text-align:right;">
+          <div style="display:inline-flex;gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="openProjectModal('${p.id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteProject('${p.id}', '${p.title}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    container.innerHTML = `
+      <div class="admin-card">
+        <div class="card-header">
+          <div class="card-title"><span class="material-symbols-rounded">work</span> Projects & Case Studies (${projects.length})</div>
+          <button class="btn btn-primary btn-sm" onclick="openProjectModal()"><span class="material-symbols-rounded">add</span> Add New Project</button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Cover</th>
+              <th>Project Details</th>
+              <th>Status</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  else if (tab === 'experience') {
+    const items = await apiFetch('/api/admin/experience');
+    cachedData.experience = items;
+
+    let listHtml = items.map(exp => `
+      <div class="admin-card" style="margin-bottom:14px;padding:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--text-main);">${exp.role} ${exp.current ? '<span class="badge badge-published">Current</span>' : ''}</div>
+            <div style="color:var(--primary);font-size:13px;font-weight:500;">${exp.company} · ${exp.dates}</div>
+            <p style="color:var(--text-muted);margin:8px 0;font-size:13px;">${exp.description || ''}</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${(exp.tags || []).map(t => `<span class="badge" style="background:rgba(255,255,255,0.06);color:var(--text-muted);">${t}</span>`).join('')}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="openExpModal('${exp.id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteExperience('${exp.id}')">Delete</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    container.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:16px;">Experience Positions</div>
+        <button class="btn btn-primary btn-sm" onclick="openExpModal()"><span class="material-symbols-rounded">add</span> Add Position</button>
+      </div>
+      <div>${listHtml}</div>
+    `;
+  }
+
+  else if (tab === 'education') {
+    const items = await apiFetch('/api/admin/education');
+    cachedData.education = items;
+
+    let listHtml = items.map(edu => `
+      <div class="admin-card" style="margin-bottom:14px;padding:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--text-main);">${edu.title}</div>
+            <div style="color:var(--primary);font-size:13px;font-weight:500;">${edu.institution} · ${edu.dates}</div>
+            <p style="color:var(--text-muted);margin:8px 0;font-size:13px;">${edu.description || ''}</p>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="openEduModal('${edu.id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteEducation('${edu.id}')">Delete</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    container.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:16px;">Education & Languages</div>
+        <button class="btn btn-primary btn-sm" onclick="openEduModal()"><span class="material-symbols-rounded">add</span> Add Credential</button>
+      </div>
+      <div>${listHtml}</div>
+    `;
+  }
+
+  else if (tab === 'media') {
+    const items = await apiFetch('/api/admin/media');
+    cachedData.media = items;
+
+    let mediaCards = items.map(m => `
+      <div class="media-card">
+        <div class="media-thumb-box">
+          ${m.mimeType.startsWith('image/') ? `<img src="${m.url}" alt="${m.alt || ''}"/>` : 
+            m.mimeType === 'application/pdf' ? `<span class="material-symbols-rounded" style="font-size:48px;color:var(--primary);">picture_as_pdf</span>` :
+            `<span class="material-symbols-rounded" style="font-size:48px;color:var(--text-muted);">videocam</span>`}
+        </div>
+        <div class="media-meta-box">
+          <div class="media-title-text" title="${m.name}">${m.name}</div>
+          <div class="media-sub-text">${(m.size ? (m.size / 1024).toFixed(0) + ' KB' : '')} · ${m.category || 'asset'}</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button class="btn btn-secondary btn-sm" style="flex:1" onclick="navigator.clipboard.writeText('${m.url}');showToast('Copied URL!')">Copy</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteMedia('${m.id}')"><span class="material-symbols-rounded" style="font-size:14px">delete</span></button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    container.innerHTML = `
+      <div class="admin-card">
+        <div class="card-header">
+          <div class="card-title"><span class="material-symbols-rounded">cloud_upload</span> Upload Media to Firebase Storage</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <input type="file" id="mediaFileInput" class="form-input" style="flex:1;"/>
+          <button class="btn btn-primary" onclick="uploadMediaFile()"><span class="material-symbols-rounded">upload</span> Upload File</button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="card-header">
+          <div class="card-title"><span class="material-symbols-rounded">photo_library</span> Media Library (${items.length})</div>
+        </div>
+        <div class="media-grid">${mediaCards}</div>
+      </div>
+    `;
+  }
+
+  else if (tab === 'resume') {
+    const settings = await apiFetch('/api/admin/settings');
+    container.innerHTML = `
+      <div class="admin-card">
+        <div class="card-header">
+          <div class="card-title"><span class="material-symbols-rounded">description</span> Resume Management</div>
+        </div>
+        <p style="color:var(--text-muted);font-size:13px;margin-bottom:18px;">
+          The public resume link is tied to your active CV. Uploading a new PDF automatically replaces the active resume link on the public website and CV modal.
+        </p>
+        <div class="grid-2">
+          <div>
+            <div class="form-label">Current Active Resume</div>
+            <div style="padding:14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:14px;">
+              <div style="font-weight:600;font-size:14px;margin-bottom:4px;">Yogendra Chaudhary CV</div>
+              <div style="font-size:12px;color:var(--primary);word-break:break-all;">${settings.resumeUrl || '/assets/Yogendra_Chaudhary_CV.pdf'}</div>
+            </div>
+            <a href="${settings.resumeUrl || '/assets/Yogendra_Chaudhary_CV.pdf'}" target="_blank" class="btn btn-secondary btn-sm">
+              <span class="material-symbols-rounded">visibility</span> Preview Active Resume
+            </a>
+          </div>
+          <div>
+            <div class="form-label">Upload New Resume (PDF)</div>
+            <input type="file" id="resumeFileInput" accept="application/pdf" class="form-input" style="margin-bottom:14px;"/>
+            <button class="btn btn-primary" onclick="uploadNewResume()"><span class="material-symbols-rounded">upload_file</span> Replace Resume PDF</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  else if (tab === 'navigation') {
+    const [settings, nav, socials] = await Promise.all([
+      apiFetch('/api/admin/settings'),
+      apiFetch('/api/admin/navigation'),
+      apiFetch('/api/admin/socials')
+    ]);
+    container.innerHTML = `
+      <form onsubmit="saveNavigation(event)">
+        <div class="admin-card">
+          <div class="card-header">
+            <div class="card-title"><span class="material-symbols-rounded">navigation</span> Brand & Header Navigation</div>
+            <button type="submit" class="btn btn-primary btn-sm"><span class="material-symbols-rounded">save</span> Save Navigation</button>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Brand Name</label>
+              <input class="form-input" id="navBrandName" value="${settings.brandName || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Brand Role</label>
+              <input class="form-input" id="navBrandRole" value="${settings.brandRole || ''}"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Availability Status Text</label>
+            <textarea class="form-textarea" id="navAvailability" rows="2">${settings.availabilityText || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Email</label>
+            <input class="form-input" id="navEmail" value="${settings.email || ''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone</label>
+            <input class="form-input" id="navPhone" value="${settings.phone || ''}"/>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-header">
+            <div class="card-title"><span class="material-symbols-rounded">copyright</span> Footer Information</div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Footer Copyright</label>
+              <input class="form-input" id="footerText" value="${settings.footerText || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Footer Subtitle</label>
+              <input class="form-input" id="footerSubtitle" value="${settings.footerSubtitle || ''}"/>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary"><span class="material-symbols-rounded">save</span> Save Header & Footer</button>
+        </div>
+      </form>
+    `;
+  }
+
+  else if (tab === 'seo') {
+    const settings = await apiFetch('/api/admin/settings');
+    const seo = settings.seo || {};
+    container.innerHTML = `
+      <form onsubmit="saveSeo(event)">
+        <div class="admin-card">
+          <div class="card-header">
+            <div class="card-title"><span class="material-symbols-rounded">travel_explore</span> Search Engine Optimization & Social Sharing</div>
+            <button type="submit" class="btn btn-primary btn-sm"><span class="material-symbols-rounded">save</span> Save SEO</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Website Meta Title</label>
+            <input class="form-input" id="seoTitle" value="${seo.title || settings.siteTitle || ''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Meta Description</label>
+            <textarea class="form-textarea" id="seoDesc" rows="3">${seo.description || ''}</textarea>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Open Graph Social Image</label>
+              <input class="form-input" id="seoOgImage" value="${seo.ogImage || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Canonical URL</label>
+              <input class="form-input" id="seoCanonical" value="${seo.canonicalUrl || ''}"/>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary"><span class="material-symbols-rounded">save</span> Save SEO Settings</button>
+        </div>
+      </form>
+    `;
+  }
+
+  else if (tab === 'backups') {
+    const backups = await apiFetch('/api/admin/backups');
+    let rows = backups.map(b => `
+      <tr>
+        <td style="font-weight:600;">${b.note || 'Snapshot'}</td>
+        <td>${new Date(b.createdAt).toLocaleString()}</td>
+        <td>${b.createdBy || 'Admin'}</td>
+        <td style="text-align:right;">
+          <button class="btn btn-secondary btn-sm" onclick="restoreBackup('${b.id}')">Restore</button>
+        </td>
+      </tr>
+    `).join('');
+
+    container.innerHTML = `
+      <div class="admin-card">
+        <div class="card-header">
+          <div class="card-title"><span class="material-symbols-rounded">history</span> Version History & Snapshots (${backups.length})</div>
+          <button class="btn btn-primary btn-sm" onclick="createBackupSnapshot()"><span class="material-symbols-rounded">add</span> Take Snapshot</button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Note</th>
+              <th>Created Date</th>
+              <th>Created By</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>${rows.length > 0 ? rows : '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">No snapshots yet. Take one above.</td></tr>'}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  else if (tab === 'security') {
+    container.innerHTML = `
+      <div class="admin-card" style="max-width:540px;">
+        <div class="card-header">
+          <div class="card-title"><span class="material-symbols-rounded">lock</span> Change Password</div>
+        </div>
+        <form onsubmit="handlePasswordChange(event)">
+          <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <input class="form-input" id="oldPassword" type="password" required autocomplete="current-password"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password (min 8 chars)</label>
+            <input class="form-input" id="newPassword" type="password" minlength="8" required autocomplete="new-password"/>
+          </div>
+          <button type="submit" class="btn btn-primary"><span class="material-symbols-rounded">key</span> Update Password</button>
+        </form>
+      </div>
+    `;
+  }
+}
+
+// Handlers for Saves
+async function saveHomepage(e) {
+  e.preventDefault();
+  const payload = {
+    heroKicker: document.getElementById('heroKicker').value,
+    heroSubtitle: document.getElementById('heroSubtitle').value,
+    heroNameFirst: document.getElementById('heroNameFirst').value,
+    heroNameLast: document.getElementById('heroNameLast').value,
+    heroCopy: document.getElementById('heroCopy').value,
+    heroPrimaryBtnText: document.getElementById('heroPrimaryBtnText').value,
+    heroSecondaryBtnText: document.getElementById('heroSecondaryBtnText').value,
+    idCard: {
+      tag: document.getElementById('badgeTag').value,
+      name: document.getElementById('badgeName').value,
+      role: document.getElementById('badgeRole').value,
+      photo: document.getElementById('badgePhoto').value,
+      micro: document.getElementById('badgeMicro').value
+    },
+    aboutSection: {
+      kicker: document.getElementById('aboutKicker').value,
+      title: document.getElementById('aboutTitle').value,
+      lead: document.getElementById('aboutLead').value
+    }
+  };
+
+  await apiFetch('/api/admin/pages/home', {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+  showToast('Homepage changes saved and published to Firestore!');
+}
+
+async function saveNavigation(e) {
+  e.preventDefault();
+  const payload = {
+    brandName: document.getElementById('navBrandName').value,
+    brandRole: document.getElementById('navBrandRole').value,
+    availabilityText: document.getElementById('navAvailability').value,
+    email: document.getElementById('navEmail').value,
+    phone: document.getElementById('navPhone').value,
+    footerText: document.getElementById('footerText').value,
+    footerSubtitle: document.getElementById('footerSubtitle').value
+  };
+
+  await apiFetch('/api/admin/settings', {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+  showToast('Navigation and brand settings updated!');
+}
+
+async function saveSeo(e) {
+  e.preventDefault();
+  const seoPayload = {
+    title: document.getElementById('seoTitle').value,
+    description: document.getElementById('seoDesc').value,
+    ogImage: document.getElementById('seoOgImage').value,
+    canonicalUrl: document.getElementById('seoCanonical').value
+  };
+
+  await apiFetch('/api/admin/settings', {
+    method: 'PUT',
+    body: JSON.stringify({ seo: seoPayload, siteTitle: seoPayload.title })
+  });
+  showToast('SEO metadata saved and published!');
+}
+
+async function handlePasswordChange(e) {
+  e.preventDefault();
+  const o = document.getElementById('oldPassword').value;
+  const n = document.getElementById('newPassword').value;
+  await apiFetch('/api/admin/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ oldPassword: o, newPassword: n })
+  });
+  showToast('Password changed successfully!');
+  document.getElementById('oldPassword').value = '';
+  document.getElementById('newPassword').value = '';
+}
+
+async function createBackupSnapshot() {
+  const note = prompt('Enter a short note for this snapshot:', 'Manual snapshot before edits');
+  if (note === null) return;
+  await apiFetch('/api/admin/backups', {
+    method: 'POST',
+    body: JSON.stringify({ note })
+  });
+  showToast('Snapshot created in Firestore!');
+  if (currentTab === 'backups' || currentTab === 'dashboard') renderTabContent(currentTab);
+}
+
+async function restoreBackup(id) {
+  if (!confirm('Are you sure you want to restore this snapshot? This will overwrite current live CMS fields.')) return;
+  await apiFetch(`/api/admin/backups/${id}/restore`, { method: 'POST' });
+  showToast('Backup restored successfully!');
+}
+
+// Media upload handler
+async function uploadMediaFile() {
+  const fileInput = document.getElementById('mediaFileInput');
+  if (!fileInput.files || !fileInput.files[0]) {
+    return alert('Please select a file first.');
+  }
+
+  const formData = new FormData();
+  try {
+    formData.append('file', fileInput.files[0]);
+    const token = getAuthToken();
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/api/admin/media/upload', {
+      method: 'POST',
+      credentials: 'include',
+      headers,
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    showToast('File uploaded successfully!');
+    renderTabContent('media');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function uploadNewResume() {
+  const fileInput = document.getElementById('resumeFileInput');
+  if (!fileInput.files || !fileInput.files[0]) {
+    return alert('Please select a PDF file.');
+  }
+
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  formData.append('isResume', 'true');
+  formData.append('category', 'resume');
+
+  try {
+    const token = getAuthToken();
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/api/admin/media/upload', {
+      method: 'POST',
+      credentials: 'include',
+      headers,
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    showToast('Resume updated! Public site now downloads the new PDF.');
+    renderTabContent('resume');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function deleteMedia(id) {
+  if (!confirm('Are you sure you want to delete this asset?')) return;
+  await apiFetch(`/api/admin/media/${id}`, { method: 'DELETE' });
+  showToast('Media deleted');
+  renderTabContent('media');
+}
+
+// Project Modal & CRUD
+function openProjectModal(id = null) {
+  const isEdit = !!id;
+  const proj = isEdit ? (cachedData.projects || []).find(p => p.id === id) : {};
+  const container = document.getElementById('modalContainer');
+
+  container.innerHTML = `
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title">${isEdit ? 'Edit Project' : 'Add New Project'}</div>
+          <button class="close-btn" onclick="document.getElementById('modalContainer').style.display='none'"><span class="material-symbols-rounded">close</span></button>
+        </div>
+        <form onsubmit="handleProjectSubmit(event, '${id || ''}')">
+          <div class="form-group">
+            <label class="form-label">Project Title</label>
+            <input class="form-input" id="modalProjTitle" value="${proj.title || ''}" required/>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Slug (URL)</label>
+              <input class="form-input" id="modalProjSlug" value="${proj.slug || ''}" ${isEdit ? 'readonly' : 'required'}/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-select" id="modalProjCategory">
+                <option value="product" ${proj.category === 'product' ? 'selected' : ''}>Product Design</option>
+                <option value="archive" ${proj.category === 'archive' ? 'selected' : ''}>Design Practice</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Year</label>
+              <input class="form-input" id="modalProjYear" value="${proj.year || '2026'}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Display Order</label>
+              <input class="form-input" id="modalProjOrder" type="number" value="${proj.order || 10}"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category Label / Eyebrow</label>
+            <input class="form-input" id="modalProjLabel" value="${proj.categoryLabel || ''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Media Note</label>
+            <input class="form-input" id="modalProjMediaNote" value="${proj.mediaNote || ''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cover Image URL</label>
+            <input class="form-input" id="modalProjCover" value="${proj.coverImage || ''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Summary / Description</label>
+            <textarea class="form-textarea" id="modalProjSummary" rows="3">${proj.summary || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="modalProjStatus">
+              <option value="published" ${proj.status === 'published' ? 'selected' : ''}>Published</option>
+              <option value="draft" ${proj.status === 'draft' ? 'selected' : ''}>Draft (Hidden)</option>
+            </select>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('modalContainer').style.display='none'">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Project</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  container.style.display = 'block';
+}
+
+async function handleProjectSubmit(e, id) {
+  e.preventDefault();
+  const payload = {
+    title: document.getElementById('modalProjTitle').value,
+    slug: document.getElementById('modalProjSlug').value,
+    category: document.getElementById('modalProjCategory').value,
+    year: document.getElementById('modalProjYear').value,
+    order: Number(document.getElementById('modalProjOrder').value),
+    categoryLabel: document.getElementById('modalProjLabel').value,
+    mediaNote: document.getElementById('modalProjMediaNote').value,
+    coverImage: document.getElementById('modalProjCover').value,
+    summary: document.getElementById('modalProjSummary').value,
+    status: document.getElementById('modalProjStatus').value
+  };
+
+  if (id) {
+    await apiFetch(`/api/admin/projects/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+    showToast('Project updated successfully!');
+  } else {
+    await apiFetch('/api/admin/projects', { method: 'POST', body: JSON.stringify(payload) });
+    showToast('New project created and published!');
+  }
+  document.getElementById('modalContainer').style.display = 'none';
+  renderTabContent('projects');
+}
+
+async function deleteProject(id, title) {
+  if (!confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) return;
+  await apiFetch(`/api/admin/projects/${id}`, { method: 'DELETE' });
+  showToast('Project deleted successfully');
+  renderTabContent('projects');
+}
+
+// Experience Modal
+function openExpModal(id = null) {
+  const isEdit = !!id;
+  const exp = isEdit ? (cachedData.experience || []).find(e => e.id === id) : {};
+  const container = document.getElementById('modalContainer');
+
+  container.innerHTML = `
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title">${isEdit ? 'Edit Experience' : 'Add Experience Position'}</div>
+          <button class="close-btn" onclick="document.getElementById('modalContainer').style.display='none'"><span class="material-symbols-rounded">close</span></button>
+        </div>
+        <form onsubmit="handleExpSubmit(event, '${id || ''}')">
+          <div class="form-group">
+            <label class="form-label">Role Title</label>
+            <input class="form-input" id="modalExpRole" value="${exp.role || ''}" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Company & Location</label>
+            <input class="form-input" id="modalExpCompany" value="${exp.company || ''}" required/>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Dates</label>
+              <input class="form-input" id="modalExpDates" value="${exp.dates || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Duration</label>
+              <input class="form-input" id="modalExpDuration" value="${exp.duration || ''}"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Headline / Focus</label>
+            <input class="form-input" id="modalExpHeadline" value="${exp.headline || ''}"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="modalExpDesc" rows="3">${exp.description || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags (comma-separated)</label>
+            <input class="form-input" id="modalExpTags" value="${(exp.tags || []).join(', ')}"/>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Order</label>
+              <input class="form-input" id="modalExpOrder" type="number" value="${exp.order || 1}"/>
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:8px;padding-top:24px;">
+              <input type="checkbox" id="modalExpCurrent" ${exp.current ? 'checked' : ''}/>
+              <label for="modalExpCurrent" style="font-weight:600;font-size:13px;">Current Position</label>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('modalContainer').style.display='none'">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Position</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  container.style.display = 'block';
+}
+
+async function handleExpSubmit(e, id) {
+  e.preventDefault();
+  const tags = document.getElementById('modalExpTags').value.split(',').map(t => t.trim()).filter(Boolean);
+  const payload = {
+    role: document.getElementById('modalExpRole').value,
+    company: document.getElementById('modalExpCompany').value,
+    dates: document.getElementById('modalExpDates').value,
+    duration: document.getElementById('modalExpDuration').value,
+    headline: document.getElementById('modalExpHeadline').value,
+    description: document.getElementById('modalExpDesc').value,
+    tags,
+    order: Number(document.getElementById('modalExpOrder').value),
+    current: document.getElementById('modalExpCurrent').checked
+  };
+
+  if (id) {
+    await apiFetch(`/api/admin/experience/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+    showToast('Experience updated!');
+  } else {
+    await apiFetch('/api/admin/experience', { method: 'POST', body: JSON.stringify(payload) });
+    showToast('Experience position added!');
+  }
+  document.getElementById('modalContainer').style.display = 'none';
+  renderTabContent('experience');
+}
+
+async function deleteExperience(id) {
+  if (!confirm('Are you sure you want to delete this position?')) return;
+  await apiFetch(`/api/admin/experience/${id}`, { method: 'DELETE' });
+  showToast('Position deleted');
+  renderTabContent('experience');
+}
+
+// Education Modal
+function openEduModal(id = null) {
+  const isEdit = !!id;
+  const edu = isEdit ? (cachedData.education || []).find(e => e.id === id) : {};
+  const container = document.getElementById('modalContainer');
+
+  container.innerHTML = `
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title">${isEdit ? 'Edit Education' : 'Add Credential'}</div>
+          <button class="close-btn" onclick="document.getElementById('modalContainer').style.display='none'"><span class="material-symbols-rounded">close</span></button>
+        </div>
+        <form onsubmit="handleEduSubmit(event, '${id || ''}')">
+          <div class="form-group">
+            <label class="form-label">Title / Degree</label>
+            <input class="form-input" id="modalEduTitle" value="${edu.title || ''}" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Institution</label>
+            <input class="form-input" id="modalEduInst" value="${edu.institution || ''}" required/>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Dates / Status</label>
+              <input class="form-input" id="modalEduDates" value="${edu.dates || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Order</label>
+              <input class="form-input" id="modalEduOrder" type="number" value="${edu.order || 1}"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="modalEduDesc" rows="3">${edu.description || ''}</textarea>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('modalContainer').style.display='none'">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Credential</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  container.style.display = 'block';
+}
+
+async function handleEduSubmit(e, id) {
+  e.preventDefault();
+  const payload = {
+    title: document.getElementById('modalEduTitle').value,
+    institution: document.getElementById('modalEduInst').value,
+    dates: document.getElementById('modalEduDates').value,
+    order: Number(document.getElementById('modalEduOrder').value),
+    description: document.getElementById('modalEduDesc').value
+  };
+
+  if (id) {
+    await apiFetch(`/api/admin/education/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+    showToast('Education updated!');
+  } else {
+    await apiFetch('/api/admin/education', { method: 'POST', body: JSON.stringify(payload) });
+    showToast('Credential added!');
+  }
+  document.getElementById('modalContainer').style.display = 'none';
+  renderTabContent('education');
+}
+
+async function deleteEducation(id) {
+  if (!confirm('Are you sure you want to delete this credential?')) return;
+  await apiFetch(`/api/admin/education/${id}`, { method: 'DELETE' });
+  showToast('Credential deleted');
+  renderTabContent('education');
+}
+
+// Initial Boot
+checkAuth();
+</script>
+</body>
+</html>

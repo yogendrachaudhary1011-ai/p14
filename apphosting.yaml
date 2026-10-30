@@ -1,0 +1,12 @@
+runConfig:
+  cpu: 1
+  memoryMiB: 1024
+  minInstances: 0
+  maxInstances: 5
+  concurrency: 80
+
+env:
+  - variable: NODE_ENV
+    value: production
+  - variable: FIRESTORE_DATABASE_ID
+    value: ai-studio-pf11-f733d483-d6eb-49d4-b39f-52d8a40fba86
