@@ -23,6 +23,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     syncAllProjectsToSupabase,
     login,
     logout,
+    changeAdminPassword,
     updateSettings,
     addProject,
     updateProject,
@@ -42,10 +43,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'projects' | 'settings' | 'experience' | 'education' | 'media' | 'seo'>('overview');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Login form state
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  // Login form state (NEVER pre-filled)
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+
+  // Confirmation dialog modal state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    title: string;
+    message: string;
+    confirmLabel?: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   // Project edit state
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -68,6 +77,26 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   });
   const [expTagsInput, setExpTagsInput] = useState('');
 
+  // Education edit state
+  const [editingEdu, setEditingEdu] = useState<EducationItem | null>(null);
+  const [isCreatingEdu, setIsCreatingEdu] = useState(false);
+  const [eduFormData, setEduFormData] = useState<Partial<EducationItem>>({
+    title: '',
+    institution: '',
+    location: '',
+    dates: '',
+    status: 'Graduated',
+    description: '',
+    tags: [],
+    order: education.length + 1,
+    visible: true
+  });
+  const [eduTagsInput, setEduTagsInput] = useState('');
+
+  // Admin password management state
+  const [adminNewPassword, setAdminNewPassword] = useState('');
+  const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
+
   // Media upload state
   const [newMediaName, setNewMediaName] = useState('');
   const [newMediaUrl, setNewMediaUrl] = useState('');
@@ -89,12 +118,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!username.trim() || !password.trim()) {
+      setLoginError('Please enter both your username and password.');
+      return;
+    }
     const success = login(username, password);
     if (success) {
       setLoginError('');
       showNotice('Welcome back to Portfolio Admin CMS!');
     } else {
-      setLoginError('Invalid credentials. Password must be at least 4 characters.');
+      setLoginError('Invalid username or password. Please verify your credentials.');
     }
   };
 
@@ -121,9 +154,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 Username
               </label>
               <input
-                className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm focus:border-[#f37021] outline-none"
+                className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm focus:border-[#f37021] outline-none placeholder:text-zinc-600"
                 type="text"
                 value={username}
+                placeholder="Enter username"
+                autoComplete="username"
                 onChange={(e) => setUsername(e.target.value)}
                 required
               />
@@ -133,9 +168,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 Password
               </label>
               <input
-                className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm focus:border-[#f37021] outline-none"
+                className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm focus:border-[#f37021] outline-none placeholder:text-zinc-600"
                 type="password"
                 value={password}
+                placeholder="Enter password"
+                autoComplete="current-password"
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
@@ -155,7 +192,6 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             >
               ← Back to Public Website
             </button>
-            <span className="text-zinc-600 font-mono">Demo: admin / admin123</span>
           </div>
         </div>
       </div>
@@ -346,10 +382,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 </button>
                 <button
                   onClick={() => {
-                    if (window.confirm('Reset all content to original Yogendra Chaudhary portfolio defaults?')) {
-                      resetToDefaults();
-                      showNotice('Portfolio restored to initial defaults.');
-                    }
+                    setConfirmDialog({
+                      title: 'Reset Portfolio Defaults',
+                      message: 'Are you sure you want to restore all portfolio content, case studies, and settings to original defaults?',
+                      confirmLabel: 'Reset Everything',
+                      onConfirm: () => {
+                        resetToDefaults();
+                        showNotice('Portfolio restored to initial defaults.');
+                        setConfirmDialog(null);
+                      }
+                    });
                   }}
                   className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-md text-xs sm:text-sm cursor-pointer"
                 >
@@ -411,10 +453,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     <span className="font-mono text-zinc-400">ALL CASE STUDIES ({projects.length})</span>
                     <button
                       onClick={() => {
-                        if (window.confirm('Permanently delete all projects? This action cannot be undone.')) {
-                          projects.forEach(p => deleteProject(p.id));
-                          showNotice('All projects removed.');
-                        }
+                        setConfirmDialog({
+                          title: 'Delete All Case Studies',
+                          message: 'Permanently remove all project case studies? This action cannot be undone.',
+                          confirmLabel: 'Delete All Projects',
+                          onConfirm: () => {
+                            deleteAllProjects();
+                            showNotice('All projects removed.');
+                            setConfirmDialog(null);
+                          }
+                        });
                       }}
                       className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded text-xs cursor-pointer"
                     >
@@ -514,10 +562,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                                 </button>
                                 <button
                                   onClick={() => {
-                                    if (window.confirm(`Delete project "${proj.title}"?`)) {
-                                      deleteProject(proj.id);
-                                      showNotice(`Deleted "${proj.title}"`);
-                                    }
+                                    setConfirmDialog({
+                                      title: `Delete ${proj.title}`,
+                                      message: `Are you sure you want to delete case study "${proj.title}"?`,
+                                      confirmLabel: 'Delete Case Study',
+                                      onConfirm: () => {
+                                        deleteProject(proj.id);
+                                        showNotice(`Deleted "${proj.title}"`);
+                                        setConfirmDialog(null);
+                                      }
+                                    });
                                   }}
                                   className="px-2.5 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs cursor-pointer"
                                 >
@@ -639,6 +693,64 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-md text-xs sm:text-sm font-semibold cursor-pointer"
                 >
                   Save Profile Settings
+                </button>
+              </div>
+            </div>
+
+            {/* ADMIN SECURITY & PASSWORD CARD */}
+            <div className="p-4 sm:p-6 bg-[#131418] border border-white/10 rounded-xl space-y-4">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-white">Admin Security &amp; Password</h2>
+                <p className="text-zinc-400 text-xs sm:text-sm mt-1">
+                  Change the administrator login password for this CMS panel.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">New Password</label>
+                  <input
+                    type="password"
+                    value={adminNewPassword}
+                    onChange={(e) => setAdminNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Confirm Password</label>
+                  <input
+                    type="password"
+                    value={adminConfirmPassword}
+                    onChange={(e) => setAdminConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!adminNewPassword.trim()) {
+                      showNotice('Please enter a new password.');
+                      return;
+                    }
+                    if (adminNewPassword !== adminConfirmPassword) {
+                      showNotice('Passwords do not match. Please try again.');
+                      return;
+                    }
+                    const ok = changeAdminPassword(adminNewPassword);
+                    if (ok) {
+                      showNotice('Admin password successfully updated!');
+                      setAdminNewPassword('');
+                      setAdminConfirmPassword('');
+                    }
+                  }}
+                  className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-md text-xs sm:text-sm font-semibold cursor-pointer"
+                >
+                  Update Admin Password
                 </button>
               </div>
             </div>
@@ -939,10 +1051,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     </button>
                     <button
                       onClick={() => {
-                        if (window.confirm(`Delete experience record: ${item.role}?`)) {
-                          deleteExperience(item.id);
-                          showNotice(`Deleted ${item.role}`);
-                        }
+                        setConfirmDialog({
+                          title: 'Delete Experience',
+                          message: `Are you sure you want to delete experience record "${item.role}"?`,
+                          confirmLabel: 'Delete',
+                          onConfirm: () => {
+                            deleteExperience(item.id);
+                            showNotice(`Deleted ${item.role}`);
+                            setConfirmDialog(null);
+                          }
+                        });
                       }}
                       className="px-3 py-1.5 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs cursor-pointer"
                     >
@@ -958,32 +1076,216 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
         {/* TAB 5: EDUCATION */}
         {activeTab === 'education' && (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">Education &amp; Languages</h1>
-              <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                Academic degree information, listed spoken languages, and communication skills.
-              </p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-white">Education &amp; Qualifications</h1>
+                <p className="text-zinc-400 text-xs sm:text-sm mt-1">
+                  Manage academic degrees, certifications, institutions, and communication skills.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingEdu(null);
+                  setEduFormData({
+                    title: '',
+                    institution: '',
+                    location: '',
+                    dates: '',
+                    status: 'Graduated',
+                    description: '',
+                    tags: [],
+                    order: education.length + 1,
+                    visible: true
+                  });
+                  setEduTagsInput('');
+                  setIsCreatingEdu(true);
+                }}
+                className="px-4 py-2 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>+ Add Education</span>
+              </button>
             </div>
+
+            {/* CREATE / EDIT EDUCATION FORM */}
+            {(isCreatingEdu || editingEdu) && (
+              <div className="p-4 sm:p-6 bg-[#131418] border border-[#f37021]/30 rounded-xl space-y-4 shadow-xl">
+                <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                  <h2 className="text-base font-semibold text-white">
+                    {editingEdu ? `Edit: ${editingEdu.title}` : 'Add New Education / Qualification'}
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setIsCreatingEdu(false);
+                      setEditingEdu(null);
+                    }}
+                    className="text-xs text-zinc-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Degree / Program Title</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Bachelor in Information Management"
+                      value={eduFormData.title || ''}
+                      onChange={(e) => setEduFormData({ ...eduFormData, title: e.target.value })}
+                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Institution / University</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Tribhuvan University"
+                      value={eduFormData.institution || ''}
+                      onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })}
+                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Location</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Kathmandu, Nepal"
+                      value={eduFormData.location || ''}
+                      onChange={(e) => setEduFormData({ ...eduFormData, location: e.target.value })}
+                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Dates / Year</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 2019 – 2023"
+                      value={eduFormData.dates || ''}
+                      onChange={(e) => setEduFormData({ ...eduFormData, dates: e.target.value })}
+                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Status / Honors</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Graduated / First Division / In Progress"
+                      value={eduFormData.status || ''}
+                      onChange={(e) => setEduFormData({ ...eduFormData, status: e.target.value })}
+                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Focus Areas &amp; Skills (comma separated)</label>
+                    <input
+                      type="text"
+                      placeholder="Design Systems, Human-Computer Interaction, Research"
+                      value={eduTagsInput}
+                      onChange={(e) => setEduTagsInput(e.target.value)}
+                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Description</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Details about coursework, major projects, thesis or awards..."
+                      value={eduFormData.description || ''}
+                      onChange={(e) => setEduFormData({ ...eduFormData, description: e.target.value })}
+                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    onClick={() => {
+                      if (!eduFormData.title?.trim()) {
+                        showNotice('Please enter a degree or education title.');
+                        return;
+                      }
+                      const tags = eduTagsInput.split(',').map(s => s.trim()).filter(Boolean);
+                      if (editingEdu) {
+                        updateEducation(editingEdu.id, { ...eduFormData, tags });
+                        showNotice(`Updated ${eduFormData.title}`);
+                        setEditingEdu(null);
+                      } else {
+                        addEducation({ ...eduFormData, tags } as any);
+                        showNotice(`Added ${eduFormData.title}`);
+                        setIsCreatingEdu(false);
+                      }
+                    }}
+                    className="px-4 py-2 bg-[#f37021] hover:bg-[#ff721a] text-white rounded text-xs sm:text-sm font-semibold cursor-pointer"
+                  >
+                    Save Education
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsCreatingEdu(false);
+                      setEditingEdu(null);
+                    }}
+                    className="px-4 py-2 bg-zinc-800 text-zinc-300 rounded text-xs sm:text-sm cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4">
               {education.map((edu) => (
-                <div key={edu.id} className="p-4 sm:p-5 bg-[#131418] border border-white/10 rounded-xl space-y-3">
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
-                    <div>
-                      <h3 className="font-semibold text-white text-sm sm:text-base">{edu.title}</h3>
-                      <div className="text-xs text-zinc-400 mt-0.5">{edu.institution} · {edu.location}</div>
-                      <p className="text-zinc-300 text-xs sm:text-sm mt-2">{edu.description}</p>
+                <div key={edu.id} className="p-4 sm:p-5 bg-[#131418] border border-white/10 rounded-xl flex flex-col sm:flex-row justify-between items-start gap-4">
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-white text-sm sm:text-base truncate">{edu.title}</h3>
+                      {edu.status && (
+                        <span className="text-[10px] px-2.5 py-0.5 rounded bg-[#1a1b22] text-[#f37021] font-bold shrink-0 border border-[#f37021]/30">
+                          {edu.status}
+                        </span>
+                      )}
                     </div>
-                    <span className="px-2.5 py-1 rounded bg-[#1a1b22] text-[#f37021] text-xs font-semibold shrink-0">
-                      {edu.status}
-                    </span>
+                    <div className="text-xs text-zinc-400">{edu.institution} · {edu.location} {edu.dates ? `· ${edu.dates}` : ''}</div>
+                    {edu.description && (
+                      <p className="text-zinc-300 text-xs sm:text-sm line-clamp-3 max-w-3xl">{edu.description}</p>
+                    )}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {edu.tags.map((t, idx) => (
+                        <span key={idx} className="text-[11px] px-2 py-0.5 rounded bg-white/5 border border-white/5 text-zinc-400">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {edu.tags.map((t, idx) => (
-                      <span key={idx} className="text-[11px] px-2 py-0.5 rounded bg-white/5 border border-white/5 text-zinc-400">
-                        {t}
-                      </span>
-                    ))}
+
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-start">
+                    <button
+                      onClick={() => {
+                        setEditingEdu(edu);
+                        setEduFormData(edu);
+                        setEduTagsInput(edu.tags.join(', '));
+                        setIsCreatingEdu(false);
+                      }}
+                      className="px-3 py-1.5 rounded bg-[#1a1b22] hover:bg-[#252630] border border-white/10 text-white text-xs cursor-pointer"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        setConfirmDialog({
+                          title: 'Delete Education Entry',
+                          message: `Are you sure you want to remove "${edu.title}"?`,
+                          confirmLabel: 'Delete',
+                          onConfirm: () => {
+                            deleteEducation(edu.id);
+                            showNotice(`Deleted ${edu.title}`);
+                            setConfirmDialog(null);
+                          }
+                        });
+                      }}
+                      className="px-3 py-1.5 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs cursor-pointer"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}
@@ -1028,7 +1330,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   <button
                     onClick={() => {
                       if (!newMediaName || !newMediaUrl) {
-                        alert('Please provide name and URL');
+                        showNotice('Please provide name and URL');
                         return;
                       }
                       addMedia(newMediaName, newMediaUrl, 'image/webp', 120000);
@@ -1074,8 +1376,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       </button>
                       <button
                         onClick={() => {
-                          deleteMedia(item.id);
-                          showNotice('Deleted asset');
+                          setConfirmDialog({
+                            title: 'Remove Media Asset',
+                            message: `Are you sure you want to remove asset "${item.name}"?`,
+                            confirmLabel: 'Remove',
+                            onConfirm: () => {
+                              deleteMedia(item.id);
+                              showNotice('Deleted asset');
+                              setConfirmDialog(null);
+                            }
+                          });
                         }}
                         className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs cursor-pointer"
                       >
@@ -1153,6 +1463,30 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           </div>
         )}
       </main>
+
+      {/* CONFIRMATION DIALOG MODAL */}
+      {confirmDialog && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#131418] border border-white/15 rounded-xl p-5 sm:p-6 max-w-sm w-full space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <h3 className="text-base font-bold text-white">{confirmDialog.title}</h3>
+            <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">{confirmDialog.message}</p>
+            <div className="flex justify-end gap-2.5 pt-2">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="px-3.5 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDialog.onConfirm}
+                className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white font-semibold text-xs cursor-pointer shadow-md"
+              >
+                {confirmDialog.confirmLabel || 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

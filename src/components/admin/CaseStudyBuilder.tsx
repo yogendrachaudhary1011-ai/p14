@@ -39,15 +39,12 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
   const handleDeleteSection = (sectionId: string) => {
     if (sections.length <= 1) {
-      alert('A case study must have at least one section.');
       return;
     }
-    if (confirm('Are you sure you want to delete this section?')) {
-      const updated = sections.filter((s) => s.id !== sectionId);
-      onChange(updated);
-      if (selectedSectionId === sectionId) {
-        setSelectedSectionId(updated[0]?.id || '');
-      }
+    const updated = sections.filter((s) => s.id !== sectionId);
+    onChange(updated);
+    if (selectedSectionId === sectionId) {
+      setSelectedSectionId(updated[0]?.id || '');
     }
   };
 

@@ -31,6 +31,7 @@ interface PortfolioContextType {
   syncAllProjectsToSupabase: () => Promise<{ success: boolean; count: number; message: string }>;
   login: (u: string, p: string) => boolean;
   logout: () => void;
+  changeAdminPassword: (newPass: string) => boolean;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
   addProject: (project: Partial<Project>) => Project;
   updateProject: (id: string, updates: Partial<Project>) => void;
@@ -91,10 +92,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const somtuOnly = parsed.filter(p => p.id === 'somtu');
-          if (somtuOnly.length > 0) {
-            return somtuOnly;
-          }
+          return parsed;
         }
       }
       return initialProjects;
@@ -282,15 +280,28 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [projects]);
 
   const login = (u: string, p: string): boolean => {
-    const validUsers = ['admin', 'zane-wick', 'yogendra'];
-    const cleanedUser = u.trim().toLowerCase();
-    if ((validUsers.includes(cleanedUser) || cleanedUser.length > 0) && p.length >= 4) {
-      setIsAdmin(true);
-      setAdminUser(cleanedUser === 'zane-wick' ? 'Zane Wick' : 'Yogendra Chaudhary');
-      safeStorage.setItem(STORAGE_KEYS.AUTH, 'true');
-      return true;
+    const userClean = u.trim();
+    const passClean = p.trim();
+    if (!userClean || !passClean) return false;
+
+    // Check custom saved admin password if set
+    const customPass = safeStorage.getItem('yc_portfolio_admin_custom_password');
+    if (customPass) {
+      if (passClean !== customPass) {
+        return false;
+      }
     }
-    return false;
+
+    setIsAdmin(true);
+    setAdminUser(userClean.toLowerCase() === 'zane-wick' ? 'Zane Wick' : userClean === 'admin' ? 'Yogendra Chaudhary' : userClean);
+    safeStorage.setItem(STORAGE_KEYS.AUTH, 'true');
+    return true;
+  };
+
+  const changeAdminPassword = (newPassword: string): boolean => {
+    if (!newPassword || newPassword.trim().length === 0) return false;
+    safeStorage.setItem('yc_portfolio_admin_custom_password', newPassword.trim());
+    return true;
   };
 
   const logout = () => {
@@ -539,6 +550,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         syncAllProjectsToSupabase,
         login,
         logout,
+        changeAdminPassword,
         updateSettings,
         addProject,
         updateProject,

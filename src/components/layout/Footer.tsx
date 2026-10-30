@@ -48,6 +48,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           >
             LinkedIn
           </a>
+          <button
+            type="button"
+            onClick={() => onNavigate('/admin')}
+            className="text-xs text-zinc-500 hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+            title="Open Admin Panel"
+          >
+            CMS
+          </button>
         </nav>
       </div>
     </footer>
