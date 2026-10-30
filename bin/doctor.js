@@ -1,17 +1,17 @@
-import { checkFirestore, checkStorage, firestoreDatabaseId, config } from '../lib/firebase.js';
+import { checkSupabase, checkSupabaseStorage, supabaseProjectUrl, supabaseConfig } from '../lib/supabase.js';
 
 async function doctor() {
   console.log('=== YOGENDRA CMS SYSTEM DIAGNOSTICS ===');
-  console.log(`Active Project: ${config.projectId}`);
-  console.log(`Firestore Database ID: ${firestoreDatabaseId}`);
-  console.log(`Storage Bucket: ${config.storageBucket}`);
+  console.log(`Active Project: ${supabaseConfig.projectId}`);
+  console.log(`Supabase project: ${supabaseProjectUrl || 'not configured'}`);
+  console.log(`Storage Bucket: ${supabaseConfig.storageBucket}`);
 
   console.log('\nChecking connectivity...');
-  const dbOk = await checkFirestore();
-  console.log(`Firestore: ${dbOk ? '✓ Connected & operational' : '✗ Unreachable'}`);
+  const dbOk = await checkSupabase();
+  console.log(`Supabase database: ${dbOk ? '✓ Connected & operational' : '✗ Unreachable'}`);
 
-  const storageOk = await checkStorage();
-  console.log(`Storage: ${storageOk ? '✓ Connected' : 'ℹ Falling back to Firestore binary storage'}`);
+  const storageOk = await checkSupabaseStorage();
+  console.log(`Storage: ${storageOk ? '✓ Connected' : '✗ Supabase Storage unavailable'}`);
 
   console.log('\nDiagnostic complete.');
   process.exit(dbOk ? 0 : 1);
