@@ -30,7 +30,7 @@ interface PortfolioContextType {
 
 const STORAGE_KEYS = {
   SETTINGS: 'yc_portfolio_settings',
-  PROJECTS: 'yc_portfolio_projects_v2', // bumped to permanently clear old projects
+  PROJECTS: 'yc_portfolio_projects_v3', // unified to brand new case study design system
   EXPERIENCE: 'yc_portfolio_experience_v2',
   EDUCATION: 'yc_portfolio_education',
   MEDIA: 'yc_portfolio_media',
@@ -40,10 +40,12 @@ const STORAGE_KEYS = {
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Purge old projects from prior storage key
+  // Purge old projects from prior storage keys
   useEffect(() => {
     try {
       localStorage.removeItem('yc_portfolio_projects');
+      localStorage.removeItem('yc_portfolio_projects_v2');
+      localStorage.removeItem('portfolio_cms_projects');
     } catch {
       // ignore
     }
