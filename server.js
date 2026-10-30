@@ -6,7 +6,7 @@ import adminRoutes from './routes/admin.js';
 import { ensureAdminUser } from './lib/auth.js';
 import { renderHtml, renderDynamicCaseStudy, getPublishedSnapshot } from './lib/renderer.js';
 import { seedDatabaseIfNeeded } from './lib/seed.js';
-import { checkFirestore, checkStorage, firestoreDatabaseId, config } from './lib/firebase.js';
+import { checkSupabase, checkSupabaseStorage, firestoreDatabaseId, config } from './lib/supabase.js';
 import { getMediaBlob } from './lib/media.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,22 +35,22 @@ app.use((req, res, next) => {
 
 // Health check endpoints
 app.get(['/healthz', '/api/health'], async (req, res) => {
-  const isDbConnected = await checkFirestore();
-  const isStorageConnected = await checkStorage();
+  const isDbConnected = await checkSupabase();
+  const isStorageConnected = await checkSupabaseStorage();
 
   res.json({
     status: isDbConnected ? 'ok' : 'degraded',
     server: 'running',
-    activeProject: config.projectId || process.env.FIREBASE_PROJECT_ID || 'gen-lang-client-0706919729',
-    firestoreDatabaseId,
-    firestoreConnected: isDbConnected,
+    activeProject: supabaseProjectUrl ? new URL(supabaseProjectUrl).host : 'not-configured',
+    databaseProvider: 'supabase',
+    databaseConnected: isDbConnected,
     storageAvailable: isStorageConnected,
     cmsWritesAllowed: isDbConnected,
     timestamp: new Date().toISOString()
   });
 });
 
-// Serve media blobs stored in resilient Firestore binary storage
+// Serve legacy media URLs through Supabase Storage
 app.get('/api/media/blob/:id', async (req, res) => {
   try {
     const blob = await getMediaBlob(req.params.id);
