@@ -67,6 +67,7 @@ body {
 .login-brand span { color: var(--primary); }
 .login-sub { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
 .form-group { margin-bottom: 18px; }
+.form-help { display:block; margin-top:6px; color:var(--text-dim); font-size:11px; }
 .form-label {
   display: block;
   font-size: 12px;
@@ -599,6 +600,10 @@ body {
         <span class="material-symbols-rounded">navigation</span>
         <span>Contact & Footer</span>
       </button>
+      <button class="nav-item" data-tab="design" title="Colors and page layout" onclick="switchTab('design')">
+        <span class="material-symbols-rounded">palette</span>
+        <span>Design & Layout</span>
+      </button>
       <button class="nav-item" data-tab="seo" title="SEO and social sharing" onclick="switchTab('seo')">
         <span class="material-symbols-rounded">travel_explore</span>
         <span>SEO & Sharing</span>
@@ -826,6 +831,7 @@ function switchTab(tab) {
     media: ['Media Library', 'Upload, replace, and organize images and files used by the site.'],
     resume: ['Resume', 'Replace the PDF visitors can view or download.'],
     navigation: ['Contact & Footer', 'Update your brand details, contact links, and footer text.'],
+    design: ['Design & Layout', 'Change site colors and choose which homepage sections appear.'],
     seo: ['SEO & Sharing', 'Control search previews and the image shown when your site is shared.'],
     backups: ['Backups', 'Create a restore point before larger edits or restore an earlier snapshot.'],
     security: ['Account', 'Change the password used to sign in to this CMS.']
@@ -938,6 +944,19 @@ async function renderTabContent(tab) {
               <input class="form-input" id="heroSecondaryBtnText" value="${home.heroSecondaryBtnText || ''}"/>
             </div>
           </div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Primary Button Link</label><input class="form-input" id="heroPrimaryBtnLink" value="${home.heroPrimaryBtnLink || 'projects.html'}" placeholder="projects.html or https://..."/></div>
+            <div class="form-group"><label class="form-label">Secondary Button Link</label><input class="form-input" id="heroSecondaryBtnLink" value="${home.heroSecondaryBtnLink || 'about.html'}" placeholder="about.html or https://..."/></div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-header"><div class="card-title"><span class="material-symbols-rounded">work</span> Selected work heading</div></div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Section Label</label><input class="form-input" id="workEyebrow" value="${home.workSection?.eyebrow || ''}"/></div>
+            <div class="form-group"><label class="form-label">Section Title</label><input class="form-input" id="workTitle" value="${home.workSection?.title || ''}"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Section Description</label><textarea class="form-textarea" id="workIntro" rows="3">${home.workSection?.intro || ''}</textarea></div>
         </div>
 
         <div class="admin-card">
@@ -960,8 +979,11 @@ async function renderTabContent(tab) {
               <input class="form-input" id="badgeRole" value="${home.idCard?.role || ''}"/>
             </div>
             <div class="form-group">
-              <label class="form-label">Badge Photo URL</label>
-              <input class="form-input" id="badgePhoto" value="${home.idCard?.photo || ''}"/>
+              <label class="form-label" for="badgePhotoFile">Badge Photo</label>
+              <input class="form-input" id="badgePhotoFile" type="file" accept="image/*" onchange="uploadCmsFile('badgePhoto', this)"/>
+              <input type="hidden" id="badgePhoto" value="${home.idCard?.photo || ''}"/>
+              <img id="badgePhotoPreview" src="${home.idCard?.photo || ''}" alt="Current profile photo" style="${home.idCard?.photo ? 'display:block;' : 'display:none;'}width:90px;height:90px;object-fit:cover;border-radius:8px;margin-top:10px;"/>
+              <div id="badgePhotoStatus" style="font-size:12px;color:var(--text-dim);margin-top:6px;">Choose a photo from your device to replace it.</div>
             </div>
           </div>
           <div class="form-group">
@@ -986,10 +1008,28 @@ async function renderTabContent(tab) {
             <label class="form-label">Lead Story</label>
             <textarea class="form-textarea" id="aboutLead" rows="3">${home.aboutSection?.lead || ''}</textarea>
           </div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label" for="aboutVideoSrcFile">About Video</label><input class="form-input" id="aboutVideoSrcFile" type="file" accept="video/mp4,video/webm" onchange="uploadCmsFile('aboutVideoSrc', this)"/><input type="hidden" id="aboutVideoSrc" value="${home.aboutSection?.videoSrc || ''}"/><video id="aboutVideoSrcPreview" src="${home.aboutSection?.videoSrc || ''}" muted controls style="${home.aboutSection?.videoSrc ? 'display:block;' : 'display:none;'}width:100%;max-width:320px;max-height:160px;margin-top:8px;"></video><div id="aboutVideoSrcStatus" class="form-help">Choose an MP4 or WebM video file.</div></div>
+            <div class="form-group"><label class="form-label" for="aboutVideoPosterFile">Video Poster Image</label><input class="form-input" id="aboutVideoPosterFile" type="file" accept="image/*" onchange="uploadCmsFile('aboutVideoPoster', this)"/><input type="hidden" id="aboutVideoPoster" value="${home.aboutSection?.videoPoster || ''}"/><img id="aboutVideoPosterPreview" src="${home.aboutSection?.videoPoster || ''}" alt="Video poster preview" style="${home.aboutSection?.videoPoster ? 'display:block;' : 'display:none;'}width:160px;height:90px;object-fit:cover;border-radius:6px;margin-top:8px;"/><div id="aboutVideoPosterStatus" class="form-help">Choose a poster image from your device.</div></div>
+          </div>
+          <div class="form-group"><label class="form-label">About Media Caption</label><input class="form-input" id="aboutCaption" value="${home.aboutSection?.caption || ''}"/></div>
           <button type="submit" class="btn btn-primary"><span class="material-symbols-rounded">save</span> Save All Homepage Changes</button>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-header"><div><div class="card-title"><span class="material-symbols-rounded">view_quilt</span> Show and arrange sections</div><p style="font-size:12px;color:var(--text-muted);margin-top:5px;">Set each section's position or hide it without deleting its content.</p></div></div>
+          <div class="grid-2">
+            ${[['hero','Hero'],['work','Selected Work'],['about','About'],['contact','Contact CTA']].map(([key,label],index)=>{const pref=home.sectionSettings?.[key]||{};return `<div class="grid-2" style="align-items:center;gap:10px;padding:12px;border:1px solid var(--border);border-radius:8px;"><label style="display:flex;align-items:center;gap:9px;font-weight:600;"><input type="checkbox" id="sectionVisible-${key}" ${pref.visible===false?'':'checked'}/>Show ${label}</label>${key!=='contact'?`<label style="font-size:12px;color:var(--text-muted);">Position <select class="form-select" id="sectionOrder-${key}">${[1,2,3].map(n=>`<option value="${n}" ${(Number(pref.order)||index+1)===n?'selected':''}>${n}</option>`).join('')}</select></label>`:''}</div>`}).join('')}
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-header"><div><div class="card-title"><span class="material-symbols-rounded">add_circle</span> Extra homepage sections</div><p style="font-size:12px;color:var(--text-muted);margin-top:5px;">Add your own text, images, and links without editing code.</p></div><button type="button" class="btn btn-secondary btn-sm" onclick="addCustomHomeSection()">Add section</button></div>
+          <div id="customHomeSectionsEditor"></div>
         </div>
       </form>
     `;
+    renderCustomHomeSections(home.customSections || []);
   }
 
   else if (tab === 'projects') {
@@ -1210,6 +1250,11 @@ async function renderTabContent(tab) {
             <label class="form-label">Contact Phone</label>
             <input class="form-input" id="navPhone" value="${settings.phone || ''}"/>
           </div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Header contact button</label><input class="form-input" id="contactButtonText" value="${settings.contactButtonText || 'Let\'s Talk'}"/></div>
+            <div class="form-group"><label class="form-label">Homepage contact banner text</label><input class="form-input" id="contactCtaText" value="${settings.contactCtaText || 'Let\'s Work Together'}"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Contact banner destination</label><input class="form-input" id="contactCtaUrl" value="${settings.contactCtaUrl || ''}" placeholder="Leave blank to use contact email, or enter mailto:, tel:, https://..."/></div>
         </div>
 
         <div class="admin-card">
@@ -1230,6 +1275,31 @@ async function renderTabContent(tab) {
         </div>
       </form>
     `;
+  }
+
+  else if (tab === 'design') {
+    const settings = await apiFetch('/api/admin/settings');
+    const theme = settings.theme || {};
+    const colorValue = (value, fallback) => /^#[0-9a-f]{6}$/i.test(value || '') ? value : fallback;
+    container.innerHTML = `
+      <form onsubmit="saveDesign(event)">
+        <div class="admin-card">
+          <div class="card-header"><div><div class="card-title"><span class="material-symbols-rounded">palette</span> Site colors</div><p style="color:var(--text-muted);font-size:12px;margin-top:5px;">Preview your palette here, then save it across the whole website.</p></div><button class="btn btn-primary btn-sm" type="submit">Save design</button></div>
+          <div class="grid-3">
+            <label class="form-group"><span class="form-label">Background</span><input class="form-input" id="themeBackground" type="color" value="${colorValue(theme.background, '#080808')}"/></label>
+            <label class="form-group"><span class="form-label">Card and panel surface</span><input class="form-input" id="themeSurface" type="color" value="${colorValue(theme.surface, '#101010')}"/></label>
+            <label class="form-group"><span class="form-label">Main text</span><input class="form-input" id="themeText" type="color" value="${colorValue(theme.text, '#f5f5f0')}"/></label>
+            <label class="form-group"><span class="form-label">Primary accent</span><input class="form-input" id="themeAccent" type="color" value="${colorValue(theme.accent, '#b8ff57')}"/></label>
+            <label class="form-group"><span class="form-label">Secondary accent</span><input class="form-input" id="themeAccentAlt" type="color" value="${colorValue(theme.accentAlt, '#ff6a3d')}"/></label>
+            <label class="form-group"><span class="form-label">Website font</span><select class="form-select" id="themeFontFamily"><option value="dmSans" ${theme.fontFamily === 'inter' || theme.fontFamily === 'system' ? '' : 'selected'}>DM Sans</option><option value="inter" ${theme.fontFamily === 'inter' ? 'selected' : ''}>Inter</option><option value="system" ${theme.fontFamily === 'system' ? 'selected' : ''}>System default</option></select></label>
+          </div>
+          <div id="themePreview" style="display:flex;align-items:center;gap:14px;padding:18px;border-radius:10px;background:${colorValue(theme.background, '#080808')};color:${colorValue(theme.text, '#f5f5f0')};border:1px solid ${colorValue(theme.accent, '#b8ff57')};">
+            <span id="themePreviewAccent" style="width:24px;height:24px;border-radius:50%;background:${colorValue(theme.accent, '#b8ff57')};"></span><strong>Preview: your portfolio colors</strong><span style="margin-left:auto;padding:7px 12px;border-radius:5px;background:${colorValue(theme.surface, '#101010')};">Card</span>
+          </div>
+        </div>
+      </form>
+    `;
+    ['themeBackground','themeSurface','themeText','themeAccent'].forEach(id => document.getElementById(id).addEventListener('input', updateThemePreview));
   }
 
   else if (tab === 'seo') {
@@ -1253,7 +1323,10 @@ async function renderTabContent(tab) {
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label">Open Graph Social Image</label>
-              <input class="form-input" id="seoOgImage" value="${seo.ogImage || ''}"/>
+              <input class="form-input" id="seoOgImageFile" type="file" accept="image/*" onchange="uploadCmsFile('seoOgImage', this)"/>
+              <input type="hidden" id="seoOgImage" value="${seo.ogImage || ''}"/>
+              <img id="seoOgImagePreview" src="${seo.ogImage || ''}" alt="Social sharing preview" style="${seo.ogImage ? 'display:block;' : 'display:none;'}width:180px;height:95px;object-fit:cover;border-radius:6px;margin-top:8px;"/>
+              <div id="seoOgImageStatus" class="form-help">Choose an image from your device to replace the sharing preview.</div>
             </div>
             <div class="form-group">
               <label class="form-label">Canonical URL</label>
@@ -1322,6 +1395,107 @@ async function renderTabContent(tab) {
   }
 }
 
+function readCustomHomeSections() {
+  return Array.from(document.querySelectorAll('.custom-home-section')).map((card, index) => ({
+    id: card.dataset.id || `custom-${Date.now()}-${index}`,
+    eyebrow: card.querySelector('[data-field="eyebrow"]').value.trim(),
+    title: card.querySelector('[data-field="title"]').value.trim(),
+    body: card.querySelector('[data-field="body"]').value.trim(),
+    image: card.querySelector('[data-field="image"]').value.trim(),
+    imageAlt: card.querySelector('[data-field="imageAlt"]').value.trim(),
+    buttonText: card.querySelector('[data-field="buttonText"]').value.trim(),
+    buttonLink: card.querySelector('[data-field="buttonLink"]').value.trim(),
+    visible: card.querySelector('[data-field="visible"]').checked
+  }));
+}
+
+function renderCustomHomeSections(items = []) {
+  const editor = document.getElementById('customHomeSectionsEditor');
+  if (!editor) return;
+  if (!items.length) {
+    editor.innerHTML = '<p style="padding:18px;color:var(--text-muted);font-size:13px;">No extra sections yet. Add one to create a custom homepage block.</p>';
+    return;
+  }
+  editor.innerHTML = items.map((section, index) => `
+    <div class="admin-card custom-home-section" data-id="" style="margin-bottom:14px;padding:18px;">
+      <div class="card-header"><strong>Custom section ${index + 1}</strong><div style="display:flex;gap:6px;"><button class="btn btn-secondary btn-sm" type="button" title="Move up" onclick="moveCustomHomeSection(${index},-1)">↑</button><button class="btn btn-secondary btn-sm" type="button" title="Move down" onclick="moveCustomHomeSection(${index},1)">↓</button><button class="btn btn-danger btn-sm" type="button" onclick="removeCustomHomeSection(${index})">Remove</button></div></div>
+      <div class="grid-2"><div class="form-group"><label class="form-label">Small label</label><input class="form-input" data-field="eyebrow"/></div><div class="form-group"><label class="form-label">Section title</label><input class="form-input" data-field="title"/></div></div>
+      <div class="form-group"><label class="form-label">Text</label><textarea class="form-textarea" data-field="body" rows="4" placeholder="Write a paragraph. Separate paragraphs with a blank line."></textarea></div>
+      <div class="grid-2"><div class="form-group"><label class="form-label">Section image</label><input class="form-input" type="file" accept="image/*" onchange="uploadCmsFile('customHomeImage-${index}',this)"/><input type="hidden" data-field="image" id="customHomeImage-${index}"/><img id="customHomeImage-${index}Preview" alt="Section image preview" style="display:none;width:100%;max-width:300px;max-height:180px;object-fit:cover;border-radius:8px;margin-top:8px;"/></div><div class="form-group"><label class="form-label">Image description</label><input class="form-input" data-field="imageAlt"/><label style="display:flex;align-items:center;gap:8px;margin-top:12px;"><input type="checkbox" data-field="visible" checked/>Show this section</label></div></div>
+      <div class="grid-2"><div class="form-group"><label class="form-label">Button text (optional)</label><input class="form-input" data-field="buttonText"/></div><div class="form-group"><label class="form-label">Button link</label><input class="form-input" data-field="buttonLink" placeholder="about.html or https://..."/></div></div>
+    </div>`).join('');
+  items.forEach((section, index) => {
+    const card = editor.querySelectorAll('.custom-home-section')[index];
+    card.dataset.id = section.id || `custom-${Date.now()}-${index}`;
+    for (const field of ['eyebrow','title','body','image','imageAlt','buttonText','buttonLink']) {
+      card.querySelector(`[data-field="${field}"]`).value = section[field] || '';
+    }
+    card.querySelector('[data-field="visible"]').checked = section.visible !== false;
+    const preview = document.getElementById(`customHomeImage-${index}Preview`);
+    if (section.image) { preview.src = section.image; preview.style.display = 'block'; }
+  });
+}
+
+function addCustomHomeSection() {
+  const sections = readCustomHomeSections();
+  sections.push({ id: `custom-${Date.now()}`, visible: true });
+  renderCustomHomeSections(sections);
+}
+
+function moveCustomHomeSection(index, direction) {
+  const sections = readCustomHomeSections();
+  const target = index + direction;
+  if (target < 0 || target >= sections.length) return;
+  [sections[index], sections[target]] = [sections[target], sections[index]];
+  renderCustomHomeSections(sections);
+}
+
+function removeCustomHomeSection(index) {
+  if (!confirm('Remove this custom homepage section?')) return;
+  const sections = readCustomHomeSections();
+  sections.splice(index, 1);
+  renderCustomHomeSections(sections);
+}
+
+async function uploadCmsFile(targetId, input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  input.disabled = true;
+  const submitButtons = Array.from(input.closest('form')?.querySelectorAll('button[type="submit"]') || []);
+  submitButtons.forEach(button => { button.disabled = true; });
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('category', 'site-content');
+  formData.append('alt', file.name);
+  const status = document.getElementById(`${targetId}Status`);
+  if (status) status.textContent = `Uploading ${file.name}...`;
+  try {
+    const token = getAuthToken();
+    const headers = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch('/api/admin/media/upload', { method: 'POST', credentials: 'include', headers, body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    const field = document.getElementById(targetId);
+    if (field) field.value = data.media.url;
+    const preview = document.getElementById(`${targetId}Preview`);
+    if (preview) {
+      preview.style.display = 'block';
+      if (preview.tagName === 'VIDEO') { preview.src = data.media.url; preview.load(); }
+      else preview.src = data.media.url;
+    }
+    if (status) status.textContent = `Uploaded ${file.name}. Save this page to publish it.`;
+    showToast(`Uploaded ${file.name}. Save this page to apply it.`);
+  } catch (err) {
+    if (status) status.textContent = `Upload failed: ${err.message}`;
+    showToast(err.message, 'error');
+    input.value = '';
+  } finally {
+    input.disabled = false;
+    submitButtons.forEach(button => { button.disabled = false; });
+  }
+}
+
 // Handlers for Saves
 async function saveHomepage(e) {
   e.preventDefault();
@@ -1333,6 +1507,8 @@ async function saveHomepage(e) {
     heroCopy: document.getElementById('heroCopy').value,
     heroPrimaryBtnText: document.getElementById('heroPrimaryBtnText').value,
     heroSecondaryBtnText: document.getElementById('heroSecondaryBtnText').value,
+    heroPrimaryBtnLink: document.getElementById('heroPrimaryBtnLink').value,
+    heroSecondaryBtnLink: document.getElementById('heroSecondaryBtnLink').value,
     idCard: {
       tag: document.getElementById('badgeTag').value,
       name: document.getElementById('badgeName').value,
@@ -1340,11 +1516,26 @@ async function saveHomepage(e) {
       photo: document.getElementById('badgePhoto').value,
       micro: document.getElementById('badgeMicro').value
     },
+    workSection: {
+      eyebrow: document.getElementById('workEyebrow').value,
+      title: document.getElementById('workTitle').value,
+      intro: document.getElementById('workIntro').value
+    },
     aboutSection: {
       kicker: document.getElementById('aboutKicker').value,
       title: document.getElementById('aboutTitle').value,
-      lead: document.getElementById('aboutLead').value
-    }
+      lead: document.getElementById('aboutLead').value,
+      videoSrc: document.getElementById('aboutVideoSrc').value,
+      videoPoster: document.getElementById('aboutVideoPoster').value,
+      caption: document.getElementById('aboutCaption').value
+    },
+    sectionSettings: {
+      hero: { visible: document.getElementById('sectionVisible-hero').checked, order: Number(document.getElementById('sectionOrder-hero').value) },
+      work: { visible: document.getElementById('sectionVisible-work').checked, order: Number(document.getElementById('sectionOrder-work').value) },
+      about: { visible: document.getElementById('sectionVisible-about').checked, order: Number(document.getElementById('sectionOrder-about').value) },
+      contact: { visible: document.getElementById('sectionVisible-contact').checked }
+    },
+    customSections: readCustomHomeSections()
   };
 
   await apiFetch('/api/admin/pages/home', {
@@ -1362,6 +1553,9 @@ async function saveNavigation(e) {
     availabilityText: document.getElementById('navAvailability').value,
     email: document.getElementById('navEmail').value,
     phone: document.getElementById('navPhone').value,
+    contactButtonText: document.getElementById('contactButtonText').value,
+    contactCtaText: document.getElementById('contactCtaText').value,
+    contactCtaUrl: document.getElementById('contactCtaUrl').value,
     footerText: document.getElementById('footerText').value,
     footerSubtitle: document.getElementById('footerSubtitle').value
   };
@@ -1387,6 +1581,30 @@ async function saveSeo(e) {
     body: JSON.stringify({ seo: seoPayload, siteTitle: seoPayload.title })
   });
   showToast('SEO metadata saved and published!');
+}
+
+function updateThemePreview() {
+  const preview = document.getElementById('themePreview');
+  if (!preview) return;
+  preview.style.background = document.getElementById('themeBackground').value;
+  preview.style.color = document.getElementById('themeText').value;
+  preview.style.borderColor = document.getElementById('themeAccent').value;
+  document.getElementById('themePreviewAccent').style.background = document.getElementById('themeAccent').value;
+  preview.querySelector('span:last-child').style.background = document.getElementById('themeSurface').value;
+}
+
+async function saveDesign(e) {
+  e.preventDefault();
+  const theme = {
+    background: document.getElementById('themeBackground').value,
+    surface: document.getElementById('themeSurface').value,
+    text: document.getElementById('themeText').value,
+    accent: document.getElementById('themeAccent').value,
+    accentAlt: document.getElementById('themeAccentAlt').value,
+    fontFamily: document.getElementById('themeFontFamily').value
+  };
+  await apiFetch('/api/admin/settings', { method: 'PUT', body: JSON.stringify({ theme }) });
+  showToast('Site colors saved and published.');
 }
 
 async function handlePasswordChange(e) {
@@ -1523,6 +1741,7 @@ function openProjectModal(id = null) {
   projectCoverUploadPromise = Promise.resolve(true);
   const isEdit = !!id;
   const proj = isEdit ? (cachedData.projects || []).find(p => p.id === id) : {};
+  const caseStudy = proj.caseStudy || {};
   const container = document.getElementById('modalContainer');
 
   container.innerHTML = `
@@ -1581,6 +1800,14 @@ function openProjectModal(id = null) {
             <label class="form-label">Summary / Description</label>
             <textarea class="form-textarea" id="modalProjSummary" rows="3">${proj.summary || ''}</textarea>
           </div>
+          <div class="admin-card" style="padding:18px;background:var(--bg-input);">
+            <div class="card-header"><div><div class="card-title"><span class="material-symbols-rounded">article</span> Editable case study story</div><p style="font-size:12px;color:var(--text-muted);margin-top:5px;">Replace the built-in story with your own editable sections. Uncheck to keep the original layout.</p></div></div>
+            <label style="display:flex;align-items:center;gap:9px;margin-bottom:16px;"><input id="modalProjCustomStory" type="checkbox" ${caseStudy.enabled || !isEdit ? 'checked' : ''}/>Use my editable story on this project page</label>
+            <div class="form-group"><label class="form-label">Overview</label><textarea class="form-textarea" id="modalProjOverview" rows="3">${caseStudy.overview || proj.summary || ''}</textarea></div>
+            <div class="grid-2"><div class="form-group"><label class="form-label">Challenge</label><textarea class="form-textarea" id="modalProjChallenge" rows="3">${caseStudy.challenge || ''}</textarea></div><div class="form-group"><label class="form-label">Approach</label><textarea class="form-textarea" id="modalProjApproach" rows="3">${caseStudy.approach || ''}</textarea></div></div>
+            <div class="grid-2"><div class="form-group"><label class="form-label">Solution</label><textarea class="form-textarea" id="modalProjSolution" rows="3">${caseStudy.solution || ''}</textarea></div><div class="form-group"><label class="form-label">Outcomes</label><textarea class="form-textarea" id="modalProjOutcomes" rows="3">${caseStudy.outcomes || ''}</textarea></div></div>
+            <div class="form-group"><label class="form-label" for="modalProjStoryImageFile">Story Image (optional)</label><input class="form-input" id="modalProjStoryImageFile" type="file" accept="image/*" onchange="uploadCmsFile('modalProjStoryImage',this)"/><input type="hidden" id="modalProjStoryImage" value="${caseStudy.image || ''}"/><img id="modalProjStoryImagePreview" src="${caseStudy.image || ''}" alt="Case study story image" style="${caseStudy.image ? 'display:block;' : 'display:none;'}width:100%;max-width:360px;max-height:200px;object-fit:cover;border-radius:8px;margin-top:8px;"/><div id="modalProjStoryImageStatus" class="form-help">Choose a file from your device.</div></div>
+          </div>
           <div class="form-group">
             <label class="form-label">Status</label>
             <select class="form-select" id="modalProjStatus">
@@ -1616,6 +1843,15 @@ async function handleProjectSubmit(e, id) {
     mediaNote: document.getElementById('modalProjMediaNote').value,
     coverImage: document.getElementById('modalProjCover').value,
     summary: document.getElementById('modalProjSummary').value,
+    caseStudy: {
+      enabled: document.getElementById('modalProjCustomStory').checked,
+      overview: document.getElementById('modalProjOverview').value,
+      challenge: document.getElementById('modalProjChallenge').value,
+      approach: document.getElementById('modalProjApproach').value,
+      solution: document.getElementById('modalProjSolution').value,
+      outcomes: document.getElementById('modalProjOutcomes').value,
+      image: document.getElementById('modalProjStoryImage').value
+    },
     status: document.getElementById('modalProjStatus').value
   };
 
@@ -1863,5 +2099,6 @@ checkAuth();
 </script>
 </body>
 </html>
+
 
 
