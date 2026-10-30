@@ -26,6 +26,7 @@ import {
 } from '../lib/auth.js';
 import { 
   processUploadedFile, 
+  replaceMediaItem,
   deleteMediaItem, 
   checkMediaUsage 
 } from '../lib/media.js';
@@ -553,6 +554,17 @@ router.post('/admin/media/upload', requireAuthMiddleware, upload.single('file'),
   }
 });
 
+router.post('/admin/media/:id/replace', requireAuthMiddleware, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No replacement file uploaded' });
+    const media = await replaceMediaItem(req.params.id, req.file);
+    invalidateCache();
+    res.json({ success: true, media });
+  } catch (err) {
+    res.status(400).json({ error: `Image replacement failed: ${err.message}` });
+  }
+});
+
 router.put('/admin/media/:id', requireAuthMiddleware, async (req, res) => {
   try {
     const { alt, name, category } = req.body;
@@ -656,3 +668,4 @@ router.post('/admin/backups/:id/restore', requireAuthMiddleware, async (req, res
 });
 
 export default router;
+
