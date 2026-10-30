@@ -31,7 +31,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
         <MediaPreview
           src={heroImage || 'https://placehold.co/1539x728/111317/ffffff?text=Case+Study+Hero'}
           alt={heroImageAlt || 'Hero visual'}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.015]"
+          className="w-full h-full object-cover"
           loading="eager"
           fallbackSrc="https://placehold.co/1539x728/111317/ffffff?text=Case+Study+Hero"
         />
@@ -129,3 +129,4 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
     </div>
   );
 };
+
