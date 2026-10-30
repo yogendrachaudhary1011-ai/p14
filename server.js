@@ -6,7 +6,7 @@ import adminRoutes from './routes/admin.js';
 import { ensureAdminUser } from './lib/auth.js';
 import { renderHtml, renderDynamicCaseStudy, getPublishedSnapshot } from './lib/renderer.js';
 import { seedDatabaseIfNeeded } from './lib/seed.js';
-import { checkSupabase, checkSupabaseStorage, firestoreDatabaseId, config } from './lib/supabase.js';
+import { checkSupabase, checkSupabaseStorage, supabaseProjectUrl } from './lib/supabase.js';
 import { getMediaBlob } from './lib/media.js';
 
 const __filename = fileURLToPath(import.meta.url);
