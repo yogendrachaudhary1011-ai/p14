@@ -1,17 +1,14 @@
-import { checkSupabase, checkSupabaseStorage, supabaseProjectUrl, supabaseConfig } from '../lib/supabase.js';
+import { checkSupabase, checkSupabaseStorage, supabaseProjectUrl } from '../lib/supabase.js';
 
 async function doctor() {
   console.log('=== YOGENDRA CMS SYSTEM DIAGNOSTICS ===');
-  console.log(`Active Project: ${supabaseConfig.projectId}`);
-  console.log(`Supabase project: ${supabaseProjectUrl || 'not configured'}`);
-  console.log(`Storage Bucket: ${supabaseConfig.storageBucket}`);
-
+  console.log('Supabase project: ' + (supabaseProjectUrl || 'not configured'));
   console.log('\nChecking connectivity...');
   const dbOk = await checkSupabase();
-  console.log(`Supabase database: ${dbOk ? '✓ Connected & operational' : '✗ Unreachable'}`);
+  console.log('Supabase database: ' + (dbOk ? 'connected and operational' : 'unreachable'));
 
   const storageOk = await checkSupabaseStorage();
-  console.log(`Storage: ${storageOk ? '✓ Connected' : '✗ Supabase Storage unavailable'}`);
+  console.log('Supabase Storage: ' + (storageOk ? 'connected' : 'unavailable'));
 
   console.log('\nDiagnostic complete.');
   process.exit(dbOk ? 0 : 1);
