@@ -59,14 +59,14 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
   return (
     <section id={section.id} className="w-full max-w-[1200px] flex flex-col justify-start items-start gap-7 scroll-mt-28">
       {/* Section Header */}
-      <div className="w-full flex justify-between items-center border-b border-white/20 pb-4">
-        <div className="flex-1 flex flex-col justify-start items-start">
-          <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-tight md:leading-[57.20px] uppercase tracking-tight">
+      <div className="w-full flex justify-between items-center border-b border-white/20 pb-4 gap-4">
+        <div className="flex-1 flex flex-col justify-start items-start min-w-0">
+          <h2 className="text-white text-2xl sm:text-3xl md:text-5xl font-bold font-['Plus_Jakarta_Sans'] leading-tight md:leading-[57.20px] uppercase tracking-tight break-words">
             {section.heading}
           </h2>
         </div>
         {/* Subtle indicator from Figma */}
-        <div className="w-20 h-6 flex items-center justify-end opacity-25 select-none font-mono text-xs text-white">
+        <div className="hidden sm:flex h-6 items-center justify-end opacity-30 select-none font-mono text-xs text-white shrink-0">
           <span>{formattedIndex} / {section.type.toUpperCase().slice(0, 10)}</span>
         </div>
       </div>
@@ -74,7 +74,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
       {/* Intro narrative if specified */}
       {section.intro && (
         <div className="w-full flex flex-col justify-start items-start">
-          <p className="text-white text-lg sm:text-xl font-normal font-['Plus_Jakarta_Sans'] leading-6 md:leading-7">
+          <p className="text-white text-base sm:text-lg md:text-xl font-normal font-['Plus_Jakarta_Sans'] leading-relaxed md:leading-7 break-words">
             {section.intro}
           </p>
         </div>

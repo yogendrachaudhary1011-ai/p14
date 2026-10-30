@@ -126,7 +126,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
   return (
     <div className="w-full flex flex-col gap-6 font-['Plus_Jakarta_Sans']">
       {/* Top Section Navigator & Add Section Bar */}
-      <div className="p-4 rounded-[8px] bg-zinc-900 border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-4 rounded-[8px] bg-zinc-900 border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h3 className="text-white font-semibold text-base">Case Study Section Tree</h3>
           <p className="text-zinc-400 text-xs">
@@ -134,11 +134,11 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
           <select
             value={newSectionType}
             onChange={(e) => setNewSectionType(e.target.value as SectionType)}
-            className="px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-xs"
+            className="px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-xs flex-1 sm:flex-initial"
           >
             <option value="problem">The Problem</option>
             <option value="challenge">My Challenge</option>
@@ -158,7 +158,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
           <button
             type="button"
             onClick={handleAddSection}
-            className="px-3 py-2 rounded bg-[#ff853a] hover:bg-[#ff721a] text-white text-xs font-semibold flex items-center gap-1 cursor-pointer"
+            className="px-3 py-2 rounded bg-[#ff853a] hover:bg-[#ff721a] text-white text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer shrink-0"
           >
             <span className="material-symbols-rounded text-sm">add</span>
             <span>Add Section</span>
@@ -254,20 +254,20 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
         {/* RIGHT COLUMN: Active Section Editor + Blocks sequence (8 cols) */}
         {selectedSection ? (
-          <div className="lg:col-span-8 flex flex-col gap-6 bg-zinc-900/40 p-5 rounded-[8px] border border-white/10">
+          <div className="lg:col-span-8 flex flex-col gap-6 bg-zinc-900/40 p-3 sm:p-5 rounded-[8px] border border-white/10 min-w-0">
             {/* Section Header Configuration */}
-            <div className="p-4 rounded-[6px] bg-zinc-950 border border-white/10 flex flex-col gap-4">
+            <div className="p-3 sm:p-4 rounded-[6px] bg-zinc-950 border border-white/10 flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-white/10 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono uppercase text-[#ff853a] px-2 py-0.5 rounded bg-zinc-900">
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <span className="text-xs font-mono uppercase text-[#ff853a] px-2 py-0.5 rounded bg-zinc-900 shrink-0">
                     {selectedSection.type}
                   </span>
-                  <span className="text-white font-semibold text-base">
-                    Editing Chapter: {selectedSection.navigationLabel}
+                  <span className="text-white font-semibold text-sm sm:text-base break-words">
+                    Editing: {selectedSection.navigationLabel}
                   </span>
                 </div>
 
-                <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer">
+                <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer shrink-0">
                   <input
                     type="checkbox"
                     checked={selectedSection.visible}
@@ -324,17 +324,17 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
             {/* Blocks List */}
             <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <h4 className="text-white text-sm font-semibold uppercase tracking-wider font-mono">
                   Content Blocks ({selectedSection.blocks?.length || 0})
                 </h4>
 
                 {/* Add Block Dropdown */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
                   <select
                     value={newBlockType}
                     onChange={(e) => setNewBlockType(e.target.value as CaseStudyBlockType)}
-                    className="px-2.5 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs"
+                    className="px-2.5 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs flex-1 sm:flex-initial"
                   >
                     <option value="paragraph">Paragraph Text</option>
                     <option value="heading">Subsection Heading</option>
@@ -355,7 +355,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                   <button
                     type="button"
                     onClick={handleAddBlock}
-                    className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium flex items-center gap-1 cursor-pointer border border-white/10"
+                    className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium flex items-center justify-center gap-1 cursor-pointer border border-white/10 shrink-0"
                   >
                     <span className="material-symbols-rounded text-sm">add</span>
                     <span>Insert Block</span>
@@ -760,13 +760,36 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                             {block.slides?.map((sl, sIdx) => (
                               <div
                                 key={sIdx}
-                                className="flex items-center gap-2 p-2 rounded bg-zinc-900 border border-white/5"
+                                className="flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 rounded bg-zinc-900 border border-white/5"
                               >
-                                <img
-                                  src={sl.url}
-                                  alt="Thumb"
-                                  className="w-12 h-10 object-cover rounded bg-black shrink-0"
-                                />
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                  <img
+                                    src={sl.url}
+                                    alt="Thumb"
+                                    className="w-12 h-10 object-cover rounded bg-black shrink-0"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={sl.title || ''}
+                                    onChange={(e) => {
+                                      const cloned = [...block.slides];
+                                      cloned[sIdx] = { ...cloned[sIdx], title: e.target.value };
+                                      handleUpdateBlock(block.id, { slides: cloned });
+                                    }}
+                                    className="flex-1 sm:w-40 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
+                                    placeholder="Title label..."
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const cloned = block.slides.filter((_, i) => i !== sIdx);
+                                      handleUpdateBlock(block.id, { slides: cloned });
+                                    }}
+                                    className="text-zinc-500 hover:text-red-400 text-xs px-2 sm:hidden ml-auto cursor-pointer"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
                                 <input
                                   type="text"
                                   value={sl.url}
@@ -775,19 +798,8 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     cloned[sIdx] = { ...cloned[sIdx], url: e.target.value };
                                     handleUpdateBlock(block.id, { slides: cloned });
                                   }}
-                                  className="flex-1 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
+                                  className="w-full flex-1 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
                                   placeholder="Slide image URL..."
-                                />
-                                <input
-                                  type="text"
-                                  value={sl.title || ''}
-                                  onChange={(e) => {
-                                    const cloned = [...block.slides];
-                                    cloned[sIdx] = { ...cloned[sIdx], title: e.target.value };
-                                    handleUpdateBlock(block.id, { slides: cloned });
-                                  }}
-                                  className="w-40 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
-                                  placeholder="Title label..."
                                 />
                                 <button
                                   type="button"
@@ -795,7 +807,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     const cloned = block.slides.filter((_, i) => i !== sIdx);
                                     handleUpdateBlock(block.id, { slides: cloned });
                                   }}
-                                  className="text-zinc-500 hover:text-red-400 text-xs px-2"
+                                  className="hidden sm:inline-block text-zinc-500 hover:text-red-400 text-xs px-2 shrink-0 cursor-pointer"
                                 >
                                   Remove
                                 </button>
@@ -824,7 +836,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                 ];
                                 handleUpdateBlock(block.id, { screens: updated });
                               }}
-                              className="px-2 py-1 rounded bg-zinc-800 text-white text-xs hover:bg-zinc-700"
+                              className="px-2 py-1 rounded bg-zinc-800 text-white text-xs hover:bg-zinc-700 cursor-pointer"
                             >
                               + Add Screen
                             </button>
@@ -834,13 +846,51 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                             {block.screens?.map((scr, scIdx) => (
                               <div
                                 key={scIdx}
-                                className="flex items-center gap-2 p-2 rounded bg-zinc-900 border border-white/5"
+                                className="flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 rounded bg-zinc-900 border border-white/5"
                               >
-                                <img
-                                  src={scr.url}
-                                  alt="Thumb"
-                                  className="w-10 h-12 object-cover rounded bg-black shrink-0"
-                                />
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                  <img
+                                    src={scr.url}
+                                    alt="Thumb"
+                                    className="w-10 h-12 object-cover rounded bg-black shrink-0"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={scr.label || ''}
+                                    onChange={(e) => {
+                                      const cloned = [...block.screens];
+                                      cloned[scIdx] = { ...cloned[scIdx], label: e.target.value };
+                                      handleUpdateBlock(block.id, { screens: cloned });
+                                    }}
+                                    className="flex-1 sm:w-36 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
+                                    placeholder="Flow name..."
+                                  />
+                                  <select
+                                    value={scr.device || 'desktop'}
+                                    onChange={(e) => {
+                                      const cloned = [...block.screens];
+                                      cloned[scIdx] = {
+                                        ...cloned[scIdx],
+                                        device: e.target.value as 'desktop' | 'mobile'
+                                      };
+                                      handleUpdateBlock(block.id, { screens: cloned });
+                                    }}
+                                    className="px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs shrink-0"
+                                  >
+                                    <option value="desktop">1440 px</option>
+                                    <option value="mobile">428 px</option>
+                                  </select>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const cloned = block.screens.filter((_, i) => i !== scIdx);
+                                      handleUpdateBlock(block.id, { screens: cloned });
+                                    }}
+                                    className="text-zinc-500 hover:text-red-400 text-xs px-2 sm:hidden ml-auto cursor-pointer"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
                                 <input
                                   type="text"
                                   value={scr.url}
@@ -849,42 +899,16 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     cloned[scIdx] = { ...cloned[scIdx], url: e.target.value };
                                     handleUpdateBlock(block.id, { screens: cloned });
                                   }}
-                                  className="flex-1 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
+                                  className="w-full flex-1 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
                                   placeholder="Screen image URL..."
                                 />
-                                <input
-                                  type="text"
-                                  value={scr.label || ''}
-                                  onChange={(e) => {
-                                    const cloned = [...block.screens];
-                                    cloned[scIdx] = { ...cloned[scIdx], label: e.target.value };
-                                    handleUpdateBlock(block.id, { screens: cloned });
-                                  }}
-                                  className="w-36 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
-                                  placeholder="Flow name..."
-                                />
-                                <select
-                                  value={scr.device || 'desktop'}
-                                  onChange={(e) => {
-                                    const cloned = [...block.screens];
-                                    cloned[scIdx] = {
-                                      ...cloned[scIdx],
-                                      device: e.target.value as 'desktop' | 'mobile'
-                                    };
-                                    handleUpdateBlock(block.id, { screens: cloned });
-                                  }}
-                                  className="px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
-                                >
-                                  <option value="desktop">1440 px</option>
-                                  <option value="mobile">428 px</option>
-                                </select>
                                 <button
                                   type="button"
                                   onClick={() => {
                                     const cloned = block.screens.filter((_, i) => i !== scIdx);
                                     handleUpdateBlock(block.id, { screens: cloned });
                                   }}
-                                  className="text-zinc-500 hover:text-red-400 text-xs px-2"
+                                  className="hidden sm:inline-block text-zinc-500 hover:text-red-400 text-xs px-2 shrink-0 cursor-pointer"
                                 >
                                   Remove
                                 </button>
@@ -944,12 +968,12 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                       )}
 
                       {block.type === 'cta' && (
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
                           <input
                             type="text"
                             value={block.label}
                             onChange={(e) => handleUpdateBlock(block.id, { label: e.target.value })}
-                            className="w-48 px-2 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs"
+                            className="w-full sm:w-48 px-2 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs"
                             placeholder="Button label..."
                           />
                           <input
@@ -964,7 +988,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                             onChange={(e) =>
                               handleUpdateBlock(block.id, { style: e.target.value as 'primary' | 'outline' })
                             }
-                            className="px-2 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs"
+                            className="px-2 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs shrink-0"
                           >
                             <option value="primary">Solid Button</option>
                             <option value="outline">Outline Button</option>

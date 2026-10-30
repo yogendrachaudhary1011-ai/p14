@@ -22,8 +22,8 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
 
   return (
     <>
-      {/* MOBILE / TABLET FLOATING DOCK (visible below lg) */}
-      <div className="lg:hidden w-full sticky top-0 z-30 bg-black/95 backdrop-blur-md border-b border-white/10 px-4 py-3">
+      {/* MOBILE / TABLET FLOATING DOCK (visible below lg) - positioned cleanly below 72px header */}
+      <div className="lg:hidden w-full sticky top-[72px] z-30 bg-black/95 backdrop-blur-md border-b border-white/10 px-4 py-3 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 overflow-hidden">
             <span className="text-zinc-500 text-xs font-mono uppercase tracking-wider">Jump to:</span>

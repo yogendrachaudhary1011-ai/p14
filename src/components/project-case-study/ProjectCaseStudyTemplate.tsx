@@ -142,7 +142,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
         />
 
         {/* Two-Column Case Study Section with Left Sticky Navigation */}
-        <div className="w-full max-w-[1399.13px] px-4 md:px-0 flex flex-col lg:flex-row justify-between items-start gap-12 lg:gap-16 relative pb-28 pt-4">
+        <div className="w-full max-w-[1399.13px] px-4 sm:px-6 md:px-8 lg:px-0 flex flex-col lg:flex-row justify-between items-start gap-8 sm:gap-12 lg:gap-16 relative pb-28 pt-4">
           {/* Left Table of Contents Nav */}
           <SectionNavigation
             sections={navSections}
@@ -151,7 +151,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
           />
 
           {/* Right Column: Case Study Sections */}
-          <main className="w-full lg:w-[1079.30px] max-w-[1200px] flex flex-col gap-20">
+          <main className="w-full min-w-0 flex-1 max-w-[1200px] flex flex-col gap-12 sm:gap-16 lg:gap-20">
             {sections.map((section, idx) => (
               <CaseStudySection key={section.id} section={section} index={idx} />
             ))}

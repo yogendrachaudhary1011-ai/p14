@@ -280,7 +280,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-1 border-b border-white/10 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-1 border-b border-white/10 overflow-x-auto pb-1 scrollbar-none whitespace-nowrap">
         {[
           { id: 'basic', label: '1. Basic Info & URL', icon: 'info' },
           { id: 'hero', label: '2. Hero & Metadata', icon: 'overview' },
@@ -294,7 +294,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as TabType)}
-              className={`px-4 py-2.5 rounded-t-[6px] text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-t-[6px] text-xs font-medium flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
                 isActive
                   ? 'bg-zinc-800 text-white border-t-2 border-[#ff853a]'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
@@ -689,19 +689,19 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
       {showPreviewModal && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col">
           {/* Preview Modal Header */}
-          <div className="px-6 py-3 bg-zinc-900 border-b border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ff853a] animate-pulse"></span>
-              <span className="text-white text-sm font-semibold font-mono">
-                Live Case Study Preview: {previewProject.title}
+          <div className="px-4 sm:px-6 py-3 bg-zinc-900 border-b border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ff853a] animate-pulse shrink-0"></span>
+              <span className="text-white text-xs sm:text-sm font-semibold font-mono truncate">
+                Preview: {previewProject.title}
               </span>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
               <button
                 type="button"
                 onClick={() => handleSaveAttempt('published')}
-                className="px-4 py-1.5 rounded bg-[#ff853a] text-white text-xs font-semibold hover:bg-[#ff721a] cursor-pointer"
+                className="px-3.5 sm:px-4 py-1.5 rounded bg-[#ff853a] text-white text-xs font-semibold hover:bg-[#ff721a] cursor-pointer"
               >
                 Publish Directly
               </button>

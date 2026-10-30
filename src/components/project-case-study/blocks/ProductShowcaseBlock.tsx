@@ -59,8 +59,8 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
             <div
               key={idx}
               className={`shrink-0 ${
-                isMobile ? 'w-[280px] sm:w-[320px]' : 'w-[360px] sm:w-[440px]'
-              } h-[580px] rounded-[10px] overflow-hidden border border-white/10 bg-zinc-950 flex flex-col shadow-2xl transition-transform hover:-translate-y-1`}
+                isMobile ? 'w-[76vw] sm:w-[300px] md:w-[320px]' : 'w-[84vw] sm:w-[380px] md:w-[440px]'
+              } max-w-[440px] h-[480px] sm:h-[540px] md:h-[580px] rounded-[10px] overflow-hidden border border-white/10 bg-zinc-950 flex flex-col shadow-2xl transition-transform hover:-translate-y-1`}
             >
               {/* Device Frame Top Bar */}
               <div className="px-4 py-2.5 bg-zinc-900/90 border-b border-white/10 flex items-center justify-between text-xs text-zinc-400 font-mono select-none">

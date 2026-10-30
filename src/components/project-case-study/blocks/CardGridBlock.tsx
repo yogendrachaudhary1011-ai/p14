@@ -6,52 +6,67 @@ interface CardGridBlockProps {
 }
 
 export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block }) => {
-  const columns = block.columns || 3;
-  
-  // Decide responsive grid class
-  let gridColsClass = 'grid-cols-1 md:grid-cols-3';
-  if (columns === 2) {
+  const cards = block.cards || [];
+  const cardCount = cards.length;
+  const targetCols = block.columns || (cardCount === 2 ? 2 : cardCount >= 3 ? 3 : 2);
+
+  // Decide responsive grid class based on column setting and card count
+  let gridColsClass = 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+  if (targetCols === 1 || cardCount === 1) {
+    gridColsClass = 'grid-cols-1';
+  } else if (targetCols === 2 || cardCount === 2) {
     gridColsClass = 'grid-cols-1 md:grid-cols-2';
-  } else if (columns === 4) {
-    gridColsClass = 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4';
+  } else if (targetCols === 4 || cardCount === 4) {
+    gridColsClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
   }
 
   return (
-    <div className={`w-full grid ${gridColsClass} gap-[5px] md:gap-2 my-2`}>
-      {block.cards.map((card, idx) => (
-        <div
-          key={idx}
-          className="flex-1 p-5 bg-zinc-900 rounded-[5px] flex flex-col justify-start items-start gap-2.5 transition-colors hover:bg-zinc-800/80"
-        >
-          {card.badge && (
-            <span className="text-[11px] font-mono uppercase tracking-wider text-[#ff853a] px-2 py-0.5 rounded bg-zinc-800">
-              {card.badge}
-            </span>
-          )}
-          <div className="w-full flex flex-col justify-start items-start">
-            <h4 className="text-white text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">
-              {card.title}
-            </h4>
-          </div>
-          {card.desc && (
+    <div className={`w-full grid ${gridColsClass} gap-4 sm:gap-5 md:gap-6 my-3 sm:my-4`}>
+      {cards.map((card, idx) => {
+        // If 2 columns and odd number of cards (e.g. 3 cards in 2-col mode), span the last card across 2 columns on desktop
+        const isLastOddInTwoCols =
+          targetCols === 2 && cardCount % 2 === 1 && idx === cardCount - 1;
+
+        return (
+          <div
+            key={idx}
+            className={`w-full h-full min-w-0 p-5 sm:p-6 md:p-7 bg-zinc-900/90 rounded-[8px] border border-white/10 hover:border-white/20 hover:bg-zinc-800/80 transition-all flex flex-col justify-start items-start gap-3.5 shadow-sm ${
+              isLastOddInTwoCols ? 'md:col-span-2' : ''
+            }`}
+          >
+            {card.badge && (
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#ff853a] px-2.5 py-1 rounded bg-zinc-800 border border-white/5">
+                {card.badge}
+              </span>
+            )}
             <div className="w-full flex flex-col justify-start items-start">
-              <p className="text-zinc-400 text-xs md:text-sm font-normal font-['Plus_Jakarta_Sans'] leading-relaxed">
-                {card.desc}
-              </p>
+              <h4 className="text-white text-base sm:text-lg md:text-xl font-semibold font-['Plus_Jakarta_Sans'] leading-snug break-words">
+                {card.title}
+              </h4>
             </div>
-          )}
-          {card.items && card.items.length > 0 && (
-            <div className="w-full flex flex-col justify-start items-start gap-2 pt-1">
-              {card.items.map((item, itemIdx) => (
-                <div key={itemIdx} className="flex items-start gap-2 text-zinc-400 text-sm md:text-base font-normal font-['Plus_Jakarta_Sans'] leading-snug">
-                  <span className="text-zinc-600 select-none">•</span>
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
+            {card.desc && (
+              <div className="w-full flex flex-col justify-start items-start">
+                <p className="text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-relaxed break-words">
+                  {card.desc}
+                </p>
+              </div>
+            )}
+            {card.items && card.items.length > 0 && (
+              <div className="w-full flex flex-col justify-start items-start gap-2.5 pt-1">
+                {card.items.map((item, itemIdx) => (
+                  <div
+                    key={itemIdx}
+                    className="flex items-start gap-2.5 text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-relaxed break-words"
+                  >
+                    <span className="text-[#ff853a] select-none text-base leading-none mt-1 shrink-0">•</span>
+                    <span className="min-w-0 flex-1">{item}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

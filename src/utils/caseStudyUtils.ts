@@ -13,18 +13,11 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
   // 1. THE PROBLEM
   if (project.problem) {
     const blocks: CaseStudyBlock[] = [];
-    if (project.problem.intro) {
-      blocks.push({
-        id: `blk-${order}-p`,
-        type: 'paragraph',
-        text: project.problem.intro
-      });
-    }
     if (project.problem.cards && project.problem.cards.length > 0) {
       blocks.push({
         id: `blk-${order}-cg`,
         type: 'cardGrid',
-        columns: 2,
+        columns: project.problem.cards.length >= 3 ? 3 : 2,
         cards: project.problem.cards.map(c => ({
           title: c.title,
           items: c.items

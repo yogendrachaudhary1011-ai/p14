@@ -19,13 +19,13 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
         </div>
       )}
 
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16">
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
         {block.decisions.map((decision, idx) => (
           <div
             key={idx}
-            className="flex flex-col justify-start items-start gap-4 p-6 rounded-[5px] bg-zinc-950/70 border border-white/5 hover:border-white/10 transition-colors"
+            className="w-full h-full min-w-0 flex flex-col justify-start items-start gap-4 p-5 sm:p-6 md:p-7 rounded-[8px] bg-zinc-950/80 border border-white/10 hover:border-white/20 transition-all shadow-sm"
           >
-            <h4 className="text-white text-lg md:text-xl font-normal font-['Plus_Jakarta_Sans'] leading-6 border-b border-white/10 pb-3 w-full">
+            <h4 className="text-white text-base sm:text-lg md:text-xl font-semibold font-['Plus_Jakarta_Sans'] leading-snug border-b border-white/10 pb-3 w-full break-words">
               {decision.title}
             </h4>
 
@@ -35,7 +35,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
                 <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4 opacity-70 uppercase tracking-wide">
                   {decision.constraintLabel || 'Constraint:'}
                 </span>
-                <p className="text-zinc-400 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">
+                <p className="text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-relaxed break-words">
                   {decision.constraint}
                 </p>
               </div>
@@ -45,7 +45,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
                 <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4 opacity-70 uppercase tracking-wide">
                   {decision.whatIDidLabel || 'What I did:'}
                 </span>
-                <p className="text-zinc-400 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">
+                <p className="text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-relaxed break-words">
                   {decision.whatIDid}
                 </p>
               </div>
@@ -55,7 +55,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
                 <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans'] leading-4 opacity-70 uppercase tracking-wide text-[#ff853a]">
                   {decision.whyLabel || 'Why:'}
                 </span>
-                <p className="text-zinc-400 text-base font-normal font-['Plus_Jakarta_Sans'] leading-5">
+                <p className="text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-relaxed break-words">
                   {decision.why}
                 </p>
               </div>
