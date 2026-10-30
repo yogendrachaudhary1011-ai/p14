@@ -364,7 +364,7 @@ export const IdCard: React.FC = () => {
                   draggable={false}
                   height="1371"
                   loading="eager"
-                  src="/assets/aistudio/Profile-24mb_66f4e952.jpeg"
+                  src="/assets/media/hero-id-portrait.jpeg"
                   width="720"
                 />
               </div>
@@ -441,3 +441,4 @@ export const IdCard: React.FC = () => {
     </>
   );
 };
+
