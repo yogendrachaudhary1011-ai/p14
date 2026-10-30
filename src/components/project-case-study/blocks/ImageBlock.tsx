@@ -15,7 +15,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
         <MediaPreview
           src={block.url || 'https://placehold.co/1079x660/111418/ffffff?text=Image+Unavailable'}
           alt={block.alt || 'Case study illustration'}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.015]"
+          className="w-full h-full object-cover"
           loading="lazy"
           fallbackSrc="https://placehold.co/1079x660/111418/ffffff?text=Image+Asset"
         />
@@ -28,3 +28,4 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
     </div>
   );
 };
+
