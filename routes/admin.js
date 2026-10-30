@@ -147,7 +147,7 @@ router.get('/admin/overview', requireAuthMiddleware, async (req, res) => {
     ]);
 
     const isDbConnected = await checkSupabase();
-    const isStorageConnected = await checkStorage();
+    const isStorageConnected = await checkSupabaseStorage();
 
     res.json({
       stats: {
