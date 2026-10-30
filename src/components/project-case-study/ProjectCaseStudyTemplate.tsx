@@ -151,7 +151,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
           />
 
           {/* Right Column: Case Study Sections */}
-          <main className="w-full min-w-0 flex-1 max-w-[1200px] flex flex-col gap-12 sm:gap-16 lg:gap-20">
+          <main className="w-full min-w-0 flex-1 max-w-[1200px] flex flex-col gap-12 sm:gap-16 lg:gap-20 self-stretch">
             {sections.map((section, idx) => (
               <CaseStudySection key={section.id} section={section} index={idx} />
             ))}

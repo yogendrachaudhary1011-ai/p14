@@ -11,26 +11,29 @@ export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block }) => {
   const targetCols = block.columns || (cardCount === 2 ? 2 : cardCount >= 3 ? 3 : 2);
 
   // Decide responsive grid class based on column setting and card count
-  let gridColsClass = 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+  let gridColsClass = 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3';
   if (targetCols === 1 || cardCount === 1) {
     gridColsClass = 'grid-cols-1';
   } else if (targetCols === 2 || cardCount === 2) {
     gridColsClass = 'grid-cols-1 md:grid-cols-2';
   } else if (targetCols === 4 || cardCount === 4) {
-    gridColsClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
+    gridColsClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4';
   }
 
   return (
-    <div className={`w-full grid ${gridColsClass} gap-4 sm:gap-5 md:gap-6 my-3 sm:my-4`}>
+    <div
+      data-cols={targetCols}
+      className={`w-full case-study-card-grid grid ${gridColsClass} gap-4 sm:gap-5 md:gap-6 my-3 sm:my-4`}
+    >
       {cards.map((card, idx) => {
-        // If 2 columns and odd number of cards (e.g. 3 cards in 2-col mode), span the last card across 2 columns on desktop
+        // If 2 columns and odd number of cards (e.g. 3 cards in 2-col mode), span the last card across 2 columns on tablet/desktop
         const isLastOddInTwoCols =
           targetCols === 2 && cardCount % 2 === 1 && idx === cardCount - 1;
 
         return (
           <div
             key={idx}
-            className={`w-full h-full min-w-0 p-5 sm:p-6 md:p-7 bg-zinc-900/90 rounded-[8px] border border-white/10 hover:border-white/20 hover:bg-zinc-800/80 transition-all flex flex-col justify-start items-start gap-3.5 shadow-sm ${
+            className={`w-full h-full min-w-0 p-5 sm:p-6 md:p-7 bg-zinc-900/90 rounded-[8px] border border-white/10 hover:border-white/20 hover:bg-zinc-800/80 transition-all flex flex-col justify-start items-start gap-3.5 shadow-sm self-stretch ${
               isLastOddInTwoCols ? 'md:col-span-2' : ''
             }`}
           >

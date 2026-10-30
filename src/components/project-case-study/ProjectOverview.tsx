@@ -51,52 +51,46 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
 
         {/* Metadata Table */}
         <div className="w-full max-w-3xl flex flex-col justify-center items-start gap-6 sm:gap-8">
-          <div className="w-full flex flex-col justify-center items-start gap-4 sm:gap-5">
+          <div className="w-full flex flex-col justify-center items-start gap-3 sm:gap-4">
             {/* My Role */}
             {role && (
-              <div className="w-full flex flex-col gap-2">
-                <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-baseline border-b border-white/20 pb-3 sm:pb-4 gap-1">
-                  <span className="text-white text-base sm:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6 shrink-0">
-                    My Role:
-                  </span>
-                  <span className="text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-5 sm:text-right">
-                    {role}
-                  </span>
-                </div>
+              <div className="w-full flex flex-col sm:flex-row justify-start items-start sm:items-baseline gap-1 sm:gap-6 py-1">
+                <span className="w-36 sm:w-48 md:w-52 shrink-0 text-white text-base sm:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">
+                  My Role:
+                </span>
+                <span className="flex-1 text-left text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-6">
+                  {role}
+                </span>
               </div>
             )}
 
             {/* Duration */}
             {duration && (
-              <div className="w-full flex flex-col gap-2">
-                <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-baseline border-b border-white/20 pb-3 sm:pb-4 gap-1">
-                  <span className="text-white text-base sm:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6 shrink-0">
-                    Duration:
-                  </span>
-                  <span className="text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-5 sm:text-right">
-                    {duration}
-                  </span>
-                </div>
+              <div className="w-full flex flex-col sm:flex-row justify-start items-start sm:items-baseline gap-1 sm:gap-6 py-1">
+                <span className="w-36 sm:w-48 md:w-52 shrink-0 text-white text-base sm:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">
+                  Duration:
+                </span>
+                <span className="flex-1 text-left text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-6">
+                  {duration}
+                </span>
               </div>
             )}
 
             {/* Deliverables */}
             {deliverables && deliverables.length > 0 && (
-              <div className="w-full flex flex-col gap-2">
-                <div className="w-full flex flex-col sm:flex-row justify-between items-start border-b border-white/20 pb-3 sm:pb-4 gap-2">
-                  <span className="text-white text-base sm:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6 shrink-0">
-                    Deliverables:
-                  </span>
-                  <div className="text-left sm:text-right flex flex-col gap-1.5 sm:max-w-md">
-                    {deliverables.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-5"
-                      >
-                        {item}
-                      </div>
-                    ))}
-                  </div>
+              <div className="w-full flex flex-col sm:flex-row justify-start items-start gap-1 sm:gap-6 py-1">
+                <span className="w-36 sm:w-48 md:w-52 shrink-0 text-white text-base sm:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">
+                  Deliverables:
+                </span>
+                <div className="flex-1 text-left flex flex-col gap-1.5">
+                  {deliverables.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-6 text-left"
+                    >
+                      {item}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

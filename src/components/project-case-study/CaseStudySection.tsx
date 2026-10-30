@@ -57,7 +57,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
   const formattedIndex = String(index + 1).padStart(2, '0');
 
   return (
-    <section id={section.id} className="w-full max-w-[1200px] flex flex-col justify-start items-start gap-7 scroll-mt-28">
+    <section id={section.id} className="w-full max-w-[1200px] flex flex-col justify-start items-stretch gap-7 scroll-mt-28 min-w-0">
       {/* Section Header */}
       <div className="w-full flex justify-between items-center border-b border-white/20 pb-4 gap-4">
         <div className="flex-1 flex flex-col justify-start items-start min-w-0">
@@ -81,7 +81,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
       )}
 
       {/* Blocks sequence */}
-      <div className="w-full flex flex-col gap-6">
+      <div className="w-full min-w-0 flex flex-col gap-6">
         {section.blocks && section.blocks.map((block) => renderBlock(block))}
       </div>
 

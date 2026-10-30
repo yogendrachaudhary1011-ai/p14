@@ -14,5 +14,84 @@
     filter: none !important;
     visibility: visible !important;
   }
+
+  /* Protect modern grid layouts from legacy 12-column site.css .grid contamination */
+  .case-study-card-grid,
+  [class*="grid-cols-"] {
+    display: grid !important;
+    width: 100% !important;
+  }
+
+  /* Baseline grid column definitions with explicit !important */
+  .grid-cols-1,
+  .case-study-card-grid[data-cols="1"] {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+
+  .grid-cols-2,
+  .case-study-card-grid[data-cols="2"] {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+
+  .grid-cols-3,
+  .case-study-card-grid[data-cols="3"] {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+
+  .grid-cols-4,
+  .case-study-card-grid[data-cols="4"] {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+
+  @media (min-width: 640px) {
+    .sm\:grid-cols-2,
+    .case-study-card-grid[data-cols="2"],
+    .case-study-card-grid[data-cols="3"],
+    .case-study-card-grid[data-cols="4"] {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .md\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .md\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    .md\:grid-cols-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .lg\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .lg\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    .lg\:grid-cols-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .xl\:grid-cols-3,
+    .case-study-card-grid[data-cols="3"] {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    .xl\:grid-cols-4,
+    .case-study-card-grid[data-cols="4"] {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+  }
+
+  /* Ensure card children inside case study fill 100% of their grid track */
+  .case-study-card-grid > * {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
 }
+
 

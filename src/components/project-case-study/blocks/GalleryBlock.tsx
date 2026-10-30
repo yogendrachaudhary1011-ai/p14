@@ -10,7 +10,7 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({ block }) => {
   const colClass = columns === 3 ? 'grid-cols-1 md:grid-cols-3' : columns === 4 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-2';
 
   return (
-    <div className={`w-full grid ${colClass} gap-4 my-2`}>
+    <div data-cols={columns} className={`w-full case-study-card-grid grid ${colClass} gap-4 my-2`}>
       {block.images.map((img, idx) => (
         <div key={idx} className="flex flex-col gap-1.5">
           <div className="rounded-[5px] overflow-hidden border border-white/10 bg-zinc-950 flex justify-center items-center">

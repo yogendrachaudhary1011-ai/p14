@@ -19,7 +19,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
         </div>
       )}
 
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+      <div data-cols="2" className="w-full case-study-card-grid grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
         {block.decisions.map((decision, idx) => (
           <div
             key={idx}

@@ -72,7 +72,7 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
       {/* DESKTOP STICKY LEFT NAVIGATION (matching Figma w-72) */}
       <nav
         aria-label="Case Study Table of Contents"
-        className="hidden lg:flex w-72 sticky top-28 self-start flex-col justify-start items-start gap-2.5 z-20 py-2"
+        className="hidden lg:flex w-72 shrink-0 sticky top-28 self-start flex-col justify-start items-start gap-2.5 z-20 py-2"
       >
         <div className="text-[11px] font-mono uppercase tracking-widest text-zinc-500 mb-1 px-3 select-none">
           CASE STUDY OUTLINE
