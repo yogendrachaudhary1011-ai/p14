@@ -1,43 +1,43 @@
-# Yogendra Chaudhary — UI/UX & Product Designer Portfolio & CMS
+# Yogendra Chaudhary — UI/UX & Product Designer Portfolio (React Application)
 
-This repository contains the complete portfolio and dynamic admin CMS for Yogendra Chaudhary, backed by Firebase Cloud Firestore.
+This repository contains the complete portfolio and dynamic admin CMS for Yogendra Chaudhary, rewritten as a modern React application powered by Vite, TypeScript, and state persistence.
 
-## Architecture
+## Features
 
-- **Public Frontend**: High-performance, pixel-perfect static HTML/CSS/JavaScript with full animation fidelity, responsive layouts, and zero client-side layout shifts (no FOUC).
-- **Server-Side Content Binding**: Fast Node.js Express server using Cheerio to bind published Firestore snapshot data into canonical templates on request with in-memory caching.
-- **Persistence Layer**: Google Cloud Firestore (`ai-studio-pf11-f733d483-d6eb-49d4-b39f-52d8a40fba86`) as the authoritative production source of truth. No local JSON files or SQLite fallbacks.
-- **Media Management**: Resilient media engine supporting Cloud Storage and native Firestore binary chunks (`media_blobs`) with live preview, usage reference checks, and alt-text editing.
-- **Admin CMS**: Dedicated full-page dashboard at `/admin` (never an overlay on the public site) with secure bcrypt authentication, rate limiting, and full CRUD for projects, experience, education, navigation, resume, SEO, and backups.
+- **Public Portfolio**:
+  - **Homepage (`/`)**: Hero section with interactive 3D ID Card stage and lanyard physics, typography reveal, filterable selected work grid, and sticky about/experience panel with media.
+  - **Selected Work (`/projects`)**: Full portfolio gallery with category filtering (`All`, `Product Design`, `Design Practice`).
+  - **About (`/about`)**: Detailed background, career journey, experience timeline, and education/language credentials.
+  - **7 Case Studies**:
+    - `waroong-app`: Numira Accounting & Business Management Software
+    - `taman-safari-digital-map`: SOMTU Website (87 screens, 81 component variants, interactive prototype)
+    - `sdd-website-revamp`: The Vedic Sewa service platform
+    - `enterprise-asset-maintenance`: Workflow Design for Complex Software
+    - `dana-study-case`: Usability Testing & Iteration
+    - `sdd-marketing-archive`: Reusable UI & Design Systems (interactive carousels & video reels)
+    - `pti-brand-foundation`: Developer Handoff & Collaboration (component states & design tokens)
+  - **Dynamic Case Study Engine**: Supports any newly created projects from the CMS.
 
-## Getting Started
+- **Admin CMS (`/admin`)**:
+  - Dedicated admin portal with secure authentication.
+  - Full CRUD operations for projects, case study metadata, and media covers.
+  - Experience timeline manager with current role indicators and skill tags.
+  - Education and language credentials manager.
+  - Profile and site settings editor (brand name, role, email, phone, location, availability).
+  - Media asset library with URL copy and preview.
+  - SEO and Open Graph metadata editor.
+  - Client and storage persistence with instant UI synchronization.
 
-### Initial Admin Setup
-Set `INITIAL_ADMIN_PASSWORD` in the hosting environment before the first deployment. The application uses it only when creating the first admin account; existing credentials are preserved on startup and during data seeding. Do not commit the password to the repository. Change an existing password from **Admin > Security**.
+## Tech Stack
 
-The authentication tests require `TEST_ADMIN_USERNAME` and `TEST_ADMIN_PASSWORD` for an existing admin account.
+- **Framework**: React 19, TypeScript
+- **Bundler & Dev Server**: Vite 8
+- **Icons & Fonts**: Plus Jakarta Sans, DM Mono, DM Sans, Inter, Material Symbols Rounded
+- **Styling**: Tailored bespoke design system preserved from original portfolio specifications
 
+## Scripts
 
-### Available Scripts
-- `npm run dev`: Starts the Node.js server on `0.0.0.0:3000`.
-- `npm start`: Production server start.
-- `npm test`: Runs the automated CMS acceptance test suite (auth, validation, CRUD, persistence, route checks).
-- `npm run doctor`: Runs connectivity diagnostics for Firestore and Storage.
-- `npm run seed`: Idempotently seeds the database from the current frontend baseline if not already initialized.
-
-## Key Endpoints
-- `/`: Dynamic public homepage
-- `/about`: Dynamic about profile and experience
-- `/projects`: Dynamic selected work showcase
-- `/admin`: Dedicated admin CMS dashboard and login
-- `/healthz` & `/api/health`: Health status reporting active database and connection state
-- `/api/auth/*`: Session authentication, logout, and password management
-- `/api/admin/*`: Protected CMS CRUD operations
-- `/api/media/blob/:id`: Live binary asset streaming
-
-## Deployment
-
-The application is pre-configured for **Firebase App Hosting**:
-- `apphosting.yaml` configures Node 22, memory, concurrency, and environment variables.
-- `firebase.json` binds Firestore rules and indexes.
-- `firestore.rules` and `storage.rules` secure database and bucket access.
+- `npm run dev`: Runs Vite development server on `0.0.0.0:3000`.
+- `npm run build`: Builds the production bundle with Vite.
+- `npm run preview`: Previews the production build on `0.0.0.0:3000`.
+- `npm run lint`: Verifies lint status.
