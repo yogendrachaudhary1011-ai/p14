@@ -35,7 +35,15 @@ import { invalidateCache } from '../lib/renderer.js';
 const router = express.Router();
 const upload = multer({ 
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+  // Vercel serverless request bodies are limited to roughly 4.5 MB.
+  limits: { fileSize: 4 * 1024 * 1024 }
+});
+const uploadFile = (req, res, next) => upload.single('file')(req, res, err => {
+  if (!err) return next();
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'File exceeds the 4 MB upload limit. Large images are optimized in the CMS before upload.' });
+  }
+  return res.status(400).json({ error: `Could not read the uploaded file: ${err.message}` });
 });
 
 // ==================== AUTHENTICATION ====================
@@ -535,7 +543,7 @@ router.get('/admin/media', requireAuthMiddleware, async (req, res) => {
   }
 });
 
-router.post('/admin/media/upload', requireAuthMiddleware, upload.single('file'), async (req, res) => {
+router.post('/admin/media/upload', requireAuthMiddleware, uploadFile, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -555,7 +563,7 @@ router.post('/admin/media/upload', requireAuthMiddleware, upload.single('file'),
   }
 });
 
-router.post('/admin/media/:id/replace', requireAuthMiddleware, upload.single('file'), async (req, res) => {
+router.post('/admin/media/:id/replace', requireAuthMiddleware, uploadFile, async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No replacement file uploaded' });
     const media = await replaceMediaItem(req.params.id, req.file);
