@@ -9,6 +9,7 @@ import {
 import { createDefaultSection, createDefaultBlock } from '../../utils/caseStudyUtils';
 import { MediaPreview } from '../MediaPreview';
 import { Upload } from 'lucide-react';
+import { MediaUploadField } from './MediaUploadField';
 
 interface CaseStudyBuilderProps {
   sections: CaseStudySection[];
@@ -555,30 +556,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
                       {(block.type === 'image' || block.type === 'fullWidthImage') && (
                         <div className="flex flex-col gap-3">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              value={block.url}
-                              onChange={(e) => handleUpdateBlock(block.id, { url: e.target.value })}
-                              className="flex-1 px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-sm"
-                              placeholder="Image URL or asset path..."
-                            />
-                            {mediaLibrary.length > 0 && (
-                              <select
-                                onChange={(e) => {
-                                  if (e.target.value) handleUpdateBlock(block.id, { url: e.target.value });
-                                }}
-                                className="px-2 py-2 rounded bg-zinc-900 border border-white/10 text-white text-xs"
-                              >
-                                <option value="">Choose Media</option>
-                                {mediaLibrary.map((m) => (
-                                  <option key={m.id} value={m.url}>
-                                    {m.name}{m.mimeType.startsWith('video/') ? ' (video)' : ''}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </div>
+                          <MediaUploadField value={block.url} onChange={(url) => handleUpdateBlock(block.id, { url })} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label="section image" />
                           <div className="flex items-center gap-3">
                             <input
                               type="text"
@@ -602,6 +580,25 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                               className="w-32 h-20 object-cover rounded border border-white/10"
                             />
                           )}
+                        </div>
+                      )}
+
+                      {block.type === 'gallery' && (
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-zinc-400">Gallery images ({block.images.length})</span>
+                            <select value={block.columns || 2} onChange={(event) => handleUpdateBlock(block.id, { columns: Number(event.target.value) as 2 | 3 | 4 })} className="rounded bg-zinc-900 border border-white/10 px-2 py-1 text-xs text-white">
+                              <option value={2}>2 columns</option><option value={3}>3 columns</option><option value={4}>4 columns</option>
+                            </select>
+                          </div>
+                          {block.images.map((image, index) => (
+                            <div key={`${block.id}-image-${index}`} className="rounded-lg border border-white/10 bg-zinc-900/60 p-3 flex flex-col gap-3">
+                              <div className="flex items-center justify-between"><span className="text-xs font-medium text-white">Image {index + 1}</span><button type="button" onClick={() => handleUpdateBlock(block.id, { images: block.images.filter((_, itemIndex) => itemIndex !== index) })} className="text-xs text-red-300 hover:text-red-200">Remove</button></div>
+                              <MediaUploadField value={image.url} onChange={(url) => { const images = [...block.images]; images[index] = { ...images[index], url }; handleUpdateBlock(block.id, { images }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`gallery image ${index + 1}`} />
+                              <input type="text" value={image.caption || ''} onChange={(event) => { const images = [...block.images]; images[index] = { ...images[index], caption: event.target.value }; handleUpdateBlock(block.id, { images }); }} className="w-full rounded bg-zinc-950 border border-white/10 px-3 py-2 text-xs text-white" placeholder="Optional image caption" />
+                            </div>
+                          ))}
+                          <button type="button" onClick={() => handleUpdateBlock(block.id, { images: [...block.images, { url: '', alt: '', caption: '' }] })} className="self-start rounded-lg border border-white/10 bg-zinc-900 px-3 py-2 text-xs text-zinc-200 hover:bg-zinc-800">+ Add another image</button>
                         </div>
                       )}
 
@@ -840,7 +837,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                 const updated = [
                                   ...(block.slides || []),
                                   {
-                                    url: 'https://placehold.co/884x660/161922/ffffff?text=New+Slide',
+                                    url: '',
                                     title: 'Component Spec'
                                   }
                                 ];
@@ -886,17 +883,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     Remove
                                   </button>
                                 </div>
-                                <input
-                                  type="text"
-                                  value={sl.url}
-                                  onChange={(e) => {
-                                    const cloned = [...block.slides];
-                                    cloned[sIdx] = { ...cloned[sIdx], url: e.target.value };
-                                    handleUpdateBlock(block.id, { slides: cloned });
-                                  }}
-                                  className="w-full flex-1 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
-                                  placeholder="Slide image URL..."
-                                />
+                                <div className="w-full flex-1"><MediaUploadField value={sl.url} onChange={(url) => { const cloned = [...block.slides]; cloned[sIdx] = { ...cloned[sIdx], url }; handleUpdateBlock(block.id, { slides: cloned }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`design system image ${sIdx + 1}`} /></div>
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -925,7 +912,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                 const updated = [
                                   ...(block.screens || []),
                                   {
-                                    url: 'https://placehold.co/554x1200/181c25/ffffff?text=Workflow+Screen',
+                                    url: '',
                                     label: 'New Workflow View',
                                     device: 'desktop' as const
                                   }
@@ -987,17 +974,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     Remove
                                   </button>
                                 </div>
-                                <input
-                                  type="text"
-                                  value={scr.url}
-                                  onChange={(e) => {
-                                    const cloned = [...block.screens];
-                                    cloned[scIdx] = { ...cloned[scIdx], url: e.target.value };
-                                    handleUpdateBlock(block.id, { screens: cloned });
-                                  }}
-                                  className="w-full flex-1 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
-                                  placeholder="Screen image URL..."
-                                />
+                                <div className="w-full flex-1"><MediaUploadField value={scr.url} onChange={(url) => { const cloned = [...block.screens]; cloned[scIdx] = { ...cloned[scIdx], url }; handleUpdateBlock(block.id, { screens: cloned }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`product screen ${scIdx + 1}`} /></div>
                                 <button
                                   type="button"
                                   onClick={() => {

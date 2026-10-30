@@ -4,6 +4,7 @@ import { CaseStudyBuilder } from './CaseStudyBuilder';
 import { ProjectCaseStudyTemplate } from '../project-case-study/ProjectCaseStudyTemplate';
 import { normalizeProjectSections } from '../../utils/caseStudyUtils';
 import { MediaPreview } from '../MediaPreview';
+import { MediaUploadField } from './MediaUploadField';
 import { isVideoMedia } from '../../utils/media';
 
 interface ProjectEditorProps {
@@ -639,13 +640,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400">
                 Primary Hero Banner Image
               </label>
-              <input
-                type="text"
-                value={heroImageUrl}
-                onChange={(e) => setHeroImageUrl(e.target.value)}
-                className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
-                placeholder="Path or URL to hero image..."
-              />
+              <MediaUploadField value={heroImageUrl} onChange={setHeroImageUrl} onUploadMedia={uploadProjectMedia} mediaLibrary={projectMedia} label="hero image" />
               <input
                 type="text"
                 value={heroImageAlt}
@@ -664,13 +659,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400">
                 Listing &amp; Card Cover Image
               </label>
-              <input
-                type="text"
-                value={coverImage}
-                onChange={(e) => setCoverImage(e.target.value)}
-                className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
-                placeholder="Path or URL to card cover..."
-              />
+              <MediaUploadField value={coverImage} onChange={setCoverImage} onUploadMedia={uploadProjectMedia} mediaLibrary={projectMedia} label="cover image" />
               {coverImage && (
                 <div className="w-full rounded border border-white/10 overflow-hidden bg-black aspect-[16/9] flex items-center justify-center">
                   <MediaPreview src={coverImage} alt="Cover preview" className="w-full h-full object-cover" />
@@ -679,31 +668,6 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             </div>
           </div>
 
-          {/* Quick select from media library */}
-          {projectMedia.length > 0 && (
-            <div className="flex flex-col gap-3 pt-4 border-t border-white/10">
-              <div className="text-xs font-mono uppercase text-zinc-400">
-                Select from Media Library:
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {projectMedia.map((m) => (
-                  <div
-                    key={m.id}
-                    onClick={() => {
-                      setHeroImageUrl(m.url);
-                      if (!isVideoMedia(m.url, m.mimeType)) setCoverImage(m.url);
-                    }}
-                    className="group relative rounded border border-white/10 overflow-hidden bg-black aspect-video cursor-pointer hover:border-[#ff853a]"
-                  >
-                    <MediaPreview src={m.url} alt={m.name} mimeType={m.mimeType} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-white p-1 text-center font-mono">
-                      Set as Hero
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -738,15 +702,9 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
           <div>
             <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
-              OpenGraph Social Share Image URL
+              Social share image
             </label>
-            <input
-              type="text"
-              value={seoImage}
-              onChange={(e) => setSeoImage(e.target.value)}
-              className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
-              placeholder="/og-rizka-portfolio.jpg"
-            />
+            <MediaUploadField value={seoImage} onChange={setSeoImage} onUploadMedia={uploadProjectMedia} mediaLibrary={projectMedia} label="social preview image" />
           </div>
         </div>
       )}

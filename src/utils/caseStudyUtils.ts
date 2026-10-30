@@ -495,38 +495,28 @@ export function createDefaultBlock(type: CaseStudyBlockType): CaseStudyBlock {
       return {
         id,
         type: 'fullWidthImage',
-        url: 'https://placehold.co/1079x660/111418/ffffff?text=Design+Artifact+Preview',
-        alt: 'Design artifact preview'
+        url: '',
+        alt: ''
       };
     case 'gallery':
       return {
         id,
         type: 'gallery',
         columns: 2,
-        images: [
-          { url: 'https://placehold.co/800x600/181c26/ffffff?text=Screen+1', alt: 'Screen 1' },
-          { url: 'https://placehold.co/800x600/141822/ffffff?text=Screen+2', alt: 'Screen 2' }
-        ]
+        images: []
       };
     case 'carousel':
       return {
         id,
         type: 'carousel',
-        slides: [
-          { url: 'https://placehold.co/884x660/161922/ffffff?text=Slide+1', title: 'Component Spec 1' },
-          { url: 'https://placehold.co/884x660/181c26/ffffff?text=Slide+2', title: 'Component Spec 2' },
-          { url: 'https://placehold.co/884x660/141822/ffffff?text=Slide+3', title: 'Component Spec 3' }
-        ]
+        slides: []
       };
     case 'productShowcase':
       return {
         id,
         type: 'productShowcase',
         subtitle: 'Desktop and Mobile responsive layouts',
-        screens: [
-          { url: 'https://placehold.co/554x1200/181c25/ffffff?text=Screen+1', label: 'Primary Workflow', device: 'desktop' },
-          { url: 'https://placehold.co/554x1200/141721/ffffff?text=Screen+2', label: 'Mobile Experience', device: 'mobile' }
-        ]
+        screens: []
       };
     case 'quote':
       return {
