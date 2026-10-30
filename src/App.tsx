@@ -82,7 +82,8 @@ export const App: React.FC = () => {
       <div id="siteContent">
         {renderRoute()}
       </div>
-      {!isAdminView && <Footer onNavigate={navigate} />}
+      {!isAdminView && <Footer />}
     </div>
   );
 };
+
