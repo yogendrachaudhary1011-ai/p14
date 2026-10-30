@@ -12,11 +12,11 @@ This repository contains the complete portfolio and dynamic admin CMS for Yogend
 
 ## Getting Started
 
-### Initial Admin Credentials
-- **Username**: `Zane Wick`
-- **Password**: `Zane@123`
+### Initial Admin Setup
+Set `INITIAL_ADMIN_PASSWORD` in the hosting environment before the first deployment. The application uses it only when creating the first admin account; existing credentials are preserved on startup and during data seeding. Do not commit the password to the repository. Change an existing password from **Admin > Security**.
 
-The initial password hash is stored server-side in Firestore. Passwords can be updated at any time in **Admin > Security**.
+The authentication tests require `TEST_ADMIN_USERNAME` and `TEST_ADMIN_PASSWORD` for an existing admin account.
+
 
 ### Available Scripts
 - `npm run dev`: Starts the Node.js server on `0.0.0.0:3000`.
