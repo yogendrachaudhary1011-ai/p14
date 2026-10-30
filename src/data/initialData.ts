@@ -7,6 +7,8 @@ export const initialSiteSettings: SiteSettings = {
   email: 'yogendrachaudhary2061@gmail.com',
   phone: '9843688407',
   location: 'Kathmandu, Nepal',
+  aboutIntro: 'I design intuitive software interfaces, reusable UI components, and user-centered workflows. My process combines interaction design, usability testing, and close developer collaboration to make complex products easier to understand and use.',
+  aboutDetails: 'I work on multi-step workflows, enterprise software, service platforms, and responsive design systems. My focus is on making product states visible, actions safe, and component handoff precise.',
   behanceUrl: 'https://www.behance.net/yogendrachaudhary1',
   linkedinUrl: 'https://www.linkedin.com/in/yogendrach',
   availabilityText: 'Available for UI/UX and product design\nand collaboration.',
@@ -289,3 +291,4 @@ export const initialEducation: EducationItem[] = [
     visible: true
   }
 ];
+
