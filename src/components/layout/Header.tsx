@@ -8,7 +8,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
-  const { settings, isAdmin } = usePortfolio();
+  const { settings } = usePortfolio();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [progressWidth, setProgressWidth] = useState(0);
@@ -103,43 +103,6 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             </span>
           </a>
 
-          {isAdmin ? (
-            <button
-              onClick={() => onNavigate('/admin')}
-              className="cms-admin-indicator"
-              style={{
-                background: 'rgba(243, 112, 33, 0.2)',
-                color: '#f37021',
-                border: '1px solid rgba(243, 112, 33, 0.4)',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                marginLeft: '8px'
-              }}
-              title="Open Admin CMS"
-            >
-              CMS Active
-            </button>
-          ) : (
-            <button
-              onClick={() => onNavigate('/admin')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#5c5c6e',
-                fontSize: '12px',
-                cursor: 'pointer',
-                padding: '4px 6px',
-                marginLeft: '6px',
-                opacity: 0.6
-              }}
-              title="Admin Login"
-            >
-              ⚙
-            </button>
-          )}
         </div>
 
         <button
@@ -194,13 +157,6 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
               LinkedIn ↗
             </a>
           </div>
-          <a
-            href="/admin"
-            onClick={(e) => handleNavClick(e, '/admin')}
-            style={{ fontSize: '13px', color: '#8e8ea0', marginTop: '12px' }}
-          >
-            {isAdmin ? 'Admin CMS (Logged In)' : 'Admin Login'}
-          </a>
         </div>
       </nav>
     </header>
