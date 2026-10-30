@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { usePortfolio } from './context/PortfolioContext';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
@@ -13,16 +13,26 @@ export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => {
     return window.location.pathname || '/';
   });
+  const [scrollTarget, setScrollTarget] = useState(() => window.location.hash.slice(1));
+  const [navigationVersion, setNavigationVersion] = useState(0);
+
+  useLayoutEffect(() => {
+    if (!scrollTarget) return;
+    const frame = requestAnimationFrame(() => {
+      const target = document.getElementById(scrollTarget);
+      if (!target) return;
+      const headerOffset = document.getElementById('siteHeader')?.getBoundingClientRect().height || 0;
+      const top = target.getBoundingClientRect().top + window.scrollY - headerOffset - 16;
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [currentPath, navigationVersion, scrollTarget]);
 
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname || '/');
-      const targetId = window.location.hash.slice(1);
-      if (targetId) {
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }));
-      }
+      setScrollTarget(window.location.hash.slice(1));
+      setNavigationVersion((version) => version + 1);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -34,11 +44,9 @@ export const App: React.FC = () => {
     window.history.pushState(null, '', `${destinationPath}${destination.search}${destination.hash}`);
     setCurrentPath(destinationPath);
     const targetId = destination.hash.slice(1);
-    if (targetId) {
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }));
-    } else {
+    setScrollTarget(targetId);
+    setNavigationVersion((version) => version + 1);
+    if (!targetId) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
