@@ -82,8 +82,8 @@ begin
       end if;
     elsif v_action = 'delete' then
       delete from public.app_documents
-        where public.app_documents.collection_name = collection_name
-          and public.app_documents.id = document_id;
+        where public.app_documents.collection_name = v_collection
+          and public.app_documents.id = v_document_id;
     else
       raise exception 'Unsupported document batch operation';
     end if;
