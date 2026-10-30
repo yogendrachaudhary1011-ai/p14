@@ -260,6 +260,7 @@ router.post('/admin/projects', requireAuthMiddleware, async (req, res) => {
       status: status || 'published',
       featured: req.body.featured || false,
       coverImage: coverImage || 'assets/media/home-media-03-d6c887bed8af.webp',
+      caseStudy: req.body.caseStudy || {},
       coverClass: `cover-${cleanSlug}`,
       route: `/${cleanSlug}`,
       customTemplate: false,
@@ -668,4 +669,5 @@ router.post('/admin/backups/:id/restore', requireAuthMiddleware, async (req, res
 });
 
 export default router;
+
 
