@@ -95,7 +95,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
       )}
 
       {/* Blocks sequence */}
-      <div className="w-full min-w-0 flex flex-col gap-6">
+      <div className={`w-full min-w-0 flex flex-col ${section.type === 'product' ? 'gap-0 [&>div]:my-0' : 'gap-6'}`}>
         {normalizedSection.blocks && normalizedSection.blocks.map((block) => renderBlock(block))}
       </div>
 
