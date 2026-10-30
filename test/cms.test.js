@@ -21,7 +21,7 @@ async function runTests() {
 
   // Test 3: Admin authentication - correct credentials
   console.log('3. Testing login with initial credentials (Zane Wick / Zane@123)...');
-  const loginRes = await loginUser('Zane Wick', 'Zane@123', 'test-ip-1');
+  const loginRes = await loginUser(testAdminUsername, testAdminPassword, '127.0.0.1');
   assert.ok(loginRes.token, 'Must return a session token');
   assert.strictEqual(loginRes.user.username, 'Zane Wick');
   console.log('   ✓ Correct login succeeds and generates session');
@@ -30,7 +30,7 @@ async function runTests() {
   console.log('4. Testing wrong password rejection...');
   let wrongPassFailed = false;
   try {
-    await loginUser('Zane Wick', 'WrongPassword!456', 'test-ip-2');
+    await loginUser(testAdminUsername, `${testAdminPassword}-wrong`, '127.0.0.1');
   } catch (err) {
     wrongPassFailed = true;
     assert.strictEqual(err.message, 'Invalid username or password');
