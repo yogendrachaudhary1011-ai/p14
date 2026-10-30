@@ -64,16 +64,14 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             Home
           </a>
           <a
-            href="/projects"
-            className={currentPath === '/projects' ? 'is-active' : ''}
-            onClick={(e) => handleNavClick(e, '/projects')}
+            href="/#work"
+            onClick={(e) => handleNavClick(e, '/#work')}
           >
             Work
           </a>
           <a
-            href="/about"
-            className={currentPath === '/about' ? 'is-active' : ''}
-            onClick={(e) => handleNavClick(e, '/about')}
+            href="/#about"
+            onClick={(e) => handleNavClick(e, '/#about')}
           >
             About
           </a>
@@ -119,10 +117,10 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
 
         <div className={`mobile-nav ${mobileMenuOpen ? 'is-open' : ''}`} id="mobileNav">
           <a href="/" onClick={(e) => handleNavClick(e, '/')}>Home</a>
-          <a href="/projects" onClick={(e) => handleNavClick(e, '/projects')}>
+          <a href="/#work" onClick={(e) => handleNavClick(e, '/#work')}>
             Work
           </a>
-          <a href="/about" onClick={(e) => handleNavClick(e, '/about')}>
+          <a href="/#about" onClick={(e) => handleNavClick(e, '/#about')}>
             About
           </a>
           <span className="mobile-availability">
