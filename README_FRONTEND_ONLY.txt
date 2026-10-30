@@ -16,7 +16,7 @@ Included:
 Intentionally removed:
 - backend/server code
 - database files
-- Firebase configuration/integration
+- Supabase configuration/integration
 - admin/CMS files
 - API routes
 - CMS runtime/injection code
@@ -34,6 +34,6 @@ GOOGLE AI STUDIO WORKFLOW
 6. Paste the ENTIRE prompt into AI Studio as one request.
 7. Let AI Studio complete the implementation and run its checks.
 8. Before deployment, verify the public site visually against the original frontend.
-9. Verify /admin and Firebase persistence using the acceptance tests in the prompt.
+9. Verify /admin and Supabase persistence using the acceptance tests in the prompt.
 
 Do not merge old backend/admin/database files back into this repository. The purpose of this package is to give AI Studio a clean frontend source of truth and force it to build the dynamic system from scratch.
