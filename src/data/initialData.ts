@@ -285,19 +285,5 @@ export const initialEducation: EducationItem[] = [
     tags: ['Business Studies', 'UI/UX Design', 'Product Design', 'Workflow Design', 'Usability Testing', 'Developer Collaboration', 'Figma', 'Adobe Illustrator'],
     order: 1,
     visible: true
-  },
-  {
-    id: 'edu-2',
-    title: 'Nepali · Bhojpuri',
-    institution: 'English · Hindi',
-    location: 'Nepal',
-    dates: 'Languages',
-    status: '04 listed',
-    program: 'Communication',
-    year: '4',
-    description: 'Four languages listed in my CV alongside an ongoing Bachelor of Business Studies and hands-on UI/UX product work.',
-    tags: ['Nepali', 'Bhojpuri', 'English', 'Hindi', 'Figma'],
-    order: 2,
-    visible: true
   }
 ];

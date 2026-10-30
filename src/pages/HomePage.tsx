@@ -181,7 +181,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         {/* HERO SECTION */}
         <section className="hero" id="home">
           <div className="hero-inner">
-            <div className="hero-kicker eyebrow">Portfolio / UI/UX &amp; Product Design</div>
             <h1 aria-label="Yogendra Chaudhary — UI/UX & Product Designer" className="hero-title hero-title-static">
               <span className="static-title">
                 <span className="hero-title-line hero-title-line--one hero-title-line--name portfolio-v3-title-line">
@@ -255,7 +254,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <div className="shell">
             <div className="work-top">
               <div>
-                <span className="eyebrow">Selected work</span>
                 <h2 className="display work-title">SELECTED WORK</h2>
               </div>
               <div className="work-top-side">
@@ -391,39 +389,41 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                     poster="/assets/media/home-media-11-2c67061de865.webp"
                     src="/assets/media/home-media-10-7f38a3b02f4c.webm"
                   ></video>
-                  <div className="about-visual-caption">Yogendra / flows → interfaces → products</div>
-                  <nav aria-label="About section shortcuts" className="about-visual-status">
-                    <button
-                      className={activeAboutTab === 'about-profile' ? 'is-active' : ''}
-                      onClick={() => {
-                        setActiveAboutTab('about-profile');
-                        handleScrollTo('about-profile');
-                      }}
-                      type="button"
-                    >
-                      01 / About
-                    </button>
-                    <button
-                      className={activeAboutTab === 'about-experience' ? 'is-active' : ''}
-                      onClick={() => {
-                        setActiveAboutTab('about-experience');
-                        handleScrollTo('about-experience');
-                      }}
-                      type="button"
-                    >
-                      02 / Experience
-                    </button>
-                    <button
-                      className={activeAboutTab === 'about-education' ? 'is-active' : ''}
-                      onClick={() => {
-                        setActiveAboutTab('about-education');
-                        handleScrollTo('about-education');
-                      }}
-                      type="button"
-                    >
-                      03 / Education &amp; Languages
-                    </button>
-                  </nav>
+                  <div className="about-visual-footer">
+                    <div className="about-visual-caption">Yogendra / flows → interfaces → products</div>
+                    <nav aria-label="About section shortcuts" className="about-visual-status">
+                      <button
+                        className={activeAboutTab === 'about-profile' ? 'is-active' : ''}
+                        onClick={() => {
+                          setActiveAboutTab('about-profile');
+                          handleScrollTo('about-profile');
+                        }}
+                        type="button"
+                      >
+                        01 / About
+                      </button>
+                      <button
+                        className={activeAboutTab === 'about-experience' ? 'is-active' : ''}
+                        onClick={() => {
+                          setActiveAboutTab('about-experience');
+                          handleScrollTo('about-experience');
+                        }}
+                        type="button"
+                      >
+                        02 / Experience
+                      </button>
+                      <button
+                        className={activeAboutTab === 'about-education' ? 'is-active' : ''}
+                        onClick={() => {
+                          setActiveAboutTab('about-education');
+                          handleScrollTo('about-education');
+                        }}
+                        type="button"
+                      >
+                        03 / Education
+                      </button>
+                    </nav>
+                  </div>
                 </aside>
 
                 <a
@@ -442,10 +442,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
               <div className="about-scroll-content">
                 <section className="about-panel about-profile-panel" id="about-profile">
-                  <span className="eyebrow orange">About me</span>
-                  <h2 className="display display-lg" style={{ marginTop: '19px' }}>
-                    A UI/UX and Product Designer focused on clear software experiences.
-                  </h2>
+                  <h2 className="display display-lg">ABOUT ME</h2>
                   <p className="lead">
                     I design intuitive software interfaces, reusable UI components, and user-centered workflows. My process combines interaction design, usability testing, and close developer collaboration to make complex products easier to understand and use.
                   </p>
@@ -453,7 +450,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
                 <section className="about-panel about-experience-panel" id="about-experience">
                   <div className="about-panel-head">
-                    <span className="eyebrow">Experience</span>
                     <h3 className="display display-md">Experience</h3>
                   </div>
                   <div className="timeline about-timeline">
@@ -495,8 +491,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
                 <section className="about-panel about-education-panel" id="about-education">
                   <div className="about-panel-head">
-                    <span className="eyebrow orange">Education &amp; Languages</span>
-                    <h3 className="display display-md">Education &amp; Languages</h3>
+                    <h3 className="display display-md">EDUCATION</h3>
                   </div>
                   <div className="education-list">
                     {education.filter(e => e.visible).map((edu) => (
@@ -504,14 +499,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                         <div className="education-main">
                           <h3>{edu.title}</h3>
                           <div className="education-institution">{edu.institution}</div>
-                          <p className="education-desc">{edu.description}</p>
-                          <div className="tag-row">
-                            {edu.tags.map((t, idx) => (
-                              <span key={idx} className="tag">
-                                {t}
-                              </span>
-                            ))}
-                          </div>
                         </div>
                         <div className="education-aside">
                           <div className="education-badge">{edu.status}</div>
@@ -524,6 +511,22 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               </div>
             </div>
           </div>
+        </section>
+
+        {/* BOTTOM CONNECT CTA SECTION */}
+        <section className="connect-fill">
+          <a
+            aria-label="Let's connect"
+            className="connect-fill-link"
+            href={`mailto:${settings.email}`}
+          >
+            <div className="connect-fill-inner">
+              <span className="connect-fill-label">LET'S CONNECT</span>
+              <span aria-hidden="true" className="connect-fill-arrow">
+                arrow_outward
+              </span>
+            </div>
+          </a>
         </section>
       </div>
     </div>

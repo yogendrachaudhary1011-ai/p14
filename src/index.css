@@ -237,5 +237,59 @@
   }
 }
 
+/* About visual card: fix overlapping elements between caption and shortcuts navigation */
+.about-visual-footer {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 10 !important;
+  padding: 16px !important;
+  background: linear-gradient(180deg, transparent 0%, rgba(8, 8, 8, 0.72) 30%, rgba(8, 8, 8, 0.96) 100%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  pointer-events: none;
+}
+
+.about-visual-footer .about-visual-caption {
+  position: static !important;
+  inset: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  padding: 0 !important;
+  border: none !important;
+  color: var(--text, #f0f0f2) !important;
+  font: 500 10px/1.4 var(--mono) !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  pointer-events: auto;
+}
+
+.about-visual-footer .about-visual-status {
+  position: static !important;
+  inset: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  padding-top: 10px !important;
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.12)) !important;
+  pointer-events: auto;
+}
+
+.about-visual-footer .about-visual-status button {
+  appearance: none;
+  white-space: nowrap !important;
+  font: 500 8.5px/1.2 var(--mono) !important;
+  letter-spacing: 0.055em !important;
+  text-transform: uppercase !important;
+  padding: 6px 8px !important;
+  border-radius: 4px;
+}
+
 
 

@@ -105,7 +105,15 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [education, setEducation] = useState<EducationItem[]>(() => {
     try {
       const stored = safeStorage.getItem(STORAGE_KEYS.EDUCATION);
-      return stored ? JSON.parse(stored) : initialEducation;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(e => e.id !== 'edu-2');
+          safeStorage.setItem(STORAGE_KEYS.EDUCATION, JSON.stringify(cleaned));
+          return cleaned;
+        }
+      }
+      return initialEducation;
     } catch {
       return initialEducation;
     }

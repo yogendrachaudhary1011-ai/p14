@@ -51,17 +51,6 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
       />
       <header className={`header ${isScrolled ? 'is-scrolled' : ''}`} id="siteHeader">
       <nav aria-label="Main navigation" className="shell nav">
-        <a
-          className="brand"
-          href="/"
-          onClick={(e) => handleNavClick(e, '/')}
-        >
-          {settings.brandName || 'YOGENDRA'}
-          <b>——</b>
-          <span className="brand-role">
-            PRODUCT<span className="brand-role-gap">DESIGNER</span>
-          </span>
-        </a>
 
         <div className="nav-links">
           <a
