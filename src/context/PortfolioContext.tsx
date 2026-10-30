@@ -24,6 +24,8 @@ interface PortfolioContextType {
   isAdmin: boolean;
   adminUser: string | null;
   isSupabaseConnected: boolean;
+  cloudSaveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  cloudSaveError: string | null;
   supabaseConfig: { url: string; key: string };
   updateSupabaseConfig: (url: string, key: string) => boolean;
   syncAllProjectsToSupabase: () => Promise<{ success: boolean; count: number; message: string }>;
@@ -166,6 +168,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(() => {
     return false;
   });
+  const [cloudSaveStatus, setCloudSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [cloudSaveError, setCloudSaveError] = useState<string | null>(null);
   const [cloudReady, setCloudReady] = useState(false);
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
   const lastCloudSnapshot = useRef<string | null>(null);
@@ -212,6 +216,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setCloudReady(false);
       if (!isSupabaseConfigured()) {
         setIsSupabaseConnected(false);
+        setCloudSaveStatus('idle');
+        setCloudSaveError(null);
         return;
       }
 
@@ -228,7 +234,14 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const { snapshot, connected, error } = await fetchPortfolioSnapshot();
         if (!active) return;
         setIsSupabaseConnected(connected);
-        if (error) console.error('Supabase portfolio load failed:', error);
+        if (error) {
+          console.error('Supabase portfolio load failed:', error);
+          setCloudSaveStatus('error');
+          setCloudSaveError(error);
+        } else {
+          setCloudSaveStatus(snapshot ? 'saved' : 'idle');
+          setCloudSaveError(null);
+        }
         lastCloudSnapshot.current = snapshot ? JSON.stringify(snapshot) : null;
         if (snapshot) {
           setSettings(snapshot.settings);
@@ -254,6 +267,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         console.warn('Supabase initialization notice:', err);
         setIsSupabaseConnected(false);
         setCloudReady(false);
+        setCloudSaveStatus('error');
+        setCloudSaveError(err instanceof Error ? err.message : 'Unable to connect to Supabase.');
       }
     }
 
@@ -271,11 +286,20 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const serialized = JSON.stringify(snapshot);
     if (serialized === lastCloudSnapshot.current) return;
     const timer = window.setTimeout(() => {
+      setCloudSaveStatus('saving');
+      setCloudSaveError(null);
       saveQueue.current = saveQueue.current.then(async () => {
         const result = await savePortfolioSnapshot(snapshot);
         setIsSupabaseConnected(result.success);
-        if (result.success) lastCloudSnapshot.current = serialized;
-        if (!result.success) console.error('Supabase portfolio save failed:', result.error);
+        if (result.success) {
+          lastCloudSnapshot.current = serialized;
+          setCloudSaveStatus('saved');
+          setCloudSaveError(null);
+        } else {
+          setCloudSaveStatus('error');
+          setCloudSaveError(result.error || 'Cloud save failed.');
+          console.error('Supabase portfolio save failed:', result.error);
+        }
       });
     }, 300);
     return () => window.clearTimeout(timer);
@@ -293,23 +317,32 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const syncAllProjectsToSupabase = useCallback(async (): Promise<{ success: boolean; count: number; message: string }> => {
     if (!isSupabaseConfigured()) {
+      setCloudSaveStatus('error');
+      setCloudSaveError('Supabase is not configured.');
       return { success: false, count: 0, message: 'Supabase credentials are not configured yet.' };
     }
 
     try {
+      setCloudSaveStatus('saving');
+      setCloudSaveError(null);
       const result = await savePortfolioSnapshot({ settings, projects, experience, education, media });
       if (!result.success) throw new Error(result.error || 'Cloud save failed.');
       setIsSupabaseConnected(true);
+      lastCloudSnapshot.current = JSON.stringify({ settings, projects, experience, education, media });
+      setCloudSaveStatus('saved');
       return {
         success: true,
         count: projects.length,
         message: `Portfolio snapshot saved. ${projects.length} projects are in Supabase.`
       };
     } catch (err: any) {
+      const message = err.message || 'Unknown error';
+      setCloudSaveStatus('error');
+      setCloudSaveError(message);
       return {
         success: false,
         count: 0,
-        message: `Sync failed: ${err.message || 'Unknown error'}`
+        message: `Sync failed: ${message}`
       };
     }
   }, [settings, projects, experience, education, media]);
@@ -337,6 +370,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const supabase = getSupabase();
     if (supabase) await supabase.auth.signOut();
     setCloudReady(false);
+    setCloudSaveStatus('idle');
+    setCloudSaveError(null);
     setIsAdmin(false);
     setAdminUser(null);
     safeStorage.removeItem(STORAGE_KEYS.AUTH);
@@ -571,6 +606,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         isAdmin,
         adminUser,
         isSupabaseConnected,
+        cloudSaveStatus,
+        cloudSaveError,
         supabaseConfig,
         updateSupabaseConfig,
         syncAllProjectsToSupabase,

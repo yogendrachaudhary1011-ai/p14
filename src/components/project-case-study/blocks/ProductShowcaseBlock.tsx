@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { ProductShowcaseBlockItem } from '../../../types';
+import { MediaPreview } from '../../MediaPreview';
 
 interface ProductShowcaseBlockProps {
   block: ProductShowcaseBlockItem;
@@ -72,14 +73,12 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
 
               {/* Scrollable screen interior */}
               <div className="flex-1 overflow-y-auto bg-black p-1 scrollbar-thin scrollbar-thumb-zinc-800">
-                <img
+                <MediaPreview
                   src={screen.url}
                   alt={screen.label || `Product Screen ${idx + 1}`}
                   className="w-full h-auto object-cover rounded-sm"
                   loading="lazy"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://placehold.co/554x1200/181c25/ffffff?text=Product+Screen';
-                  }}
+                  fallbackSrc="https://placehold.co/554x1200/181c25/ffffff?text=Product+Screen"
                 />
               </div>
             </div>

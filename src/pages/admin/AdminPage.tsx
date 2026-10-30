@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { Project, ExperienceItem, EducationItem } from '../../types';
 import { ProjectEditor } from '../../components/admin/ProjectEditor';
+import { MediaPreview } from '../../components/MediaPreview';
 import { SUPABASE_SQL_SCHEMA } from '../../supabase';
+import { uploadMediaToSupabase } from '../../utils/supabaseService';
+import { inferMediaMimeType } from '../../utils/media';
 import {
   ArrowUpRight,
   BriefcaseBusiness,
@@ -25,6 +28,7 @@ import {
   Menu,
   Plus,
   RefreshCw,
+  Upload,
   Search,
   Settings2,
   ShieldCheck,
@@ -48,6 +52,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     isAdmin,
     adminUser,
     isSupabaseConnected,
+    cloudSaveStatus,
+    cloudSaveError,
     supabaseConfig,
     updateSupabaseConfig,
     syncAllProjectsToSupabase,
@@ -143,6 +149,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [newMediaName, setNewMediaName] = useState('');
   const [newMediaUrl, setNewMediaUrl] = useState('');
   const [mediaSearchQuery, setMediaSearchQuery] = useState('');
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const mediaFileInputRef = useRef<HTMLInputElement>(null);
 
   // Notification message
   const [notice, setNotice] = useState<string | null>(null);
@@ -159,6 +167,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     setNotice(msg);
     setTimeout(() => setNotice(null), 3500);
   };
+
+  const cloudStatusLabel = cloudSaveStatus === 'saving'
+    ? 'Saving to Supabase…'
+    : cloudSaveStatus === 'error'
+      ? 'Cloud save failed'
+      : cloudSaveStatus === 'saved'
+        ? 'Saved to Supabase'
+        : isSupabaseConnected
+          ? (isAdmin ? 'Supabase connected' : 'Supabase read-only')
+          : 'Local persistence active';
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard?.writeText(text);
@@ -478,8 +496,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             <strong className="text-white">{navTabs.find((tab) => tab.id === activeTab)?.label}</strong>
           </div>
           <div className="admin-topbar-actions">
-            <span className="admin-live-status">
-              <i /> {isSupabaseConnected ? 'Cloud synced (Supabase)' : 'Local persistence active'}
+            <span
+              className={`admin-live-status admin-live-status--${cloudSaveStatus}`}
+              title={cloudSaveError || undefined}
+              role="status"
+              aria-live="polite"
+            >
+              <i /> {cloudStatusLabel}
             </span>
             <button onClick={() => onNavigate('/')}>
               <ArrowUpRight size={14} className="text-[#f37021]" /> View public site
@@ -1190,7 +1213,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
               <div className="pt-2">
                 <button
-                  onClick={() => showNotice('Profile settings saved successfully.')}
+                  onClick={async () => {
+                    const result = await syncAllProjectsToSupabase();
+                    showNotice(result.message);
+                  }}
                   className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md transition-all"
                 >
                   Save Profile Settings
@@ -1879,11 +1905,65 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-white">Media Asset Library</h2>
               <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                Images, previews, and media used across home, projects, and case study chapters.
+                  Upload images and videos to Supabase Storage, then choose them in projects and case studies.
               </p>
             </div>
 
             {/* ADD NEW ASSET CARD */}
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-semibold text-white">Upload images or videos</h3>
+                <p className="text-xs text-zinc-400 mt-1">JPG, PNG, WebP, GIF, AVIF, MP4, or WebM · up to 50 MB each · stored in Supabase</p>
+              </div>
+              <input
+                ref={mediaFileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm"
+                multiple
+                className="hidden"
+                onChange={async (event) => {
+                  const files = Array.from(event.currentTarget.files || []);
+                  event.currentTarget.value = '';
+                  if (!files.length) return;
+                  if (!isAdmin) {
+                    showNotice('Sign in to Supabase Auth before uploading media.');
+                    return;
+                  }
+
+                  setUploadingMedia(true);
+                  let uploaded = 0;
+                  const failures: string[] = [];
+                  for (const file of files) {
+                    const result = await uploadMediaToSupabase(file);
+                    if (result.url) {
+                      const displayName = file.name.replace(/\.[^.]+$/, '') || file.name;
+                      addMedia(displayName, result.url, file.type, file.size);
+                      uploaded += 1;
+                    } else {
+                      failures.push(`${file.name}: ${result.error || 'upload failed'}`);
+                    }
+                  }
+                  setUploadingMedia(false);
+                  if (uploaded && !failures.length) {
+                    showNotice(`Uploaded ${uploaded} ${uploaded === 1 ? 'file' : 'files'} to Supabase.`);
+                  } else if (uploaded) {
+                    showNotice(`Uploaded ${uploaded}; failed: ${failures.join(' · ')}`);
+                  } else {
+                    showNotice(failures.join(' · ') || 'No files were uploaded.');
+                  }
+                }}
+              />
+              <button
+                type="button"
+                disabled={uploadingMedia || !isAdmin}
+                onClick={() => mediaFileInputRef.current?.click()}
+                className="shrink-0 px-4 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Upload size={15} />
+                <span>{uploadingMedia ? 'Uploading to Supabase…' : 'Choose files'}</span>
+              </button>
+            </div>
+
             <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-3">
               <h3 className="text-sm font-semibold text-white">Add New Media Asset</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -1914,7 +1994,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         showNotice('Please provide both asset name and URL.');
                         return;
                       }
-                      addMedia(newMediaName, newMediaUrl, 'image/webp', 120000);
+                      addMedia(newMediaName, newMediaUrl, inferMediaMimeType(newMediaUrl), 0);
                       showNotice(`Added asset: ${newMediaName}`);
                       setNewMediaName('');
                       setNewMediaUrl('');
@@ -1948,13 +2028,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   className="bg-[#12131a] border border-white/10 hover:border-white/20 rounded-xl overflow-hidden flex flex-col transition-all shadow-md group"
                 >
                   <div className="h-40 bg-[#090a0d] overflow-hidden flex items-center justify-center relative">
-                    <img
+                    <MediaPreview
                       alt={item.name}
                       src={item.url}
+                      mimeType={item.mimeType}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/assets/media/home-media-04-f775f2921176.webp';
-                      }}
+                      fallbackSrc="/assets/media/home-media-04-f775f2921176.webp"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <button

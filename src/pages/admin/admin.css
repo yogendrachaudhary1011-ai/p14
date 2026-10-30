@@ -341,6 +341,39 @@
   box-shadow: 0 0 8px var(--admin-emerald);
 }
 
+.admin-live-status--saving {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.admin-live-status--saving i {
+  background: #fbbf24;
+  box-shadow: 0 0 8px #fbbf24;
+}
+
+.admin-live-status--error {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.admin-live-status--error i {
+  background: #f87171;
+  box-shadow: 0 0 8px #f87171;
+}
+
+.admin-live-status--idle {
+  color: #a1a1aa;
+  background: rgba(113, 113, 122, 0.1);
+  border-color: rgba(113, 113, 122, 0.25);
+}
+
+.admin-live-status--idle i {
+  background: #a1a1aa;
+  box-shadow: none;
+}
+
 .admin-topbar-actions button {
   display: flex;
   align-items: center;

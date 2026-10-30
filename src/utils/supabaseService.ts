@@ -305,35 +305,48 @@ export async function saveSettingsToSupabase(settings: SiteSettings): Promise<bo
   }
 }
 
-/**
- * Uploads media file to Supabase Storage bucket 'portfolio-media'
- */
-export async function uploadMediaToSupabase(file: File): Promise<string | null> {
+/** Uploads an image or video to the public portfolio-media bucket. */
+export async function uploadMediaToSupabase(file: File): Promise<{ url: string | null; error?: string }> {
   const supabase = getSupabase();
-  if (!supabase) return null;
+  if (!supabase) return { url: null, error: 'Supabase is not configured.' };
+
+  const allowedTypes = new Set([
+    'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif',
+    'video/mp4', 'video/webm'
+  ]);
+  if (!allowedTypes.has(file.type)) {
+    return { url: null, error: 'Choose a JPG, PNG, WebP, GIF, AVIF, MP4, or WebM file.' };
+  }
+  if (file.size > 50 * 1024 * 1024) {
+    return { url: null, error: 'Files must be 50 MB or smaller.' };
+  }
 
   try {
-    const fileExt = file.name.split('.').pop() || 'png';
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+    const fileExt = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const filePath = `uploads/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('portfolio-media')
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        contentType: file.type,
+        upsert: false
+      });
 
     if (uploadError) {
       console.warn('Supabase storage upload error:', uploadError.message);
-      return null;
+      return { url: null, error: uploadError.message };
     }
 
     const { data } = supabase.storage
       .from('portfolio-media')
       .getPublicUrl(filePath);
 
-    return data.publicUrl;
+    return { url: data.publicUrl };
   } catch (err) {
     console.warn('Upload to Supabase Storage failed:', err);
-    return null;
+    return { url: null, error: err instanceof Error ? err.message : 'Upload failed.' };
   }
 }
 

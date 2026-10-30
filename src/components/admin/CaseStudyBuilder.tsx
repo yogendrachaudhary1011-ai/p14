@@ -7,6 +7,7 @@ import {
   MediaAsset
 } from '../../types';
 import { createDefaultSection, createDefaultBlock } from '../../utils/caseStudyUtils';
+import { MediaPreview } from '../MediaPreview';
 
 interface CaseStudyBuilderProps {
   sections: CaseStudySection[];
@@ -474,7 +475,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                 <option value="">Choose Media</option>
                                 {mediaLibrary.map((m) => (
                                   <option key={m.id} value={m.url}>
-                                    {m.name}
+                                    {m.name}{m.mimeType.startsWith('video/') ? ' (video)' : ''}
                                   </option>
                                 ))}
                               </select>
@@ -497,9 +498,9 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                             />
                           </div>
                           {block.url && (
-                            <img
+                            <MediaPreview
                               src={block.url}
-                              alt="Preview"
+                              alt="Media preview"
                               className="w-32 h-20 object-cover rounded border border-white/10"
                             />
                           )}

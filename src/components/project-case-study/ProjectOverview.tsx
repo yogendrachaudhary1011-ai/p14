@@ -1,4 +1,5 @@
 import React from 'react';
+import { MediaPreview } from '../MediaPreview';
 
 interface ProjectOverviewProps {
   heroImage: string;
@@ -27,14 +28,12 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
     <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col justify-center items-center gap-8 sm:gap-12 md:gap-16 relative z-10 box-border">
       {/* Big Hero Image with reveal and hover depth */}
       <div className="w-full rounded-none md:rounded-[6px] overflow-hidden bg-zinc-950 flex justify-center items-center aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] max-h-[728px] max-w-full animate-cs-image-reveal group">
-        <img
+        <MediaPreview
           src={heroImage || 'https://placehold.co/1539x728/111317/ffffff?text=Case+Study+Hero'}
           alt={heroImageAlt || 'Hero visual'}
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.015]"
           loading="eager"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://placehold.co/1539x728/111317/ffffff?text=Case+Study+Hero';
-          }}
+          fallbackSrc="https://placehold.co/1539x728/111317/ffffff?text=Case+Study+Hero"
         />
       </div>
 

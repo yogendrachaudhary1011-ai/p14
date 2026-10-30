@@ -3,6 +3,8 @@ import { Project, CaseStudySection, MediaAsset } from '../../types';
 import { CaseStudyBuilder } from './CaseStudyBuilder';
 import { ProjectCaseStudyTemplate } from '../project-case-study/ProjectCaseStudyTemplate';
 import { normalizeProjectSections } from '../../utils/caseStudyUtils';
+import { MediaPreview } from '../MediaPreview';
+import { isVideoMedia } from '../../utils/media';
 
 interface ProjectEditorProps {
   initialProject?: Project | null;
@@ -589,7 +591,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               />
               {heroImageUrl && (
                 <div className="w-full rounded border border-white/10 overflow-hidden bg-black aspect-[16/9] flex items-center justify-center">
-                  <img src={heroImageUrl} alt="Hero Preview" className="w-full h-full object-cover" />
+                  <MediaPreview src={heroImageUrl} alt="Hero preview" className="w-full h-full object-cover" />
                 </div>
               )}
             </div>
@@ -607,7 +609,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               />
               {coverImage && (
                 <div className="w-full rounded border border-white/10 overflow-hidden bg-black aspect-[16/9] flex items-center justify-center">
-                  <img src={coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
+                  <MediaPreview src={coverImage} alt="Cover preview" className="w-full h-full object-cover" />
                 </div>
               )}
             </div>
@@ -625,11 +627,11 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                     key={m.id}
                     onClick={() => {
                       setHeroImageUrl(m.url);
-                      setCoverImage(m.url);
+                      if (!isVideoMedia(m.url, m.mimeType)) setCoverImage(m.url);
                     }}
                     className="group relative rounded border border-white/10 overflow-hidden bg-black aspect-video cursor-pointer hover:border-[#ff853a]"
                   >
-                    <img src={m.url} alt={m.name} className="w-full h-full object-cover" />
+                    <MediaPreview src={m.url} alt={m.name} mimeType={m.mimeType} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-white p-1 text-center font-mono">
                       Set as Hero
                     </div>

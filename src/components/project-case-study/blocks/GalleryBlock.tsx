@@ -1,5 +1,6 @@
 import React from 'react';
 import { GalleryBlockItem } from '../../../types';
+import { MediaPreview } from '../../MediaPreview';
 
 interface GalleryBlockProps {
   block: GalleryBlockItem;
@@ -14,14 +15,12 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({ block }) => {
       {block.images.map((img, idx) => (
         <div key={idx} className="flex flex-col gap-1.5 group">
           <div className="rounded-[5px] overflow-hidden border border-white/10 bg-zinc-950 flex justify-center items-center transition-all duration-300 group-hover:border-white/30 group-hover:-translate-y-1 group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)]">
-            <img
+            <MediaPreview
               src={img.url}
               alt={img.alt || `Gallery item ${idx + 1}`}
               className="w-full h-auto object-cover max-h-[500px] transition-transform duration-500 ease-out group-hover:scale-[1.02]"
               loading="lazy"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://placehold.co/800x600/181c26/ffffff?text=Gallery+Asset';
-              }}
+              fallbackSrc="https://placehold.co/800x600/181c26/ffffff?text=Gallery+Asset"
             />
           </div>
           {img.caption && (

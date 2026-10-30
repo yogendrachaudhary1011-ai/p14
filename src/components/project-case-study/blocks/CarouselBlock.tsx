@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CarouselBlockItem } from '../../../types';
+import { MediaPreview } from '../../MediaPreview';
 
 interface CarouselBlockProps {
   block: CarouselBlockItem;
@@ -25,15 +26,13 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
     <div className="w-full my-2 flex flex-col gap-3">
       {/* Container matching Figma styling: dark neutral backdrop, rounded, framed */}
       <div className="relative w-full rounded-[5px] overflow-hidden bg-neutral-900 border border-white/10 aspect-[16/10] max-h-[660px] flex items-center justify-center group">
-        <img
+        <MediaPreview
           key={currentIndex}
           src={currentSlide.url}
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
           className="w-full h-full object-contain md:object-cover transition-all duration-500 ease-out animate-cs-fade-in"
           loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://placehold.co/884x660/161922/ffffff?text=Design+System+Component';
-          }}
+          fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
 
         {/* Title overlay in top corner if available */}
