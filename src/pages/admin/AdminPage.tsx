@@ -3,6 +3,8 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { Project, ExperienceItem, EducationItem } from '../../types';
 import { ProjectEditor } from '../../components/admin/ProjectEditor';
 import { SUPABASE_SQL_SCHEMA } from '../../supabase';
+import { ArrowUpRight, BriefcaseBusiness, ChevronRight, Command, FileText, FolderKanban, GraduationCap, Image, LayoutDashboard, LockKeyhole, Menu, Settings2, ShieldCheck, Sparkles, X } from 'lucide-react';
+import './admin.css';
 
 interface AdminPageProps {
   onNavigate: (path: string) => void;
@@ -133,28 +135,32 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
   if (!isAdmin) {
     return (
-      <div id="loginView" className="flex items-center justify-center min-h-screen p-4 sm:p-6 bg-[#0a0a0c]">
-        <div className="w-full max-w-md bg-[#131418] border border-white/10 rounded-xl p-6 sm:p-8 shadow-2xl">
-          <div className="text-lg sm:text-xl font-bold text-white mb-1">
-            PORTFOLIO <span className="text-[#f37021]">ADMIN CMS</span>
-          </div>
-          <div className="text-zinc-400 text-xs sm:text-sm mb-6">
-            Yogendra Chaudhary Portfolio Management Portal
-          </div>
+      <div id="loginView" className="admin-login">
+        <div className="admin-login-art" aria-hidden="true">
+          <div className="admin-orbit admin-orbit-one" /><div className="admin-orbit admin-orbit-two" />
+          <div className="admin-login-note"><span className="admin-note-dot" /> CONTENT STUDIO <span>01 / 07</span></div>
+          <div className="admin-art-copy"><span>YOUR WORK,</span><strong>beautifully<br />in order.</strong><p>A considered space to shape the stories behind every project.</p></div>
+        </div>
+        <div className="admin-login-panel">
+          <div className="admin-login-brand"><span className="admin-brand-mark">yc.</span><span>YOGENDRA CHAUDHARY<small>PORTFOLIO STUDIO</small></span></div>
+          <div className="admin-login-card">
+            <div className="admin-eyebrow"><LockKeyhole size={14} /> PRIVATE WORKSPACE</div>
+            <h1>Welcome back<span>.</span></h1>
+            <p className="admin-login-intro">Sign in to manage your portfolio and published work.</p>
 
           {loginError && (
-            <div className="p-3 bg-red-500/15 border border-red-500/30 text-red-400 rounded-md mb-4 text-xs sm:text-sm">
+            <div className="admin-login-error">
               {loginError}
             </div>
           )}
 
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
+          <form onSubmit={handleLoginSubmit} className="admin-login-form">
             <div>
-              <label className="block text-xs font-semibold uppercase text-zinc-400 mb-1.5">
+              <label>
                 Username
               </label>
               <input
-                className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm focus:border-[#f37021] outline-none placeholder:text-zinc-600"
+                className="admin-login-input"
                 type="text"
                 value={username}
                 placeholder="Enter username"
@@ -164,11 +170,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase text-zinc-400 mb-1.5">
+              <label>
                 Password
               </label>
               <input
-                className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm focus:border-[#f37021] outline-none placeholder:text-zinc-600"
+                className="admin-login-input"
                 type="password"
                 value={password}
                 placeholder="Enter password"
@@ -179,37 +185,39 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             </div>
             <button
               type="submit"
-              className="w-full py-2.5 px-4 bg-[#f37021] hover:bg-[#ff721a] text-white font-semibold rounded-md text-sm transition-colors cursor-pointer"
+              className="admin-login-submit"
             >
-              Sign In to CMS
+              Enter your workspace <ArrowUpRight size={17} />
             </button>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-center text-xs">
+          <div className="admin-login-footer">
             <button
               onClick={() => onNavigate('/')}
-              className="text-zinc-400 hover:text-white cursor-pointer"
+              className="admin-back-link"
             >
-              ← Back to Public Website
+              <ChevronRight size={15} className="admin-back-arrow" /> Back to portfolio
             </button>
           </div>
+          </div>
+          <div className="admin-login-bottom"><ShieldCheck size={14} /> Your workspace is private and secure</div>
         </div>
       </div>
     );
   }
 
   const navTabs = [
-    { id: 'overview', label: 'Dashboard Overview', icon: 'dashboard' },
-    { id: 'projects', label: 'Projects & Case Studies', icon: 'folder' },
-    { id: 'settings', label: 'Site & Profile Settings', icon: 'person' },
-    { id: 'experience', label: 'Work Experience', icon: 'work' },
-    { id: 'education', label: 'Education & Languages', icon: 'school' },
-    { id: 'media', label: 'Media Library', icon: 'image' },
-    { id: 'seo', label: 'SEO & Metadata', icon: 'public' }
+    { id: 'overview', label: 'Overview', detail: 'Your studio at a glance', icon: LayoutDashboard },
+    { id: 'projects', label: 'Projects', detail: 'Stories & case studies', icon: FolderKanban },
+    { id: 'settings', label: 'Profile & site', detail: 'Your public presence', icon: Settings2 },
+    { id: 'experience', label: 'Experience', detail: 'Career timeline', icon: BriefcaseBusiness },
+    { id: 'education', label: 'Education', detail: 'Learning & credentials', icon: GraduationCap },
+    { id: 'media', label: 'Media library', detail: 'Images & assets', icon: Image },
+    { id: 'seo', label: 'SEO & metadata', detail: 'Search appearance', icon: FileText }
   ];
 
   return (
-    <div id="adminApp" className="min-h-screen bg-[#0a0a0c] text-zinc-100 flex flex-col font-['Plus_Jakarta_Sans']">
+    <div id="adminApp" className="admin-app">
       {/* MOBILE TOP BAR (visible on screens < lg) */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-[#131418]/95 backdrop-blur-md border-b border-white/10 z-40 px-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -219,13 +227,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             className="w-9 h-9 rounded bg-white/5 border border-white/10 text-white flex items-center justify-center cursor-pointer hover:bg-white/10"
             aria-label="Toggle navigation drawer"
           >
-            <span className="material-symbols-rounded text-xl">
-              {mobileSidebarOpen ? 'close' : 'menu'}
-            </span>
+            {mobileSidebarOpen ? <X size={19} /> : <Menu size={19} />}
           </button>
-          <div className="text-sm font-bold text-white tracking-wide">
-            PORTFOLIO <span className="text-[#f37021]">CMS</span>
-          </div>
+          <div className="admin-mobile-wordmark">yc.<span>STUDIO</span></div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -259,19 +263,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
         }`}
       >
         <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between">
-          <div className="text-sm sm:text-base font-bold text-white">
-            PORTFOLIO <span className="text-[#f37021]">CMS</span>
-          </div>
+          <div className="admin-wordmark"><span className="admin-brand-mark">yc.</span><span>YOUR STUDIO<small>PORTFOLIO CMS</small></span></div>
           <button
             onClick={() => setMobileSidebarOpen(false)}
             className="lg:hidden text-zinc-400 hover:text-white p-1 rounded hover:bg-white/5"
             aria-label="Close navigation"
           >
-            <span className="material-symbols-rounded text-lg">close</span>
+            <X size={18} />
           </button>
         </div>
 
-        <nav className="flex-1 p-3 flex flex-col gap-1 overflow-y-auto">
+        <div className="admin-sidebar-caption">WORKSPACE</div>
+        <nav className="admin-nav flex-1 p-3 flex flex-col gap-1 overflow-y-auto">
           {navTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -291,14 +294,15 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     : 'text-zinc-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <span className="material-symbols-rounded text-lg">{tab.icon}</span>
-                <span className="truncate">{tab.label}</span>
+                <tab.icon size={18} strokeWidth={1.8} />
+                <span className="admin-nav-copy"><span>{tab.label}</span><small>{tab.detail}</small></span>
+                {isActive && <ChevronRight className="admin-nav-chevron" size={15} />}
               </button>
             );
           })}
         </nav>
 
-        <div className="p-3 border-t border-white/10 flex flex-col gap-2">
+        <div className="admin-sidebar-bottom p-3 border-t border-white/10 flex flex-col gap-2">
           <button
             onClick={() => {
               setMobileSidebarOpen(false);
@@ -306,19 +310,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             }}
             className="w-full py-2 px-3 bg-[#1a1b22] border border-white/10 text-zinc-200 hover:text-white rounded-md text-xs text-center cursor-pointer transition-colors"
           >
-            ↗ View Public Site
+            <ArrowUpRight size={15} /> View live portfolio
           </button>
-          <button
-            onClick={logout}
-            className="w-full py-2 px-3 bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 rounded-md text-xs text-center cursor-pointer transition-colors"
-          >
-            Log Out ({adminUser})
-          </button>
+          <div className="admin-account-row">
+            <span className="admin-account-avatar">{(adminUser || 'Y').slice(0, 1).toUpperCase()}</span><span className="admin-account-copy"><small>SIGNED IN AS</small>{adminUser || 'Administrator'}</span><button className="admin-signout" onClick={logout} aria-label="Log out">↗</button>
+          </div>
         </div>
       </aside>
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 w-full min-w-0 pt-16 lg:pt-0 lg:ml-64 p-4 sm:p-6 md:p-8 lg:p-10 transition-all">
+        <div className="admin-topbar"><div className="admin-breadcrumb"><span>Studio</span><ChevronRight size={14} /><strong>{navTabs.find((tab) => tab.id === activeTab)?.label}</strong></div><div className="admin-topbar-actions"><span className="admin-live-status"><i /> {isSupabaseConnected ? 'Cloud connected' : 'Changes saved locally'}</span><button onClick={() => onNavigate('/')}><ArrowUpRight size={15} /> View site</button></div></div>
+        <div className="admin-page-intro"><div><div className="admin-eyebrow"><Sparkles size={14} /> PORTFOLIO STUDIO</div><h1>{activeTab === 'overview' ? `Good to see you${adminUser ? `, ${adminUser.split(' ')[0]}` : ''}.` : navTabs.find((tab) => tab.id === activeTab)?.label}</h1><p>{navTabs.find((tab) => tab.id === activeTab)?.detail} <span>·</span> Shape your portfolio, one detail at a time.</p></div><div className="admin-date-chip"><Command size={14} /> PERSONAL WORKSPACE</div></div>
         {notice && (
           <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 bg-[#10b981] text-white py-2.5 px-4 rounded-lg shadow-xl font-medium text-xs sm:text-sm animate-fade-in flex items-center gap-2">
             <span className="material-symbols-rounded text-base">check_circle</span>
@@ -330,7 +333,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">CMS Dashboard Overview</h1>
+              <h2 className="text-xl sm:text-2xl font-bold text-white">Your portfolio at a glance</h2>
               <p className="text-zinc-400 text-xs sm:text-sm mt-1">
                 Manage live portfolio content, case studies, experience, and assets.
               </p>
@@ -1490,3 +1493,4 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
+
