@@ -1,16 +1,20 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { SiteSettings, Project, ExperienceItem, EducationItem, MediaAsset } from '../types';
 import { initialSiteSettings, initialProjects, initialExperience, initialEducation } from '../data/initialData';
 import { normalizeProjectSections } from '../utils/caseStudyUtils';
 import {
-  fetchProjectsFromDb,
-  saveProjectToDb,
-  deleteProjectFromDb,
-  saveSettingsToDb,
-  saveMediaToDb,
-  deleteMediaFromDb,
-  subscribeToProjects
-} from '../utils/firestoreService';
+  getSavedCredentials,
+  saveSupabaseCredentials,
+  isSupabaseConfigured
+} from '../supabase';
+import {
+  fetchProjectsFromSupabase,
+  saveProjectToSupabase,
+  deleteProjectFromSupabase,
+  subscribeToSupabaseProjects,
+  fetchSettingsFromSupabase,
+  saveSettingsToSupabase
+} from '../utils/supabaseService';
 
 interface PortfolioContextType {
   settings: SiteSettings;
@@ -20,6 +24,10 @@ interface PortfolioContextType {
   media: MediaAsset[];
   isAdmin: boolean;
   adminUser: string | null;
+  isSupabaseConnected: boolean;
+  supabaseConfig: { url: string; key: string };
+  updateSupabaseConfig: (url: string, key: string) => boolean;
+  syncAllProjectsToSupabase: () => Promise<{ success: boolean; count: number; message: string }>;
   login: (u: string, p: string) => boolean;
   logout: () => void;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
@@ -141,7 +149,15 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return isAdmin ? 'Yogendra Chaudhary' : null;
   });
 
-  // Sync to local storage
+  const [supabaseConfig, setSupabaseConfigState] = useState<{ url: string; key: string }>(() => {
+    return getSavedCredentials();
+  });
+
+  const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(() => {
+    return isSupabaseConfigured();
+  });
+
+  // Sync to local storage for fast boot
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
@@ -166,41 +182,86 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [media]);
 
-  // Real Firestore Synchronization & Seeding on initial mount
+  // Supabase Data Sync & Live Subscription
   useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
-    async function initFirestore() {
+    let unsubscribe: (() => void) | null = null;
+
+    async function initSupabase() {
+      if (!isSupabaseConfigured()) {
+        setIsSupabaseConnected(false);
+        return;
+      }
+
       try {
-        const remoteProjects = await fetchProjectsFromDb();
+        const remoteProjects = await fetchProjectsFromSupabase();
         if (remoteProjects && remoteProjects.length > 0) {
-          // Sort by displayOrder or order
           const sorted = remoteProjects.sort((a, b) => (a.order || 0) - (b.order || 0));
           setProjects(sorted);
+          setIsSupabaseConnected(true);
+        } else if (remoteProjects && remoteProjects.length === 0) {
+          setIsSupabaseConnected(true);
         } else {
-          // Seed initial projects to Firestore
-          console.info('Seeding initial projects to Firestore...');
-          for (const proj of initialProjects) {
-            await saveProjectToDb(proj);
-          }
+          setIsSupabaseConnected(false);
         }
 
-        // Subscribe to live changes
-        unsubscribe = subscribeToProjects((liveProjects) => {
+        const remoteSettings = await fetchSettingsFromSupabase();
+        if (remoteSettings) {
+          setSettings(remoteSettings);
+        }
+
+        // Subscribe to live project changes
+        unsubscribe = subscribeToSupabaseProjects((liveProjects) => {
           if (liveProjects && liveProjects.length > 0) {
             const sorted = liveProjects.sort((a, b) => (a.order || 0) - (b.order || 0));
             setProjects(sorted);
           }
         });
       } catch (err) {
-        console.warn('Firestore initial sync notice:', err);
+        console.warn('Supabase initialization notice:', err);
+        setIsSupabaseConnected(false);
       }
     }
 
-    initFirestore();
+    initSupabase();
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [supabaseConfig]);
+
+  const updateSupabaseConfig = (url: string, key: string): boolean => {
+    const success = saveSupabaseCredentials(url, key);
+    if (success) {
+      setSupabaseConfigState({ url: url.trim(), key: key.trim() });
+      setIsSupabaseConnected(isSupabaseConfigured());
+    }
+    return success;
+  };
+
+  const syncAllProjectsToSupabase = useCallback(async (): Promise<{ success: boolean; count: number; message: string }> => {
+    if (!isSupabaseConfigured()) {
+      return { success: false, count: 0, message: 'Supabase credentials are not configured yet.' };
+    }
+
+    try {
+      let count = 0;
+      for (const proj of projects) {
+        const saved = await saveProjectToSupabase(proj);
+        if (saved) count++;
+      }
+      setIsSupabaseConnected(true);
+      return {
+        success: true,
+        count,
+        message: `Successfully synchronized ${count} projects to Supabase.`
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        count: 0,
+        message: `Sync failed: ${err.message || 'Unknown error'}`
+      };
+    }
+  }, [projects]);
 
   const login = (u: string, p: string): boolean => {
     const validUsers = ['admin', 'zane-wick', 'yogendra'];
@@ -230,7 +291,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           ...(newSettings.seo || {})
         }
       };
-      saveSettingsToDb(merged);
+      saveSettingsToSupabase(merged);
       return merged;
     });
   };
@@ -302,7 +363,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     setProjects((prev) => [...prev, newProj]);
-    saveProjectToDb(newProj);
+    saveProjectToSupabase(newProj);
     return newProj;
   };
 
@@ -318,7 +379,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           if (updates.slug && updates.slug !== p.slug) {
             updated.route = `/${updates.slug}`;
           }
-          saveProjectToDb(updated);
+          saveProjectToSupabase(updated);
           return updated;
         }
         return p;
@@ -328,7 +389,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const deleteProject = (id: string) => {
     setProjects((prev) => prev.filter((p) => p.id !== id));
-    deleteProjectFromDb(id);
+    deleteProjectFromSupabase(id);
   };
 
   const duplicateProject = (id: string): Project | null => {
@@ -362,7 +423,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (item) {
           const updated = { ...item, order: idx + 1, displayOrder: idx + 1 };
           reordered.push(updated);
-          saveProjectToDb(updated);
+          saveProjectToSupabase(updated);
           map.delete(pid);
         }
       });
@@ -382,7 +443,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const deleteAllProjects = () => {
-    projects.forEach((p) => deleteProjectFromDb(p.id));
+    projects.forEach((p) => deleteProjectFromSupabase(p.id));
     setProjects([]);
   };
 
@@ -428,13 +489,11 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       uploadedAt: new Date().toISOString()
     };
     setMedia((prev) => [newAsset, ...prev]);
-    saveMediaToDb(newAsset);
     return newAsset;
   };
 
   const deleteMedia = (id: string) => {
     setMedia((prev) => prev.filter((m) => m.id !== id));
-    deleteMediaFromDb(id);
   };
 
   const resetToDefaults = () => {
@@ -456,6 +515,10 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         media,
         isAdmin,
         adminUser,
+        isSupabaseConnected,
+        supabaseConfig,
+        updateSupabaseConfig,
+        syncAllProjectsToSupabase,
         login,
         logout,
         updateSettings,

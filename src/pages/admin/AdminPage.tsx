@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { Project, ExperienceItem, EducationItem } from '../../types';
 import { ProjectEditor } from '../../components/admin/ProjectEditor';
+import { SUPABASE_SQL_SCHEMA } from '../../supabase';
 
 interface AdminPageProps {
   onNavigate: (path: string) => void;
@@ -16,6 +17,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     media,
     isAdmin,
     adminUser,
+    isSupabaseConnected,
+    supabaseConfig,
+    updateSupabaseConfig,
+    syncAllProjectsToSupabase,
     login,
     logout,
     updateSettings,
@@ -83,6 +88,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
   // Notification message
   const [notice, setNotice] = useState<string | null>(null);
+
+  // Supabase connection state
+  const [supabaseUrlInput, setSupabaseUrlInput] = useState(supabaseConfig.url || '');
+  const [supabaseKeyInput, setSupabaseKeyInput] = useState(supabaseConfig.key || '');
+  const [syncingSupabase, setSyncingSupabase] = useState(false);
+  const [showSqlModal, setShowSqlModal] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
 
   const showNotice = (msg: string) => {
     setNotice(msg);
@@ -670,6 +682,212 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 </button>
               </div>
             </div>
+
+            {/* SUPABASE DATABASE & REALTIME SYNC CARD */}
+            <div style={{ marginTop: '32px', padding: '28px', background: '#131418', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Supabase Database Integration</h2>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 10px',
+                      borderRadius: '20px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      background: isSupabaseConnected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(234, 179, 8, 0.15)',
+                      color: isSupabaseConnected ? '#10b981' : '#eab308',
+                      border: `1px solid ${isSupabaseConnected ? 'rgba(16, 185, 129, 0.3)' : 'rgba(234, 179, 8, 0.3)'}`
+                    }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isSupabaseConnected ? '#10b981' : '#eab308' }} />
+                      {isSupabaseConnected ? 'Connected to Supabase' : 'Offline / Local Cache'}
+                    </span>
+                  </div>
+                  <p style={{ color: '#8e8ea0', fontSize: '13px', marginTop: '6px' }}>
+                    Connect your project to Supabase PostgreSQL for persistent database storage, real-time sync, and media uploads.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowSqlModal(true)}
+                  style={{
+                    padding: '8px 14px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderRadius: '6px',
+                    color: '#f0f0f4',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span className="material-symbols-rounded" style={{ fontSize: '16px' }}>terminal</span>
+                  <span>View Supabase SQL Setup</span>
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '18px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    Supabase Project URL
+                  </label>
+                  <input
+                    type="text"
+                    value={supabaseUrlInput}
+                    onChange={(e) => setsupabaseUrlInput(e.target.value)}
+                    placeholder="https://your-project.supabase.co"
+                    style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4', fontFamily: 'monospace', fontSize: '13px' }}
+                  />
+                  <div style={{ fontSize: '11px', color: '#8e8ea0', marginTop: '4px' }}>
+                    Found in Supabase Dashboard → Settings → API → Project URL
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    Supabase Anon Key
+                  </label>
+                  <input
+                    type="password"
+                    value={supabaseKeyInput}
+                    onChange={(e) => setSupabaseKeyInput(e.target.value)}
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+                    style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4', fontFamily: 'monospace', fontSize: '13px' }}
+                  />
+                  <div style={{ fontSize: '11px', color: '#8e8ea0', marginTop: '4px' }}>
+                    Found in Supabase Dashboard → Settings → API → Project API Keys (anon/public)
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '20px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ok = updateSupabaseConfig(supabaseUrlInput, supabaseKeyInput);
+                    if (ok) {
+                      showNotice(supabaseUrlInput.trim() ? 'Supabase configuration saved & connected!' : 'Cleared Supabase configuration.');
+                    } else {
+                      showNotice('Failed to update Supabase configuration.');
+                    }
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    background: '#10b981',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: '13px'
+                  }}
+                >
+                  Save &amp; Connect Supabase
+                </button>
+
+                <button
+                  type="button"
+                  disabled={syncingSupabase || !supabaseUrlInput.trim()}
+                  onClick={async () => {
+                    setSyncingSupabase(true);
+                    showNotice('Synchronizing projects to Supabase...');
+                    const result = await syncAllProjectsToSupabase();
+                    setSyncingSupabase(false);
+                    showNotice(result.message);
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    background: '#1a1b22',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    color: syncingSupabase || !supabaseUrlInput.trim() ? '#666' : '#f0f0f4',
+                    borderRadius: '6px',
+                    fontWeight: 500,
+                    cursor: syncingSupabase || !supabaseUrlInput.trim() ? 'not-allowed' : 'pointer',
+                    fontSize: '13px'
+                  }}
+                >
+                  {syncingSupabase ? 'Syncing...' : 'Sync All Projects to Supabase'}
+                </button>
+              </div>
+            </div>
+
+            {/* SQL SCHEMA MODAL */}
+            {showSqlModal && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+                <div style={{ background: '#131418', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', width: '100%', maxWidth: '780px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                  <div style={{ padding: '18px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#f0f0f4' }}>Supabase SQL Migration Script</h3>
+                      <p style={{ margin: '4px 0 0', color: '#8e8ea0', fontSize: '12px' }}>
+                        Run this in your Supabase Dashboard → <b>SQL Editor</b> to create tables and RLS security policies.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowSqlModal(false)}
+                      style={{ background: 'none', border: 'none', color: '#8e8ea0', fontSize: '20px', cursor: 'pointer', padding: '4px' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div style={{ flex: 1, padding: '20px 24px', overflowY: 'auto' }}>
+                    <pre style={{
+                      background: '#0a0a0c',
+                      padding: '16px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      color: '#34d399',
+                      fontSize: '12px',
+                      fontFamily: 'monospace',
+                      whiteSpace: 'pre-wrap',
+                      overflowX: 'auto',
+                      lineHeight: '1.5'
+                    }}>
+                      {SUPABASE_SQL_SCHEMA}
+                    </pre>
+                  </div>
+
+                  <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '12px', color: '#8e8ea0' }}>
+                      Ready to execute in Supabase SQL Editor
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(SUPABASE_SQL_SCHEMA);
+                          setCopiedSql(true);
+                          setTimeout(() => setCopiedSql(false), 2500);
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          background: copiedSql ? '#10b981' : '#f37021',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {copiedSql ? '✓ Copied SQL to Clipboard!' : 'Copy SQL Script'}
+                      </button>
+                      <button
+                        onClick={() => setShowSqlModal(false)}
+                        style={{ padding: '8px 14px', background: '#1c1d24', color: '#f0f0f4', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
