@@ -596,6 +596,7 @@ body {
 // State
 let currentTab = 'dashboard';
 let cachedData = {};
+let projectCoverUploadPromise = Promise.resolve(true);
 
 // Helpers
 function showToast(msg, type = 'success') {
@@ -1420,6 +1421,7 @@ async function deleteMedia(id) {
 
 // Project Modal & CRUD
 function openProjectModal(id = null) {
+  projectCoverUploadPromise = Promise.resolve(true);
   const isEdit = !!id;
   const proj = isEdit ? (cachedData.projects || []).find(p => p.id === id) : {};
   const container = document.getElementById('modalContainer');
@@ -1468,8 +1470,13 @@ function openProjectModal(id = null) {
             <input class="form-input" id="modalProjMediaNote" value="${proj.mediaNote || ''}"/>
           </div>
           <div class="form-group">
-            <label class="form-label">Cover Image URL</label>
-            <input class="form-input" id="modalProjCover" value="${proj.coverImage || ''}"/>
+            <label class="form-label" for="modalProjCoverFile">Cover Image</label>
+            <input class="form-input" id="modalProjCoverFile" type="file" accept="image/*" onchange="uploadProjectCoverImage()"/>
+            <div id="modalProjCoverStatus" style="font-size:12px;color:var(--text-dim);margin-top:6px;">${proj.coverImage ? 'Current image shown below. Choose a file to replace it.' : 'Choose an image file from your device.'}</div>
+            <div id="modalProjCoverPreview" style="${proj.coverImage ? 'display:block;' : 'display:none;'}margin-top:10px;max-width:320px;">
+              <img id="modalProjCoverPreviewImage" src="${proj.coverImage || ''}" alt="Project cover preview" style="display:block;width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1px solid var(--border);"/>
+            </div>
+            <input type="hidden" id="modalProjCover" value="${proj.coverImage || ''}"/>
           </div>
           <div class="form-group">
             <label class="form-label">Summary / Description</label>
@@ -1495,6 +1502,11 @@ function openProjectModal(id = null) {
 
 async function handleProjectSubmit(e, id) {
   e.preventDefault();
+  const coverUploadSucceeded = await projectCoverUploadPromise;
+  if (!coverUploadSucceeded) {
+    showToast('Cover image upload failed. Please choose the file again.', 'error');
+    return;
+  }
   const payload = {
     title: document.getElementById('modalProjTitle').value,
     slug: document.getElementById('modalProjSlug').value,
@@ -1517,6 +1529,54 @@ async function handleProjectSubmit(e, id) {
   }
   document.getElementById('modalContainer').style.display = 'none';
   renderTabContent('projects');
+}
+
+async function uploadProjectCoverImage() {
+  const fileInput = document.getElementById('modalProjCoverFile');
+  const file = fileInput.files && fileInput.files[0];
+  if (!file) return;
+
+  const status = document.getElementById('modalProjCoverStatus');
+  const preview = document.getElementById('modalProjCoverPreview');
+  const previewImage = document.getElementById('modalProjCoverPreviewImage');
+  status.textContent = `Uploading ${file.name}...`;
+  fileInput.disabled = true;
+
+  projectCoverUploadPromise = (async () => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('category', 'project-covers');
+      formData.append('alt', file.name);
+      const token = getAuthToken();
+      const headers = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const res = await fetch('/api/admin/media/upload', {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+      document.getElementById('modalProjCover').value = data.media.url;
+      previewImage.src = data.media.url;
+      preview.style.display = 'block';
+      status.textContent = `Uploaded ${file.name}. Save the project to publish this image.`;
+      showToast('Cover image uploaded. Save the project to apply it.');
+      return true;
+    } catch (err) {
+      status.textContent = `Upload failed: ${err.message}`;
+      showToast(err.message, 'error');
+      fileInput.value = '';
+      return false;
+    } finally {
+      fileInput.disabled = false;
+    }
+  })();
+  await projectCoverUploadPromise;
 }
 
 async function deleteProject(id, title) {
