@@ -26,8 +26,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </a>
           <a
             aria-label="Yogendra on Behance"
-            href={settings.behanceUrl || 'https://www.behance.net/yogendrach'}
-            rel="noreferrer"
+            href={(settings.behanceUrl && settings.behanceUrl.includes('yogendrachaudhary1')) ? settings.behanceUrl : 'https://www.behance.net/yogendrachaudhary1'}
+            rel="noopener noreferrer"
             target="_blank"
           >
             Behance
@@ -35,15 +35,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <a
             aria-label="Open Yogendra’s resume"
             href={settings.resumeUrl || '/assets/Yogendra_Chaudhary_CV.pdf'}
-            rel="noreferrer"
+            rel="noopener noreferrer"
             target="_blank"
           >
             Resume
           </a>
           <a
             aria-label="Yogendra on LinkedIn"
-            href={settings.linkedinUrl || 'https://www.linkedin.com/in/yogendrach'}
-            rel="noreferrer"
+            href={settings.linkedinUrl ? (settings.linkedinUrl.startsWith('http') ? settings.linkedinUrl : `https://${settings.linkedinUrl}`) : 'https://www.linkedin.com/in/yogendrach'}
+            rel="noopener noreferrer"
             target="_blank"
           >
             LinkedIn

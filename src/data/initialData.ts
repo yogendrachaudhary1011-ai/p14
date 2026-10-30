@@ -7,7 +7,7 @@ export const initialSiteSettings: SiteSettings = {
   email: 'yogendrachaudhary2061@gmail.com',
   phone: '9843688407',
   location: 'Kathmandu, Nepal',
-  behanceUrl: 'https://www.behance.net/yogendrach',
+  behanceUrl: 'https://www.behance.net/yogendrachaudhary1',
   linkedinUrl: 'https://www.linkedin.com/in/yogendrach',
   availabilityText: 'Available for UI/UX and product design\nand collaboration.',
   availabilityStatus: 'Available',

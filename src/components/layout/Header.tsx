@@ -168,6 +168,24 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
               arrow_outward
             </span>
           </a>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <a
+              href={(settings.behanceUrl && settings.behanceUrl.includes('yogendrachaudhary1')) ? settings.behanceUrl : 'https://www.behance.net/yogendrachaudhary1'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: '12px', color: '#b8ff57', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--mono)' }}
+            >
+              Behance ↗
+            </a>
+            <a
+              href={settings.linkedinUrl ? (settings.linkedinUrl.startsWith('http') ? settings.linkedinUrl : `https://${settings.linkedinUrl}`) : 'https://www.linkedin.com/in/yogendrach'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: '12px', color: '#b8ff57', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--mono)' }}
+            >
+              LinkedIn ↗
+            </a>
+          </div>
           <a
             href="/admin"
             onClick={(e) => handleNavClick(e, '/admin')}

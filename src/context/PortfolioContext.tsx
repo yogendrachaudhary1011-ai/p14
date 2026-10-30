@@ -65,7 +65,17 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [settings, setSettings] = useState<SiteSettings>(() => {
     try {
       const stored = safeStorage.getItem(STORAGE_KEYS.SETTINGS);
-      return stored ? JSON.parse(stored) : initialSiteSettings;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (!parsed.behanceUrl || parsed.behanceUrl === 'https://www.behance.net/yogendrach') {
+          parsed.behanceUrl = 'https://www.behance.net/yogendrachaudhary1';
+        }
+        if (!parsed.linkedinUrl || parsed.linkedinUrl.includes('linkedin.com/in/yogendrach')) {
+          parsed.linkedinUrl = 'https://www.linkedin.com/in/yogendrach';
+        }
+        return { ...initialSiteSettings, ...parsed };
+      }
+      return initialSiteSettings;
     } catch {
       return initialSiteSettings;
     }
