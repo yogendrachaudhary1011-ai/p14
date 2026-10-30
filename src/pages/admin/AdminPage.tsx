@@ -602,6 +602,26 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Behance Profile URL</label>
+                  <input
+                    type="text"
+                    value={settings.behanceUrl || ''}
+                    placeholder="https://www.behance.net/..."
+                    onChange={(e) => updateSettings({ behanceUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">LinkedIn Profile URL</label>
+                  <input
+                    type="text"
+                    value={settings.linkedinUrl || ''}
+                    placeholder="https://www.linkedin.com/in/..."
+                    onChange={(e) => updateSettings({ linkedinUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
                 <div className="md:col-span-2">
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Availability Text</label>
                   <textarea

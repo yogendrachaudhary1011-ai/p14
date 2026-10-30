@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { IdCard } from '../components/home/IdCard';
+import { getPrewrittenMailtoUrl } from '../utils/emailUtils';
 
 interface HomePageProps {
   onNavigate: (path: string) => void;
@@ -518,7 +519,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <a
             aria-label="Let's connect"
             className="connect-fill-link"
-            href={`mailto:${settings.email}`}
+            href={getPrewrittenMailtoUrl(settings.email || 'yogendrachaudhary2061@gmail.com')}
           >
             <div className="connect-fill-inner">
               <span className="connect-fill-label">LET'S CONNECT</span>

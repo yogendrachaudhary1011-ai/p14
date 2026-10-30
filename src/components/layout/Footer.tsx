@@ -1,5 +1,6 @@
 import React from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
+import { getPrewrittenMailtoUrl } from '../../utils/emailUtils';
 
 interface FooterProps {
   onNavigate: (path: string) => void;
@@ -7,6 +8,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const { settings } = usePortfolio();
+  const emailUrl = getPrewrittenMailtoUrl(settings.email || 'yogendrachaudhary2061@gmail.com');
 
   return (
     <footer className="case-footer">
@@ -16,16 +18,19 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <span>{settings.footerSubtitle}</span>
         </div>
         <nav aria-label="Social channels" className="case-footer-socials">
-          <a aria-label="Email Yogendra" href={`mailto:${settings.email}`}>
+          <a
+            aria-label="Email Yogendra Chaudhary"
+            href={emailUrl}
+          >
             Email
           </a>
           <a
-            aria-label="Open Yogendra’s portfolio"
-            href={settings.seo.canonicalUrl || 'https://yogendrach.vercel.app'}
+            aria-label="Yogendra on Behance"
+            href={settings.behanceUrl || 'https://www.behance.net/yogendrach'}
             rel="noreferrer"
             target="_blank"
           >
-            Portfolio
+            Behance
           </a>
           <a
             aria-label="Open Yogendra’s resume"
@@ -36,34 +41,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             Resume
           </a>
           <a
-            aria-label="Call Yogendra"
-            href={`tel:${settings.phone}`}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Phone
-          </a>
-          <a
             aria-label="Yogendra on LinkedIn"
-            href="https://www.linkedin.com/in/yogendrach"
+            href={settings.linkedinUrl || 'https://www.linkedin.com/in/yogendrach'}
             rel="noreferrer"
             target="_blank"
           >
             LinkedIn
           </a>
-          <button
-            onClick={() => onNavigate('/admin')}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#5c5c6e',
-              cursor: 'pointer',
-              fontSize: 'inherit',
-              padding: 0
-            }}
-          >
-            Admin
-          </button>
         </nav>
       </div>
     </footer>

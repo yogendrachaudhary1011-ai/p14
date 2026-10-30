@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
+import { getPrewrittenMailtoUrl } from '../../utils/emailUtils';
 
 interface HeaderProps {
   currentPath: string;
@@ -11,6 +12,8 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [progressWidth, setProgressWidth] = useState(0);
+
+  const emailUrl = getPrewrittenMailtoUrl(settings.email || 'yogendrachaudhary2061@gmail.com');
 
   const isCaseStudy = currentPath !== '/' && currentPath !== '/projects' && currentPath !== '/about' && currentPath !== '/admin';
 
@@ -85,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
           <a
             aria-label="Email Yogendra"
             className="nav-talk"
-            href={`mailto:${settings.email}`}
+            href={emailUrl}
           >
             Let's Talk
             <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
@@ -158,7 +161,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
           <a
             aria-label="Email Yogendra"
             className="mobile-talk"
-            href={`mailto:${settings.email}`}
+            href={emailUrl}
           >
             Let's Talk
             <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">

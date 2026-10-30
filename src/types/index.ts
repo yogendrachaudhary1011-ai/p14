@@ -5,6 +5,8 @@ export interface SiteSettings {
   email: string;
   phone: string;
   location: string;
+  behanceUrl?: string;
+  linkedinUrl?: string;
   availabilityText: string;
   availabilityStatus: string;
   footerText: string;
