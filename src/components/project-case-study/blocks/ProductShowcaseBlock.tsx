@@ -34,14 +34,14 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
           <button
             onClick={scrollLeft}
             aria-label="Scroll left"
-            className="w-8 h-8 rounded-full bg-zinc-900 border border-white/10 text-white hover:bg-zinc-800 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-zinc-900 border border-white/10 text-white hover:bg-zinc-800 hover:scale-105 active:scale-95 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-md"
           >
             <span className="material-symbols-rounded text-sm">arrow_back</span>
           </button>
           <button
             onClick={scrollRight}
             aria-label="Scroll right"
-            className="w-8 h-8 rounded-full bg-zinc-900 border border-white/10 text-white hover:bg-zinc-800 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-zinc-900 border border-white/10 text-white hover:bg-zinc-800 hover:scale-105 active:scale-95 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-md"
           >
             <span className="material-symbols-rounded text-sm">arrow_forward</span>
           </button>
@@ -60,7 +60,7 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
               key={idx}
               className={`shrink-0 ${
                 isMobile ? 'w-[76vw] sm:w-[300px] md:w-[320px]' : 'w-[84vw] sm:w-[380px] md:w-[440px]'
-              } max-w-[440px] h-[480px] sm:h-[540px] md:h-[580px] rounded-[10px] overflow-hidden border border-white/10 bg-zinc-950 flex flex-col shadow-2xl transition-transform hover:-translate-y-1`}
+              } max-w-[440px] h-[480px] sm:h-[540px] md:h-[580px] rounded-[10px] overflow-hidden border border-white/10 bg-zinc-950 flex flex-col shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-[0_24px_48px_rgba(0,0,0,0.85)]`}
             >
               {/* Device Frame Top Bar */}
               <div className="px-4 py-2.5 bg-zinc-900/90 border-b border-white/10 flex items-center justify-between text-xs text-zinc-400 font-mono select-none">

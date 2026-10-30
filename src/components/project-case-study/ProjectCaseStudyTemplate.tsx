@@ -20,11 +20,11 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
   // Normalize project sections
   const sections = useMemo(() => normalizeProjectSections(project), [project]);
 
-  // Dynamic navigation items computed from visible sections
+  // Dynamic navigation items computed from visible sections matching Figma 10 outline items
   const navSections = useMemo(
     () =>
       sections
-        .filter((s) => s.visible)
+        .filter((s) => s.visible && s.id !== 'why-works' && s.id !== 'differently')
         .map((s) => ({
           id: s.id,
           label: s.navigationLabel
@@ -35,12 +35,18 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
   const [activeSection, setActiveSection] = useState<string>(() => {
     return navSections[0]?.id || '';
   });
+  const [scrollProgress, setScrollProgress] = useState(0);
 
-  // Track active section on scroll
+  // Track active section and reading scroll progress
   useEffect(() => {
-    if (navSections.length === 0) return;
-
     const handleScroll = () => {
+      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalScroll > 0) {
+        const currentProgress = (window.scrollY / totalScroll) * 100;
+        setScrollProgress(Math.min(100, Math.max(0, currentProgress)));
+      }
+
+      if (navSections.length === 0) return;
       const scrollPos = window.scrollY + 200;
       for (let i = navSections.length - 1; i >= 0; i--) {
         const el = document.getElementById(navSections[i].id);
@@ -73,7 +79,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
   // Status check: if draft and not admin preview
   if (project.status === 'draft' && !isAdminPreview) {
     return (
-      <div className="w-full min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 text-center font-['Plus_Jakarta_Sans']">
+      <div className="w-full min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 text-center font-sans">
         <div className="p-8 rounded-[10px] bg-zinc-950 border border-white/10 max-w-md flex flex-col items-center gap-4">
           <span className="material-symbols-rounded text-4xl text-[#ff853a]">lock</span>
           <h2 className="text-2xl font-bold">Project Under Review</h2>
@@ -92,7 +98,15 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
   }
 
   return (
-    <div className="w-full bg-black text-white font-['Plus_Jakarta_Sans'] flex flex-col items-center overflow-x-hidden selection:bg-[#ff853a] selection:text-white">
+    <div className="w-full bg-black text-white font-sans flex flex-col items-center selection:bg-[#ff853a] selection:text-white">
+      {/* Sleek Top Reading Scroll Progress Bar */}
+      <div className="fixed top-0 left-0 w-full h-[2.5px] z-50 pointer-events-none bg-white/5">
+        <div
+          className="h-full bg-gradient-to-r from-white via-[#ff853a] to-white transition-all duration-150 ease-out shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
+
       {/* Admin preview banner */}
       {isAdminPreview && (
         <div className="w-full bg-[#ff853a]/20 border-b border-[#ff853a]/40 text-[#ff853a] text-xs font-mono py-2 px-4 text-center tracking-wider sticky top-0 z-50 backdrop-blur-md">
@@ -100,8 +114,8 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
         </div>
       )}
 
-      {/* Main Container matching w-[1521px] from provided Figma design */}
-      <div className="w-full max-w-[1521px] relative bg-black flex flex-col justify-start items-center">
+      {/* Main Container */}
+      <div className="w-full max-w-[1440px] mx-auto relative bg-black flex flex-col justify-start items-center box-border animate-cs-fade-in">
         {/* Decorative Grid Lines matching Figma spec */}
         <div className="w-full h-[735.20px] left-0 top-[1px] absolute opacity-5 pointer-events-none select-none overflow-hidden">
           <div className="w-px h-[735.20px] left-[7%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
@@ -142,7 +156,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
         />
 
         {/* Two-Column Case Study Section with Left Sticky Navigation */}
-        <div className="w-full max-w-[1399.13px] px-4 sm:px-6 md:px-8 lg:px-0 flex flex-col lg:flex-row justify-between items-start gap-8 sm:gap-12 lg:gap-16 relative pb-28 pt-4">
+        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col lg:flex-row justify-between items-start gap-8 sm:gap-12 lg:gap-16 relative pb-28 pt-4 box-border">
           {/* Left Table of Contents Nav */}
           <SectionNavigation
             sections={navSections}
@@ -160,17 +174,17 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
             <div className="pt-12 pb-16 border-t border-white/20 flex flex-col sm:flex-row justify-between items-center gap-6">
               <button
                 onClick={() => (onNavigate ? onNavigate('/projects') : window.history.back())}
-                className="inline-flex items-center gap-2 text-white hover:text-[#ff853a] transition-colors text-base font-medium cursor-pointer"
+                className="inline-flex items-center gap-2 text-white hover:text-[#ff853a] transition-all duration-200 hover:-translate-x-1.5 text-base font-medium cursor-pointer group"
               >
-                <span className="material-symbols-rounded">arrow_back</span>
+                <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-x-1">arrow_back</span>
                 <span>Explore all projects</span>
               </button>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm cursor-pointer"
+                className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-all duration-200 hover:-translate-y-1 text-sm cursor-pointer group"
               >
                 <span>Back to top</span>
-                <span className="material-symbols-rounded">arrow_upward</span>
+                <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-y-1">arrow_upward</span>
               </button>
             </div>
           </main>

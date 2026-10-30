@@ -4,11 +4,11 @@ import { QuoteBlockItem, CtaBlockItem, DividerBlockItem, SpacerBlockItem } from 
 export const QuoteBlock: React.FC<{ block: QuoteBlockItem }> = ({ block }) => {
   return (
     <div className="w-full my-4 p-4 sm:p-6 md:p-8 rounded-[5px] bg-zinc-950 border-l-4 border-[#ff853a] flex flex-col gap-3">
-      <blockquote className="text-white text-lg sm:text-xl md:text-2xl font-normal font-['Plus_Jakarta_Sans'] italic leading-relaxed break-words">
+      <blockquote className="text-white text-lg sm:text-xl md:text-2xl font-normal font-sans italic leading-relaxed break-words">
         “{block.quote}”
       </blockquote>
       {(block.author || block.role) && (
-        <div className="text-zinc-400 text-xs sm:text-sm font-['Plus_Jakarta_Sans'] flex flex-wrap items-center gap-2">
+        <div className="text-zinc-400 text-xs sm:text-sm font-sans flex flex-wrap items-center gap-2">
           {block.author && <span className="font-semibold text-white">{block.author}</span>}
           {block.author && block.role && <span className="text-zinc-600">·</span>}
           {block.role && <span>{block.role}</span>}
@@ -26,7 +26,7 @@ export const CtaBlock: React.FC<{ block: CtaBlockItem }> = ({ block }) => {
         href={block.url}
         target={block.isExternal ? '_blank' : '_self'}
         rel={block.isExternal ? 'noopener noreferrer' : undefined}
-        className={`inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 rounded-[5px] text-sm sm:text-base font-medium font-['Plus_Jakarta_Sans'] transition-all text-center max-w-full break-words ${
+        className={`inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 rounded-[5px] text-sm sm:text-base font-medium font-sans transition-all text-center max-w-full break-words ${
           isPrimary
             ? 'bg-white text-black hover:bg-zinc-200'
             : 'border-[1.60px] border-white text-white hover:bg-white hover:text-black'

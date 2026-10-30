@@ -23,45 +23,44 @@ export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block }) => {
   return (
     <div
       data-cols={targetCols}
-      className={`w-full case-study-card-grid grid ${gridColsClass} gap-4 sm:gap-5 md:gap-6 my-3 sm:my-4`}
+      className={`w-full case-study-card-grid grid ${gridColsClass} gap-4 sm:gap-5 my-2`}
     >
       {cards.map((card, idx) => {
-        // If 2 columns and odd number of cards (e.g. 3 cards in 2-col mode), span the last card across 2 columns on tablet/desktop
         const isLastOddInTwoCols =
           targetCols === 2 && cardCount % 2 === 1 && idx === cardCount - 1;
 
         return (
           <div
             key={idx}
-            className={`w-full h-full min-w-0 p-5 sm:p-6 md:p-7 bg-zinc-900/90 rounded-[8px] border border-white/10 hover:border-white/20 hover:bg-zinc-800/80 transition-all flex flex-col justify-start items-start gap-3.5 shadow-sm self-stretch ${
+            className={`w-full h-full min-w-0 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 flex flex-col justify-start items-start gap-2.5 cs-interactive-card self-stretch ${
               isLastOddInTwoCols ? 'md:col-span-2' : ''
             }`}
           >
             {card.badge && (
-              <span className="text-[11px] font-mono uppercase tracking-wider text-[#ff853a] px-2.5 py-1 rounded bg-zinc-800 border border-white/5">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-white/70 px-2 py-0.5 rounded bg-zinc-800">
                 {card.badge}
               </span>
             )}
             <div className="w-full flex flex-col justify-start items-start">
-              <h4 className="text-white text-base sm:text-lg md:text-xl font-semibold font-['Plus_Jakarta_Sans'] leading-snug break-words">
+              <h4 className="text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 break-words">
                 {card.title}
               </h4>
             </div>
             {card.desc && (
               <div className="w-full flex flex-col justify-start items-start">
-                <p className="text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-relaxed break-words">
+                <p className="text-zinc-500 text-xs sm:text-sm font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4 sm:leading-5 break-words">
                   {card.desc}
                 </p>
               </div>
             )}
             {card.items && card.items.length > 0 && (
-              <div className="w-full flex flex-col justify-start items-start gap-2.5 pt-1">
+              <div className="w-full flex flex-col justify-start items-start gap-2 pt-1">
                 {card.items.map((item, itemIdx) => (
                   <div
                     key={itemIdx}
-                    className="flex items-start gap-2.5 text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-relaxed break-words"
+                    className="flex items-start gap-2 text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words"
                   >
-                    <span className="text-[#ff853a] select-none text-base leading-none mt-1 shrink-0">•</span>
+                    <span className="text-white/40 select-none text-sm leading-none mt-1 shrink-0">•</span>
                     <span className="min-w-0 flex-1">{item}</span>
                   </div>
                 ))}

@@ -32,8 +32,8 @@ export function getSavedCredentials(): { url: string; key: string } {
   const localUrl = safeStorage.getItem(STORAGE_KEYS.URL) || '';
   const localKey = safeStorage.getItem(STORAGE_KEYS.KEY) || '';
 
-  const effectiveKey = envKey || localKey || DEFAULT_SUPABASE_KEY;
-  const effectiveUrl = normalizeSupabaseUrl(envUrl || localUrl || SUGGESTED_SUPABASE_URL);
+  const effectiveKey = envKey || localKey || '';
+  const effectiveUrl = (envUrl || localUrl) ? normalizeSupabaseUrl(envUrl || localUrl) : '';
 
   return {
     url: effectiveUrl,

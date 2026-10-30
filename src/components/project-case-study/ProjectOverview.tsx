@@ -24,13 +24,13 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   externalProjectUrl
 }) => {
   return (
-    <div className="w-full max-w-[1399.13px] px-4 sm:px-6 md:px-8 lg:px-0 flex flex-col justify-center items-center gap-8 sm:gap-12 md:gap-16 relative z-10">
-      {/* Big Hero Image */}
-      <div className="w-full rounded-[6px] md:rounded-[8px] overflow-hidden border border-white/10 shadow-2xl bg-zinc-950 flex justify-center items-center aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] max-h-[728px]">
+    <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col justify-center items-center gap-8 sm:gap-12 md:gap-16 relative z-10 box-border">
+      {/* Big Hero Image with reveal and hover depth */}
+      <div className="w-full rounded-none md:rounded-[6px] overflow-hidden bg-zinc-950 flex justify-center items-center aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] max-h-[728px] max-w-full animate-cs-image-reveal group">
         <img
           src={heroImage || 'https://placehold.co/1539x728/111317/ffffff?text=Case+Study+Hero'}
           alt={heroImageAlt || 'Hero visual'}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.015]"
           loading="eager"
           onError={(e) => {
             (e.target as HTMLImageElement).src = 'https://placehold.co/1539x728/111317/ffffff?text=Case+Study+Hero';
@@ -39,54 +39,54 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
       </div>
 
       {/* Intro Narrative and Metadata Spec */}
-      <div className="w-full flex flex-col justify-start items-start gap-8 sm:gap-12">
+      <div className="w-full flex flex-col justify-start items-start gap-10 sm:gap-14">
         {/* Intro Paragraph */}
         {introduction && (
-          <div className="w-full">
-            <p className="text-white text-base sm:text-lg md:text-xl lg:text-2xl font-normal font-['Plus_Jakarta_Sans'] leading-relaxed md:leading-9 max-w-5xl">
+          <div className="w-full max-w-full animate-cs-slide-up-delay-1">
+            <p className="w-full text-white text-lg sm:text-xl font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed sm:leading-7 break-words [text-wrap:pretty]">
               {introduction}
             </p>
           </div>
         )}
 
-        {/* Metadata Table */}
-        <div className="w-full max-w-3xl flex flex-col justify-center items-start gap-6 sm:gap-8">
-          <div className="w-full flex flex-col justify-center items-start gap-3 sm:gap-4">
+        {/* Metadata Table matching Figma specs (w-[700px] / max-w-full) */}
+        <div className="w-full max-w-[700px] flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
+          <div className="w-full flex flex-col justify-center items-start gap-6">
             {/* My Role */}
             {role && (
-              <div className="w-full flex flex-col sm:flex-row justify-start items-start sm:items-baseline gap-1 sm:gap-6 py-1">
-                <span className="w-36 sm:w-48 md:w-52 shrink-0 text-white text-base sm:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">
+              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
+                <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   My Role:
-                </span>
-                <span className="flex-1 text-left text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-6">
+                </div>
+                <div className="w-full sm:w-80 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5">
                   {role}
-                </span>
+                </div>
               </div>
             )}
 
             {/* Duration */}
             {duration && (
-              <div className="w-full flex flex-col sm:flex-row justify-start items-start sm:items-baseline gap-1 sm:gap-6 py-1">
-                <span className="w-36 sm:w-48 md:w-52 shrink-0 text-white text-base sm:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">
+              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
+                <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   Duration:
-                </span>
-                <span className="flex-1 text-left text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-6">
+                </div>
+                <div className="w-full sm:w-80 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5">
                   {duration}
-                </span>
+                </div>
               </div>
             )}
 
             {/* Deliverables */}
             {deliverables && deliverables.length > 0 && (
-              <div className="w-full flex flex-col sm:flex-row justify-start items-start gap-1 sm:gap-6 py-1">
-                <span className="w-36 sm:w-48 md:w-52 shrink-0 text-white text-base sm:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6">
-                  Deliverables:
-                </span>
-                <div className="flex-1 text-left flex flex-col gap-1.5">
+              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
+                <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
+                  Deliverables
+                </div>
+                <div className="w-full sm:w-80 flex flex-col gap-2.5">
                   {deliverables.map((item, idx) => (
                     <div
                       key={idx}
-                      className="text-zinc-400 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans'] leading-6 text-left"
+                      className="text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5"
                     >
                       {item}
                     </div>
@@ -96,17 +96,17 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             )}
           </div>
 
-          {/* Action Buttons: Figma & External Project */}
-          <div className="w-full flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
+          {/* Action Buttons: Figma & External Project with micro-interaction hover */}
+          <div className="w-full flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4 pt-1">
             {figmaUrl && (
               <a
                 href={figmaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 rounded-[4px] border-[1.60px] border-white text-white text-sm sm:text-base md:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6 hover:bg-white hover:text-black transition-all cursor-pointer text-center"
+                className="inline-flex items-center justify-center px-6 py-4 rounded-sm border-[1.60px] border-white text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group"
               >
                 <span>{figmaButtonText || 'View Figma File'}</span>
-                <span className="material-symbols-rounded text-sm ml-2">open_in_new</span>
+                <span className="material-symbols-rounded text-sm ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">open_in_new</span>
               </a>
             )}
 
@@ -115,18 +115,18 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 href={externalProjectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 rounded-[4px] bg-white text-black text-sm sm:text-base md:text-lg font-normal font-['Plus_Jakarta_Sans'] leading-6 hover:bg-zinc-200 transition-all cursor-pointer text-center"
+                className="inline-flex items-center justify-center px-6 py-4 rounded-sm bg-white text-black text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group shadow-md hover:shadow-white/10"
               >
                 <span>Live Project URL</span>
-                <span className="material-symbols-rounded text-sm ml-2">arrow_outward</span>
+                <span className="material-symbols-rounded text-sm ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">arrow_outward</span>
               </a>
             )}
           </div>
         </div>
       </div>
 
-      {/* Thin white divider before content sections */}
-      <div className="w-full h-0.5 bg-white opacity-80 my-2" />
+      {/* Thin white divider before content sections matching Figma with expand animation */}
+      <div className="w-full h-0.5 bg-white my-4 animate-cs-expand-line" />
     </div>
   );
 };

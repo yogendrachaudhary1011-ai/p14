@@ -52,7 +52,7 @@ interface PortfolioContextType {
 
 const STORAGE_KEYS = {
   SETTINGS: 'yc_portfolio_settings_v5',
-  PROJECTS: 'yc_portfolio_projects_v5',
+  PROJECTS: 'yc_portfolio_projects_v6',
   EXPERIENCE: 'yc_portfolio_experience_v2',
   EDUCATION: 'yc_portfolio_education',
   MEDIA: 'yc_portfolio_media',
@@ -73,11 +73,18 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [projects, setProjects] = useState<Project[]>(() => {
     try {
+      // Clear legacy storage versions to prevent deleted projects from persisting in local browser cache
+      safeStorage.removeItem('yc_portfolio_projects_v5');
+      safeStorage.removeItem('yc_portfolio_projects_v4');
+      safeStorage.removeItem('yc_portfolio_projects_v3');
       const stored = safeStorage.getItem(STORAGE_KEYS.PROJECTS);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          const somtuOnly = parsed.filter(p => p.id === 'somtu');
+          if (somtuOnly.length > 0) {
+            return somtuOnly;
+          }
         }
       }
       return initialProjects;
@@ -122,14 +129,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           url: '/assets/media/home-media-04-f775f2921176.webp',
           mimeType: 'image/webp',
           size: 218000,
-          uploadedAt: new Date().toISOString()
-        },
-        {
-          id: 'media-03',
-          name: 'DANA Case Cover',
-          url: '/assets/media/home-media-03-d6c887bed8af.webp',
-          mimeType: 'image/webp',
-          size: 195000,
           uploadedAt: new Date().toISOString()
         }
       ];

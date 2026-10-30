@@ -69,31 +69,34 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
         )}
       </div>
 
-      {/* DESKTOP STICKY LEFT NAVIGATION (matching Figma w-72) */}
+      {/* DESKTOP STICKY LEFT NAVIGATION - Pure Black Figma Outline Style */}
       <nav
         aria-label="Case Study Table of Contents"
-        className="hidden lg:flex w-72 shrink-0 sticky top-28 self-start flex-col justify-start items-start gap-2.5 z-20 py-2"
+        className="hidden lg:flex w-72 shrink-0 sticky top-24 self-start flex-col justify-start items-start gap-3 z-30 pt-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        style={{
+          position: 'sticky',
+          top: '96px',
+          alignSelf: 'flex-start'
+        }}
       >
-        <div className="text-[11px] font-mono uppercase tracking-widest text-zinc-500 mb-1 px-3 select-none">
-          CASE STUDY OUTLINE
-        </div>
-
-        <div className="w-full flex flex-col gap-1">
+        <div className="w-full flex flex-col gap-2">
           {sections.map((item) => {
             const isActive = activeSection === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => onSelectSection(item.id)}
-                className={`w-full text-left py-2 px-3 rounded-[4px] relative flex items-center justify-between text-base font-['Plus_Jakarta_Sans'] transition-all cursor-pointer ${
+                className={`w-full text-left py-1.5 px-0 relative flex items-center justify-between text-lg font-['Plus_Jakarta_Sans',sans-serif] leading-6 transition-all duration-200 cursor-pointer group ${
                   isActive
-                    ? 'text-white font-medium bg-white/10 translate-x-1'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                    ? 'text-white font-medium translate-x-1'
+                    : 'text-zinc-400 hover:text-white hover:translate-x-0.5'
                 }`}
               >
                 <span className="truncate pr-2">{item.label}</span>
-                {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#ff853a] shrink-0" />
+                {isActive ? (
+                  <span className="w-6 h-0.5 bg-white shrink-0 rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                ) : (
+                  <span className="w-2 h-0.5 bg-white/0 group-hover:bg-white/40 shrink-0 transition-all duration-200 rounded-full" />
                 )}
               </button>
             );
