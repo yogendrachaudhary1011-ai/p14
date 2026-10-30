@@ -21,8 +21,220 @@ export const initialSiteSettings: SiteSettings = {
   }
 };
 
-// All projects removed per permanent deletion request
-export const initialProjects: Project[] = [];
+export const initialProjects: Project[] = [
+  {
+    id: 'project-somtu',
+    title: 'SOMTU',
+    slug: 'somtu',
+    heroSubtitle: 'A case study on designing the complete School of Management, Tribhuvan University website, from landing page to registration, across desktop and mobile, as a design intern at Aarawan Media & Tech.',
+    category: 'product',
+    categoryLabel: 'Case Study',
+    mediaNote: 'Complete academic web experience with 87 screens and design system',
+    coverImage: 'https://placehold.co/1539x728/111317/f37021?text=SOMTU+School+of+Management',
+    year: '2026',
+    order: 1,
+    status: 'published',
+    featured: true,
+    summary: 'The School of Management at Tribhuvan University (SOMTU) is a Kathmandu-based management school. I designed its public website: how people discover programs, apply, read notices, join events, explore research, and find official documents.',
+    route: '/somtu',
+    role: 'UI/UX Design Intern',
+    duration: '1 Month',
+    deliverables: [
+      '87 screens and states in Figma',
+      '81 component variants',
+      'Desktop (1440 px) and mobile (428 px)',
+      'A design reference document for developers'
+    ],
+    figmaUrl: 'https://www.figma.com',
+    figmaButtonText: 'View Figma File',
+    problem: {
+      headline: 'THE PROBLEM',
+      intro: 'Existing pet tracking apps had less than 20% weekly retention. Dog owners were downloading them, logging a few activities, then abandoning them within days.',
+      cards: [
+        {
+          title: 'Applicants need a clear path',
+          items: [
+            'Which program fits, and when does it close?',
+            'Long application forms are easy to abandon',
+            'Admission status must be easy to trust'
+          ]
+        },
+        {
+          title: 'Students return for tasks',
+          items: [
+            'Exam notices, results, and official documents',
+            'Searching a long list is slow',
+            'Most visits happen on a phone'
+          ]
+        },
+        {
+          title: 'The school needs credibility',
+          items: [
+            'Research, events, and news must feel current',
+            'Official content in Nepali and English',
+            'One consistent brand across every page'
+          ]
+        }
+      ],
+      image: 'https://placehold.co/1079x660/12141a/f37021?text=SOMTU+Problem+Discovery'
+    },
+    challenge: {
+      headline: 'MY CHALLENGE',
+      statement: 'Design one connected website where every audience can reach their task in a few taps, on desktop and mobile, while keeping the School of Management’s brand consistent across more than ten feature areas.',
+      constraints: [
+        'Many content types: programs, news, notices, events, research, forms, documents',
+        'An established blue and orange brand to extend, not replace',
+        'Real content, long lists, and PDF-based notices',
+        'Two target sizes, 1440 px and 428 px, designed as equals'
+      ]
+    },
+    insights: {
+      headline: 'The aha moment - insights',
+      tagline: 'Consistency is emotional, not functional.',
+      cards: [
+        {
+          title: 'People come to do one thing.',
+          desc: 'Apply, check a result, find a notice. Every page should make its main action obvious.'
+        },
+        {
+          title: 'Lists are the website.',
+          desc: 'News, notices, events, research, and documents are all lists, so one search and filter pattern can serve them all.'
+        },
+        {
+          title: 'Long forms need a map.',
+          desc: 'A stepper, a review step, and a confirmation turn a heavy application into a guided path.'
+        }
+      ]
+    },
+    keyDecisions: {
+      headline: 'KEY DECISIONS & WHY?',
+      image: 'https://placehold.co/1079x660/151821/f37021?text=SOMTU+Architecture+Decisions',
+      decisions: [
+        {
+          title: 'One shell for every page',
+          constraint: 'More than ten feature areas, each with its own audience.',
+          whatIDid: 'Built a shared header: an announcement bar for live admissions news, utility links for SOMAT Result, Resources, Research, and Publications, a main menu with dropdowns, and a persistent Apply Now button.',
+          why: 'People always know where they are and where the next action is, and every page inherits the same structure.'
+        },
+        {
+          title: 'A landing page that leads with two actions',
+          constraint: 'A university home page can say everything and help no one.',
+          whatIDid: 'A full-width “Knowledge Without Borders” hero with Explore Programs and Apply Now, then programs, milestones, and faculty.',
+          why: 'Browsers and ready-to-apply visitors both get an obvious first tap.'
+        },
+        {
+          title: 'Program pages from one template',
+          constraint: 'Multiple programs required cohesive navigation.',
+          whatIDid: 'Standardized layout with curriculum overview, eligibility criteria, admission timeline, and quick application anchor.',
+          why: 'Applicants can compare programs without learning a new page format.'
+        },
+        {
+          title: 'Updates and notices as two different experiences',
+          constraint: 'Stories are browsed, notices are looked up.',
+          whatIDid: 'Two tabs with shared search and filters. Updates lead with a featured story. Notices use date-first cards, category chips with counts, and a mobile filter sheet. Notice pages add status, dates, Share, and Download PDF.',
+          why: 'Each content type gets the layout that suits how it is read.'
+        },
+        {
+          title: 'Event pages that change with the event',
+          constraint: 'Events have time-sensitive phases.',
+          whatIDid: 'Designed detail pages for upcoming, registered, ended, and completed events, with status card such as “This event has not started yet” and a separate registration page.',
+          why: 'Visitors see the right action at the right time instead of a button that no longer works.'
+        },
+        {
+          title: 'Registration as a guided path',
+          constraint: 'An admission application asks for a lot of information.',
+          whatIDid: 'Split it into seven steps (general details, academic report, financial support, referees, Why SOMTU, required documents, review and submit) with a numbered stepper, the selected program beside the form, and a confirmation with an application ID and help contacts.',
+          why: 'People always see how far they are, can check everything before sending, and finish with proof that it worked.'
+        },
+        {
+          title: 'Research that reads like a publication',
+          constraint: 'Scholarly papers need proper context and citation.',
+          whatIDid: 'A featured study, filters for publications, research projects, working projects, and case studies, a sort control, pagination, and detail pages with Download PDF and an accordion for long content on mobile.',
+          why: 'Academic content gets credibility and depth without overwhelming a small screen.'
+        }
+      ]
+    },
+    solution: {
+      headline: 'SOLUTION',
+      tagline: 'Six ideas held the whole website together.',
+      cards: [
+        { title: 'One shell', desc: 'Shared header, footer, and Apply Now on every page.' },
+        { title: 'Action-first pages', desc: 'Each page makes its main action obvious.' },
+        { title: 'One list pattern', desc: 'Search, chips, and pagination reused for news, notices, events, research, and resources.' },
+        { title: 'Guided forms', desc: 'Steppers, review, and confirmation for long tasks.' },
+        { title: 'State-aware screens', desc: 'Upcoming, ended, empty, and success states designed, not left to chance.' },
+        { title: 'Mobile as an equal', desc: 'Every chapter designed at 428 px with its own patterns.' }
+      ],
+      image: 'https://placehold.co/1079x660/171a25/f37021?text=SOMTU+Final+Interface+System'
+    },
+    whyWorks: {
+      headline: 'Why this approach works?',
+      cards: [
+        { title: 'Familiar everywhere', desc: 'Learn one page and you know the rest.' },
+        { title: 'Faster tasks', desc: 'Search and filters reach any item in a few taps.' },
+        { title: 'Easier to build', desc: 'Repeated patterns and a documented library cut handoff questions.' }
+      ]
+    },
+    whatNeededWork: {
+      headline: 'but.. WHAT NEEDED WORK?',
+      firstAttempt: 'Show every category chip on mobile, as on desktop.',
+      problem: 'Seven chips with counts overflowed a 428 px screen and pushed results out of sight.',
+      fix: 'Moved the full set into a Filter Content sheet with sort, reset, and apply, and kept the main screen focused on results.',
+      learning: 'Desktop patterns do not shrink. They have to be redesigned for thumbs.'
+    },
+    designSystem: {
+      headline: 'DESIGN SYSTEM',
+      desc: 'I extended the School of Management’s blue and orange brand into a system for content-heavy pages: a campus-photo banner under the header, white cards on a pale surface, and orange reserved for actions. All 81 component variants are documented.',
+      images: [
+        'https://placehold.co/884x660/161922/ffffff?text=Design+System+Typography+%26+Colors',
+        'https://placehold.co/884x660/181c26/ffffff?text=Component+Variants+%26+Buttons',
+        'https://placehold.co/884x660/141822/ffffff?text=Form+Steppers+%26+Input+States',
+        'https://placehold.co/884x660/1c1f2b/ffffff?text=Navigation+Bar+%26+Filter+Chips',
+        'https://placehold.co/884x660/171a25/ffffff?text=Card+Grids+%26+Tables'
+      ]
+    },
+    product: {
+      headline: 'THE PRODUCT',
+      desc: 'Eleven feature areas, each designed for desktop and mobile. Scroll inside any frame to see the full screen.',
+      screens: [
+        'https://placehold.co/554x1200/181c25/ffffff?text=SOMTU+Homepage+Desktop',
+        'https://placehold.co/554x1200/141721/ffffff?text=Programs+Catalog+View',
+        'https://placehold.co/554x1200/191d27/ffffff?text=Admissions+7-Step+Application',
+        'https://placehold.co/554x1200/171b25/ffffff?text=Notices+%26+Examinations+List',
+        'https://placehold.co/554x1200/151924/ffffff?text=Research+Publications+Page',
+        'https://placehold.co/554x1200/1b1e2a/ffffff?text=Event+Detail+%26+Registration',
+        'https://placehold.co/554x1200/161a23/ffffff?text=Mobile+428px+Experience'
+      ]
+    },
+    learnings: {
+      headline: 'LEARNINGS',
+      cards: [
+        { title: 'Systems beat pages', desc: 'A shared shell and list pattern made ten feature areas feel like one product.' },
+        { title: 'Design every state', desc: 'Upcoming, ended, empty, and success states are part of the experience.' },
+        { title: 'Match layout to reading', desc: 'Stories, notices, and research each needed their own layout.' },
+        { title: 'Mobile is its own design', desc: 'Filters, forms, and long pages needed new patterns, not smaller ones.' }
+      ]
+    },
+    whatDoDifferently: {
+      headline: 'WHAT I\'D DO DIFFERENTLY',
+      cards: [
+        { title: 'Test with real users', desc: 'Run quick tests on applying and finding a notice.' },
+        { title: 'Document rationale', desc: 'Write short decision notes beside each chapter.' },
+        { title: 'Plan for language', desc: 'Design an English and Nepali toggle for notices and forms.' }
+      ]
+    },
+    projectConstraints: {
+      headline: 'PROJECT CONSTRAINTS',
+      intro: 'What shaped the work:',
+      items: [
+        'Internship project at Aarawan Media & Tech',
+        'An existing School of Management brand',
+        'Real content, including Nepali notices and PDFs',
+        'Desktop at 1440 px and mobile at 428 px as the two target sizes'
+      ]
+    }
+  }
+];
 
 export const initialExperience: ExperienceItem[] = [
   {

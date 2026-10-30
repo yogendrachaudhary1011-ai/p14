@@ -408,11 +408,62 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     />
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Summary / Description</label>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Hero Subtitle (Appears beside large title)</label>
+                    <textarea
+                      rows={2}
+                      value={projectFormData.heroSubtitle || ''}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, heroSubtitle: e.target.value })}
+                      placeholder="e.g. A case study on designing the complete web and mobile experience..."
+                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>My Role</label>
+                    <input
+                      type="text"
+                      value={projectFormData.role || ''}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, role: e.target.value })}
+                      placeholder="e.g. UI/UX & Product Designer"
+                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Duration</label>
+                    <input
+                      type="text"
+                      value={projectFormData.duration || ''}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, duration: e.target.value })}
+                      placeholder="e.g. 1 Month"
+                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Figma File URL</label>
+                    <input
+                      type="text"
+                      value={projectFormData.figmaUrl || ''}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, figmaUrl: e.target.value })}
+                      placeholder="https://www.figma.com/file/..."
+                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Deliverables (1 per line)</label>
+                    <textarea
+                      rows={3}
+                      value={Array.isArray(projectFormData.deliverables) ? projectFormData.deliverables.join('\n') : (projectFormData.deliverables || '')}
+                      onChange={(e) => setProjectFormData({ ...projectFormData, deliverables: e.target.value.split('\n').filter(Boolean) as any })}
+                      placeholder="87 screens and states in Figma&#10;81 component variants&#10;Desktop (1440 px) and mobile (428 px)"
+                      style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
+                    />
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8e8ea0', textTransform: 'uppercase', marginBottom: '6px' }}>Lead Summary / Project Overview</label>
                     <textarea
                       rows={3}
                       value={projectFormData.summary || ''}
                       onChange={(e) => setProjectFormData({ ...projectFormData, summary: e.target.value })}
+                      placeholder="Overview paragraph describing the organization, goals, and design scope..."
                       style={{ width: '100%', padding: '10px 12px', background: '#101115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#f0f0f4' }}
                     />
                   </div>

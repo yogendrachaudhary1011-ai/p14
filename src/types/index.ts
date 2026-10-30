@@ -19,13 +19,97 @@ export interface SiteSettings {
   };
 }
 
+export interface ProblemSection {
+  headline?: string;
+  intro: string;
+  cards: { title: string; items: string[] }[];
+  image?: string;
+}
+
+export interface ChallengeSection {
+  headline?: string;
+  statement: string;
+  constraints: string[];
+}
+
+export interface InsightsSection {
+  headline?: string;
+  tagline: string;
+  cards: { title: string; desc: string }[];
+}
+
+export interface KeyDecisionItem {
+  title: string;
+  constraintLabel?: string;
+  constraint: string;
+  whatIDidLabel?: string;
+  whatIDid: string;
+  whyLabel?: string;
+  why: string;
+}
+
+export interface KeyDecisionsSection {
+  headline?: string;
+  image?: string;
+  decisions: KeyDecisionItem[];
+}
+
+export interface SolutionSection {
+  headline?: string;
+  tagline: string;
+  cards: { title: string; desc: string }[];
+  image?: string;
+}
+
+export interface WhyWorksSection {
+  headline?: string;
+  cards: { title: string; desc: string }[];
+}
+
+export interface WhatNeededWorkSection {
+  headline?: string;
+  firstAttempt: string;
+  problem: string;
+  fix: string;
+  learning: string;
+}
+
+export interface DesignSystemSection {
+  headline?: string;
+  desc: string;
+  images: string[];
+}
+
+export interface ProductSection {
+  headline?: string;
+  desc: string;
+  screens: string[];
+}
+
+export interface LearningsSection {
+  headline?: string;
+  cards: { title: string; desc: string }[];
+}
+
+export interface WhatDoDifferentlySection {
+  headline?: string;
+  cards: { title: string; desc: string }[];
+}
+
+export interface ProjectConstraintsSection {
+  headline?: string;
+  intro?: string;
+  items: string[];
+}
+
 export interface Project {
   id: string;
   title: string;
   slug: string;
+  heroSubtitle?: string;
   category: 'product' | 'archive';
   categoryLabel: string;
-  mediaNote: string;
+  mediaNote?: string;
   coverImage: string;
   coverClass?: string;
   year: string;
@@ -34,18 +118,26 @@ export interface Project {
   featured: boolean;
   summary: string;
   route: string;
-  customTemplate?: string;
-  // Optional rich dynamic content blocks
-  contentBlocks?: ProjectContentBlock[];
-}
 
-export interface ProjectContentBlock {
-  id: string;
-  type: 'heading' | 'text' | 'image' | 'callout' | 'quote' | 'two-column';
-  title?: string;
-  text?: string;
-  imageUrl?: string;
-  imageCaption?: string;
+  // Case Study Blueprint Fields
+  role?: string;
+  duration?: string;
+  deliverables?: string[];
+  figmaUrl?: string;
+  figmaButtonText?: string;
+
+  problem?: ProblemSection;
+  challenge?: ChallengeSection;
+  insights?: InsightsSection;
+  keyDecisions?: KeyDecisionsSection;
+  solution?: SolutionSection;
+  whyWorks?: WhyWorksSection;
+  whatNeededWork?: WhatNeededWorkSection;
+  designSystem?: DesignSystemSection;
+  product?: ProductSection;
+  learnings?: LearningsSection;
+  whatDoDifferently?: WhatDoDifferentlySection;
+  projectConstraints?: ProjectConstraintsSection;
 }
 
 export interface ExperienceItem {
