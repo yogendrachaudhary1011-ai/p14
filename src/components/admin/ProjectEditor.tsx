@@ -132,6 +132,12 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
     }
   };
 
+  const uploadProjectMedia = async (file: File): Promise<MediaAsset> => {
+    const asset = await onUploadMedia(file);
+    setProjectMedia((current) => [asset, ...current.filter((item) => item.id !== asset.id)]);
+    return asset;
+  };
+
   const handleProjectMediaUpload = async (files: FileList | null) => {
     if (!files?.length) return;
     setUploadingFiles(true);
@@ -140,13 +146,12 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
     const failures: string[] = [];
     for (const file of Array.from(files)) {
       try {
-        uploaded.push(await onUploadMedia(file));
+        uploaded.push(await uploadProjectMedia(file));
       } catch (error) {
         failures.push(`${file.name}: ${error instanceof Error ? error.message : 'Upload failed'}`);
       }
     }
     if (uploaded.length) {
-      setProjectMedia((current) => [...uploaded, ...current.filter((asset) => !uploaded.some((item) => item.id === asset.id))]);
       const firstImage = uploaded.find((asset) => !isVideoMedia(asset.url, asset.mimeType));
       if (firstImage) {
         setHeroImageUrl((current) => current || firstImage.url);
@@ -600,6 +605,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
           sections={sections}
           onChange={(newSections) => setSections(newSections)}
           mediaLibrary={projectMedia}
+          onUploadMedia={uploadProjectMedia}
         />
       )}
 

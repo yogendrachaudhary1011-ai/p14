@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   CaseStudySection,
   CaseStudyBlock,
@@ -8,23 +8,36 @@ import {
 } from '../../types';
 import { createDefaultSection, createDefaultBlock } from '../../utils/caseStudyUtils';
 import { MediaPreview } from '../MediaPreview';
+import { Upload } from 'lucide-react';
 
 interface CaseStudyBuilderProps {
   sections: CaseStudySection[];
   onChange: (updatedSections: CaseStudySection[]) => void;
   mediaLibrary?: MediaAsset[];
+  onUploadMedia?: (file: File) => Promise<MediaAsset>;
 }
 
 export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
   sections,
   onChange,
-  mediaLibrary = []
+  mediaLibrary = [],
+  onUploadMedia
 }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string>(() => sections[0]?.id || '');
   const [newSectionType, setNewSectionType] = useState<SectionType>('problem');
   const [newBlockType, setNewBlockType] = useState<CaseStudyBlockType>('paragraph');
+  const [uploadingSectionMedia, setUploadingSectionMedia] = useState(false);
+  const [sectionUploadMessage, setSectionUploadMessage] = useState<string | null>(null);
+  const sectionMediaInputRef = useRef<HTMLInputElement>(null);
 
   const selectedSection = sections.find((s) => s.id === selectedSectionId) || sections[0];
+  const selectedSectionImageCount = (selectedSection?.blocks || []).reduce((count, block) => {
+    if (block.type === 'image' || block.type === 'fullWidthImage') return count + (block.url ? 1 : 0);
+    if (block.type === 'gallery') return count + block.images.length;
+    if (block.type === 'carousel') return count + block.slides.filter((slide) => !slide.url.includes('placehold.co')).length;
+    if (block.type === 'productShowcase') return count + block.screens.filter((screen) => !screen.url.includes('placehold.co')).length;
+    return count;
+  }, 0);
 
   const handleUpdateSection = (sectionId: string, updates: Partial<CaseStudySection>) => {
     const updated = sections.map((s) => (s.id === sectionId ? { ...s, ...updates } : s));
@@ -119,6 +132,72 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
     cloned[swapIdx] = temp;
 
     handleUpdateSection(selectedSection.id, { blocks: cloned });
+  };
+
+  const handleSectionMediaUpload = async (files: FileList | null) => {
+    if (!selectedSection || !files?.length || !onUploadMedia) return;
+    setUploadingSectionMedia(true);
+    setSectionUploadMessage(null);
+    const uploaded: MediaAsset[] = [];
+    const failures: string[] = [];
+    for (const file of Array.from(files)) {
+      try {
+        uploaded.push(await onUploadMedia(file));
+      } catch (error) {
+        failures.push(`${file.name}: ${error instanceof Error ? error.message : 'Upload failed'}`);
+      }
+    }
+    if (uploaded.length) {
+      const imageAssets = uploaded.filter((asset) => asset.mimeType.startsWith('image/'));
+      const blocks = [...(selectedSection.blocks || [])];
+      if (selectedSection.type === 'designSystem') {
+        let carousel = blocks.find((block) => block.type === 'carousel');
+        if (!carousel) {
+          carousel = { id: `blk-${Date.now()}-carousel`, type: 'carousel', slides: [] };
+          blocks.push(carousel);
+        }
+        if (carousel.type === 'carousel') {
+          const realSlides = carousel.slides.filter((slide) => !slide.url.includes('placehold.co'));
+          const slides = [...realSlides, ...imageAssets.map((asset, index) => ({
+            url: asset.url,
+            title: asset.name || `Design system image ${realSlides.length + index + 1}`,
+            alt: asset.name || `Design system image ${realSlides.length + index + 1}`
+          }))];
+          const at = blocks.findIndex((block) => block.id === carousel?.id);
+          blocks[at] = { ...carousel, slides };
+        }
+      } else if (selectedSection.type === 'product') {
+        let showcase = blocks.find((block) => block.type === 'productShowcase');
+        if (!showcase) {
+          showcase = { id: `blk-${Date.now()}-showcase`, type: 'productShowcase', screens: [] };
+          blocks.push(showcase);
+        }
+        if (showcase.type === 'productShowcase') {
+          const realScreens = showcase.screens.filter((screen) => !screen.url.includes('placehold.co'));
+          const screens = [...realScreens, ...imageAssets.map((asset, index) => ({
+            url: asset.url,
+            label: asset.name || `Product screen ${realScreens.length + index + 1}`,
+            device: (realScreens.length + index) % 2 === 0 ? 'desktop' as const : 'mobile' as const
+          }))];
+          const at = blocks.findIndex((block) => block.id === showcase?.id);
+          blocks[at] = { ...showcase, screens };
+        }
+      } else {
+        blocks.push(...imageAssets.map((asset) => ({
+          id: `blk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          type: 'fullWidthImage' as const,
+          url: asset.url,
+          alt: asset.name
+        })));
+      }
+      handleUpdateSection(selectedSection.id, { blocks });
+      const skipped = uploaded.length - imageAssets.length;
+      setSectionUploadMessage(`${imageAssets.length} image${imageAssets.length === 1 ? '' : 's'} uploaded to Supabase and added to ${selectedSection.navigationLabel || selectedSection.heading}.${skipped ? ` ${skipped} non-image file${skipped === 1 ? '' : 's'} skipped.` : ''}${failures.length ? ` ${failures.join(' · ')}` : ''}`);
+    } else {
+      setSectionUploadMessage(failures.join(' · ') || 'No images were uploaded.');
+    }
+    setUploadingSectionMedia(false);
+    if (sectionMediaInputRef.current) sectionMediaInputRef.current.value = '';
   };
 
   return (
@@ -319,6 +398,25 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                 />
               </div>
             </div>
+
+            {onUploadMedia && (
+              <section className="rounded-xl border border-[#ff853a]/25 bg-[#ff853a]/[0.05] p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-white text-sm font-semibold">Images for {selectedSection.navigationLabel || selectedSection.heading}</h4>
+                    <p className="text-zinc-400 text-xs mt-1">
+                      {selectedSection.type === 'designSystem' ? 'Upload multiple component and token images. They are added as carousel slides.' : selectedSection.type === 'product' ? 'Upload multiple product screens. They are added to the product showcase.' : 'Upload images for this section. They are added as full-width images in this section only.'}
+                    </p>
+                    <p className="text-[#ffb17d] text-[11px] mt-2">{selectedSectionImageCount} image{selectedSectionImageCount === 1 ? '' : 's'} currently assigned to this section · saved with this project</p>
+                  </div>
+                  <input ref={sectionMediaInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple className="hidden" onChange={(event) => void handleSectionMediaUpload(event.target.files)} />
+                  <button type="button" disabled={uploadingSectionMedia} onClick={() => sectionMediaInputRef.current?.click()} className="shrink-0 inline-flex items-center justify-center gap-2 rounded-lg bg-[#ff853a] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#ff721a] disabled:opacity-60">
+                    <Upload size={14} />{uploadingSectionMedia ? 'Uploading…' : 'Upload to this section'}
+                  </button>
+                </div>
+                {sectionUploadMessage && <p role="status" className="mt-3 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-zinc-200">{sectionUploadMessage}</p>}
+              </section>
+            )}
 
             {/* Blocks List */}
             <div className="flex flex-col gap-4">
