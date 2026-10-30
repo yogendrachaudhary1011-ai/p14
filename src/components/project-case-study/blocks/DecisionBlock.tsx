@@ -13,7 +13,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
           <img
             src={block.image}
             alt={block.imageAlt || 'Key architecture decision diagram'}
-            className="w-full h-auto object-cover max-h-[660px] transition-transform duration-500 ease-out group-hover:scale-[1.01]"
+            className="w-full h-auto object-cover max-h-[660px]"
             loading="lazy"
           />
         </div>
@@ -66,3 +66,4 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
     </div>
   );
 };
+
