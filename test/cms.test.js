@@ -4,6 +4,13 @@ import { loginUser, validateSession } from '../lib/auth.js';
 import { seedDatabaseIfNeeded } from '../lib/seed.js';
 import { getPublishedSnapshot, renderHtml } from '../lib/renderer.js';
 
+const testAdminUsername = process.env.TEST_ADMIN_USERNAME;
+const testAdminPassword = process.env.TEST_ADMIN_PASSWORD;
+if (!testAdminUsername || !testAdminPassword) {
+  throw new Error('Set TEST_ADMIN_USERNAME and TEST_ADMIN_PASSWORD for authentication tests.');
+}
+
+
 async function runTests() {
   console.log('--- STARTING CMS AUTOMATED ACCEPTANCE TESTS ---');
 
@@ -20,7 +27,7 @@ async function runTests() {
   console.log('   ✓ Seed is idempotent and protects live edits');
 
   // Test 3: Admin authentication - correct credentials
-  console.log('3. Testing login with initial credentials (Zane Wick / Zane@123)...');
+  console.log('3. Testing admin login...');
   const loginRes = await loginUser(testAdminUsername, testAdminPassword, '127.0.0.1');
   assert.ok(loginRes.token, 'Must return a session token');
   assert.strictEqual(loginRes.user.username, 'Zane Wick');
