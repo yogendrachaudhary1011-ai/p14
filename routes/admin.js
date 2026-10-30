@@ -12,9 +12,9 @@ import {
   query, 
   orderBy, 
   writeBatch,
-  checkFirestore,
+  checkSupabase,
   checkStorage
-} from '../lib/firebase.js';
+} from '../lib/supabase.js';
 import { 
   loginUser, 
   validateSession, 
@@ -146,7 +146,7 @@ router.get('/admin/overview', requireAuthMiddleware, async (req, res) => {
       getDocs(collection(db, 'backups'))
     ]);
 
-    const isDbConnected = await checkFirestore();
+    const isDbConnected = await checkSupabase();
     const isStorageConnected = await checkStorage();
 
     res.json({
@@ -158,7 +158,7 @@ router.get('/admin/overview', requireAuthMiddleware, async (req, res) => {
         backupsCount: backupSnap.size
       },
       health: {
-        firestoreConnected: isDbConnected,
+        databaseConnected: isDbConnected,
         storageConnected: isStorageConnected,
         writesAllowed: isDbConnected
       }
@@ -193,7 +193,7 @@ router.put('/admin/settings', requireAuthMiddleware, async (req, res) => {
     invalidateCache();
     res.json({ success: true, data: settingsData });
   } catch (err) {
-    res.status(500).json({ error: `Firebase write failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase write failed: ${err.message}` });
   }
 });
 
@@ -222,7 +222,7 @@ router.put('/admin/pages/:pageId', requireAuthMiddleware, async (req, res) => {
     invalidateCache();
     res.json({ success: true, data: pageData });
   } catch (err) {
-    res.status(500).json({ error: `Firebase write failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase write failed: ${err.message}` });
   }
 });
 
@@ -280,7 +280,7 @@ router.post('/admin/projects', requireAuthMiddleware, async (req, res) => {
     invalidateCache();
     res.json({ success: true, project: projectData });
   } catch (err) {
-    res.status(500).json({ error: `Firebase write failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase write failed: ${err.message}` });
   }
 });
 
@@ -302,7 +302,7 @@ router.put('/admin/projects/:id', requireAuthMiddleware, async (req, res) => {
     invalidateCache();
     res.json({ success: true, message: 'Project updated successfully' });
   } catch (err) {
-    res.status(500).json({ error: `Firebase write failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase write failed: ${err.message}` });
   }
 });
 
@@ -318,7 +318,7 @@ router.delete('/admin/projects/:id', requireAuthMiddleware, async (req, res) => 
     invalidateCache();
     res.json({ success: true, message: 'Project deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: `Firebase delete failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase delete failed: ${err.message}` });
   }
 });
 
@@ -339,7 +339,7 @@ router.post('/admin/projects/reorder', requireAuthMiddleware, async (req, res) =
     invalidateCache();
     res.json({ success: true, message: 'Projects reordered successfully' });
   } catch (err) {
-    res.status(500).json({ error: `Firebase batch write failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase batch write failed: ${err.message}` });
   }
 });
 
@@ -379,7 +379,7 @@ router.post('/admin/experience', requireAuthMiddleware, async (req, res) => {
     invalidateCache();
     res.json({ success: true, item: expData });
   } catch (err) {
-    res.status(500).json({ error: `Firebase write failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase write failed: ${err.message}` });
   }
 });
 
@@ -392,7 +392,7 @@ router.put('/admin/experience/:id', requireAuthMiddleware, async (req, res) => {
     invalidateCache();
     res.json({ success: true, message: 'Experience item updated' });
   } catch (err) {
-    res.status(500).json({ error: `Firebase write failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase write failed: ${err.message}` });
   }
 });
 
@@ -402,7 +402,7 @@ router.delete('/admin/experience/:id', requireAuthMiddleware, async (req, res) =
     invalidateCache();
     res.json({ success: true, message: 'Experience item deleted' });
   } catch (err) {
-    res.status(500).json({ error: `Firebase delete failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase delete failed: ${err.message}` });
   }
 });
 
@@ -443,7 +443,7 @@ router.post('/admin/education', requireAuthMiddleware, async (req, res) => {
     invalidateCache();
     res.json({ success: true, item: eduData });
   } catch (err) {
-    res.status(500).json({ error: `Firebase write failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase write failed: ${err.message}` });
   }
 });
 
@@ -456,7 +456,7 @@ router.put('/admin/education/:id', requireAuthMiddleware, async (req, res) => {
     invalidateCache();
     res.json({ success: true, message: 'Education item updated' });
   } catch (err) {
-    res.status(500).json({ error: `Firebase write failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase write failed: ${err.message}` });
   }
 });
 
@@ -466,7 +466,7 @@ router.delete('/admin/education/:id', requireAuthMiddleware, async (req, res) =>
     invalidateCache();
     res.json({ success: true, message: 'Education item deleted' });
   } catch (err) {
-    res.status(500).json({ error: `Firebase delete failed: ${err.message}` });
+    res.status(500).json({ error: `Supabase delete failed: ${err.message}` });
   }
 });
 
