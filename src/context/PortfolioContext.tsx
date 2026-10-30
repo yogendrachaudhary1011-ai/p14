@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { SiteSettings, Project, ExperienceItem, EducationItem, MediaAsset } from '../types';
 import { initialSiteSettings, initialProjects, initialExperience, initialEducation } from '../data/initialData';
 import { normalizeProjectSections } from '../utils/caseStudyUtils';
+import { safeStorage } from '../utils/storage';
 import {
   getSavedCredentials,
   saveSupabaseCredentials,
@@ -63,7 +64,7 @@ const PortfolioContext = createContext<PortfolioContextType | undefined>(undefin
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<SiteSettings>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+      const stored = safeStorage.getItem(STORAGE_KEYS.SETTINGS);
       return stored ? JSON.parse(stored) : initialSiteSettings;
     } catch {
       return initialSiteSettings;
@@ -72,7 +73,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [projects, setProjects] = useState<Project[]>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.PROJECTS);
+      const stored = safeStorage.getItem(STORAGE_KEYS.PROJECTS);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -87,7 +88,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [experience, setExperience] = useState<ExperienceItem[]>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.EXPERIENCE);
+      const stored = safeStorage.getItem(STORAGE_KEYS.EXPERIENCE);
       return stored ? JSON.parse(stored) : initialExperience;
     } catch {
       return initialExperience;
@@ -96,7 +97,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [education, setEducation] = useState<EducationItem[]>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.EDUCATION);
+      const stored = safeStorage.getItem(STORAGE_KEYS.EDUCATION);
       return stored ? JSON.parse(stored) : initialEducation;
     } catch {
       return initialEducation;
@@ -105,7 +106,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [media, setMedia] = useState<MediaAsset[]>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.MEDIA);
+      const stored = safeStorage.getItem(STORAGE_KEYS.MEDIA);
       return stored ? JSON.parse(stored) : [
         {
           id: 'media-01',
@@ -139,7 +140,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
     try {
-      return localStorage.getItem(STORAGE_KEYS.AUTH) === 'true';
+      return safeStorage.getItem(STORAGE_KEYS.AUTH) === 'true';
     } catch {
       return false;
     }
@@ -160,7 +161,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Sync to local storage for fast boot
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+      safeStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
     } catch (e) {
       console.warn('Storage sync error:', e);
     }
@@ -168,7 +169,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
+      safeStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
     } catch (e) {
       console.warn('Storage sync error:', e);
     }
@@ -176,7 +177,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(media));
+      safeStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(media));
     } catch (e) {
       console.warn('Storage sync error:', e);
     }
@@ -269,7 +270,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if ((validUsers.includes(cleanedUser) || cleanedUser.length > 0) && p.length >= 4) {
       setIsAdmin(true);
       setAdminUser(cleanedUser === 'zane-wick' ? 'Zane Wick' : 'Yogendra Chaudhary');
-      localStorage.setItem(STORAGE_KEYS.AUTH, 'true');
+      safeStorage.setItem(STORAGE_KEYS.AUTH, 'true');
       return true;
     }
     return false;
@@ -278,7 +279,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const logout = () => {
     setIsAdmin(false);
     setAdminUser(null);
-    localStorage.removeItem(STORAGE_KEYS.AUTH);
+    safeStorage.removeItem(STORAGE_KEYS.AUTH);
   };
 
   const updateSettings = (newSettings: Partial<SiteSettings>) => {
@@ -501,8 +502,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setProjects(initialProjects);
     setExperience(initialExperience);
     setEducation(initialEducation);
-    localStorage.removeItem(STORAGE_KEYS.SETTINGS);
-    localStorage.removeItem(STORAGE_KEYS.PROJECTS);
+    safeStorage.removeItem(STORAGE_KEYS.SETTINGS);
+    safeStorage.removeItem(STORAGE_KEYS.PROJECTS);
   };
 
   return (

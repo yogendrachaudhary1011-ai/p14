@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { safeStorage } from './utils/storage';
 
 const STORAGE_KEYS = {
   URL: 'yc_portfolio_supabase_url',
@@ -28,8 +29,8 @@ export function getSavedCredentials(): { url: string; key: string } {
   const envUrl = (import.meta.env.VITE_SUPABASE_URL as string) || '';
   const envKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || '';
 
-  const localUrl = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.URL) || '' : '';
-  const localKey = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.KEY) || '' : '';
+  const localUrl = safeStorage.getItem(STORAGE_KEYS.URL) || '';
+  const localKey = safeStorage.getItem(STORAGE_KEYS.KEY) || '';
 
   const effectiveKey = envKey || localKey || DEFAULT_SUPABASE_KEY;
   const effectiveUrl = normalizeSupabaseUrl(envUrl || localUrl || SUGGESTED_SUPABASE_URL);
@@ -77,8 +78,8 @@ export function saveSupabaseCredentials(url: string, key: string): boolean {
   const cleanedKey = key.trim();
 
   if (cleanedUrl && cleanedKey) {
-    localStorage.setItem(STORAGE_KEYS.URL, cleanedUrl);
-    localStorage.setItem(STORAGE_KEYS.KEY, cleanedKey);
+    safeStorage.setItem(STORAGE_KEYS.URL, cleanedUrl);
+    safeStorage.setItem(STORAGE_KEYS.KEY, cleanedKey);
     try {
       supabaseInstance = createClient(cleanedUrl, cleanedKey);
       return true;
@@ -87,8 +88,8 @@ export function saveSupabaseCredentials(url: string, key: string): boolean {
       return false;
     }
   } else {
-    localStorage.removeItem(STORAGE_KEYS.URL);
-    localStorage.removeItem(STORAGE_KEYS.KEY);
+    safeStorage.removeItem(STORAGE_KEYS.URL);
+    safeStorage.removeItem(STORAGE_KEYS.KEY);
     supabaseInstance = null;
     return true;
   }

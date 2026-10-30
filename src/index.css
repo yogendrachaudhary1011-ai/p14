@@ -4,4 +4,15 @@
   :root {
     --font-jakarta: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   }
+
+  /* Guarantee main elements are always visible regardless of legacy styles */
+  #siteHeader,
+  #siteContent,
+  #root,
+  .portfolio-app {
+    opacity: 1 !important;
+    filter: none !important;
+    visibility: visible !important;
+  }
 }
+
