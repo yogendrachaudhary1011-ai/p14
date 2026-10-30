@@ -57,6 +57,13 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
 
         <div className="nav-links">
           <a
+            href="/"
+            className={currentPath === '/' ? 'is-active' : ''}
+            onClick={(e) => handleNavClick(e, '/')}
+          >
+            Home
+          </a>
+          <a
             href="/projects"
             className={currentPath === '/projects' ? 'is-active' : ''}
             onClick={(e) => handleNavClick(e, '/projects')}
@@ -148,6 +155,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
         </button>
 
         <div className={`mobile-nav ${mobileMenuOpen ? 'is-open' : ''}`} id="mobileNav">
+          <a href="/" onClick={(e) => handleNavClick(e, '/')}>Home</a>
           <a href="/projects" onClick={(e) => handleNavClick(e, '/projects')}>
             Work
           </a>
@@ -199,3 +207,4 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
     </>
   );
 };
+
