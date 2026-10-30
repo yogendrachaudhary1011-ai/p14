@@ -1,9 +1,32 @@
 import { Project, CaseStudySection, CaseStudyBlock, SectionType, CaseStudyBlockType } from '../types';
 
+/** Convert legacy Product screen showcases into the same vertical full-width image blocks used by other sections. */
+export function stackProductSectionImages(sections: CaseStudySection[]): CaseStudySection[] {
+  return sections.map((section) => {
+    if (section.type !== 'product') return section;
+
+    return {
+      ...section,
+      blocks: (section.blocks || []).flatMap((block) => {
+        if (block.type !== 'productShowcase') return [block];
+
+        return block.screens
+          .filter((screen) => screen.url?.trim())
+          .map((screen, index) => ({
+            id: `${block.id}-image-${index + 1}`,
+            type: 'fullWidthImage' as const,
+            url: screen.url,
+            alt: screen.label || `Product image ${index + 1}`
+          }));
+      })
+    };
+  });
+}
+
 export function normalizeProjectSections(project: Project): CaseStudySection[] {
   // If the project already has custom sections defined and not empty, use them
   if (project.sections && Array.isArray(project.sections) && project.sections.length > 0) {
-    return project.sections.sort((a, b) => a.order - b.order);
+    return stackProductSectionImages(project.sections).sort((a, b) => a.order - b.order);
   }
 
   // Otherwise, construct sections from the project's legacy/structured properties
@@ -274,18 +297,14 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
         text: project.product.desc
       });
     }
-    if (project.product.screens && project.product.screens.length > 0) {
+    project.product.screens?.filter((url) => url.trim()).forEach((url, idx) => {
       blocks.push({
-        id: `blk-${order}-ps`,
-        type: 'productShowcase',
-        subtitle: 'Desktop & Mobile responsive flows',
-        screens: project.product.screens.map((url, idx) => ({
-          url,
-          label: `Flow Screen ${idx + 1}`,
-          device: idx % 2 === 0 ? 'desktop' : 'mobile'
-        }))
+        id: `blk-${order}-product-image-${idx + 1}`,
+        type: 'fullWidthImage',
+        url,
+        alt: `${project.title} Product image ${idx + 1}`
       });
-    }
+    });
 
     sections.push({
       id: 'the-product',
@@ -543,3 +562,4 @@ export function createDefaultBlock(type: CaseStudyBlockType): CaseStudyBlock {
       return { id, type: 'paragraph', text: 'Text block' };
   }
 }
+

@@ -178,22 +178,6 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
           const at = blocks.findIndex((block) => block.id === carousel?.id);
           blocks[at] = { ...carousel, slides };
         }
-      } else if (selectedSection.type === 'product') {
-        let showcase = blocks.find((block) => block.type === 'productShowcase');
-        if (!showcase) {
-          showcase = { id: `blk-${Date.now()}-showcase`, type: 'productShowcase', screens: [] };
-          blocks.push(showcase);
-        }
-        if (showcase.type === 'productShowcase') {
-          const realScreens = showcase.screens.filter((screen) => !screen.url.includes('placehold.co'));
-          const screens = [...realScreens, ...imageAssets.map((asset, index) => ({
-            url: asset.url,
-            label: asset.name || `Product screen ${realScreens.length + index + 1}`,
-            device: (realScreens.length + index) % 2 === 0 ? 'desktop' as const : 'mobile' as const
-          }))];
-          const at = blocks.findIndex((block) => block.id === showcase?.id);
-          blocks[at] = { ...showcase, screens };
-        }
       } else {
         blocks.push(...imageAssets.map((asset) => ({
           id: `blk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -350,7 +334,11 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                   <div>
                     <h4 className="text-white text-sm font-bold">{sectionImageLabel}</h4>
                     <p className="text-zinc-300 text-xs mt-1">
-                      {selectedSection.type === 'designSystem' ? 'Select multiple images to add them as Design System carousel slides.' : selectedSection.type === 'product' ? 'Select multiple images to add them as Product screens.' : `Choose an image file to upload directly to Supabase and attach it to ${selectedSection.navigationLabel || selectedSection.heading}.`}
+                      {selectedSection.type === 'designSystem'
+                        ? 'Select multiple images to add them as Design System carousel slides.'
+                        : selectedSection.type === 'product'
+                          ? 'Select one or more images. They will stack vertically at the same size as images in other sections.'
+                          : `Choose an image file to upload directly to Supabase and attach it to ${selectedSection.navigationLabel || selectedSection.heading}.`}
                     </p>
                     <p className="text-[#ffb17d] text-[11px] mt-2">{selectedSectionImageCount} image{selectedSectionImageCount === 1 ? '' : 's'} attached to this section</p>
                   </div>
@@ -451,7 +439,6 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                     <option value="fullWidthImage">Full-Width Image</option>
                     <option value="gallery">Image Gallery Grid</option>
                     <option value="carousel">Interactive Slide Carousel</option>
-                    <option value="productShowcase">Product Mobile &amp; Desktop Showcase</option>
                     <option value="bulletList">Bullet List</option>
                     <option value="quote">Pull Quote</option>
                     <option value="cta">Action Button (CTA)</option>
@@ -1120,3 +1107,4 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
     </div>
   );
 };
+

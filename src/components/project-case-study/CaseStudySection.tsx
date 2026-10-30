@@ -8,9 +8,9 @@ import { TwoColumnComparisonBlock } from './blocks/TwoColumnComparisonBlock';
 import { ImageBlock } from './blocks/ImageBlock';
 import { GalleryBlock } from './blocks/GalleryBlock';
 import { CarouselBlock } from './blocks/CarouselBlock';
-import { ProductShowcaseBlock } from './blocks/ProductShowcaseBlock';
 import { BulletListBlock } from './blocks/BulletListBlock';
 import { QuoteBlock, CtaBlock, DividerBlock, SpacerBlock } from './blocks/QuoteCtaBlock';
+import { stackProductSectionImages } from '../../utils/caseStudyUtils';
 
 interface CaseStudySectionProps {
   section: CaseStudySectionType;
@@ -25,6 +25,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
   });
 
   if (!section.visible) return null;
+  const normalizedSection = stackProductSectionImages([section])[0];
 
   const renderBlock = (block: CaseStudyBlock) => {
     switch (block.type) {
@@ -44,8 +45,6 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
         return <GalleryBlock key={block.id} block={block} />;
       case 'carousel':
         return <CarouselBlock key={block.id} block={block} />;
-      case 'productShowcase':
-        return <ProductShowcaseBlock key={block.id} block={block} />;
       case 'bulletList':
         return <BulletListBlock key={block.id} block={block} />;
       case 'quote':
@@ -97,7 +96,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
 
       {/* Blocks sequence */}
       <div className="w-full min-w-0 flex flex-col gap-6">
-        {section.blocks && section.blocks.map((block) => renderBlock(block))}
+        {normalizedSection.blocks && normalizedSection.blocks.map((block) => renderBlock(block))}
       </div>
 
       {/* Crisp white divider under section matching Figma */}
@@ -109,3 +108,4 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
     </section>
   );
 };
+
