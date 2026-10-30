@@ -1,5 +1,12 @@
 import http from 'http';
 
+const testAdminUsername = process.env.TEST_ADMIN_USERNAME;
+const testAdminPassword = process.env.TEST_ADMIN_PASSWORD;
+if (!testAdminUsername || !testAdminPassword) {
+  throw new Error('Set TEST_ADMIN_USERNAME and TEST_ADMIN_PASSWORD for authentication tests.');
+}
+
+
 function request(options, postData = null) {
   return new Promise((resolve, reject) => {
     const req = http.request(options, (res) => {
@@ -67,20 +74,20 @@ async function runTests() {
       path: '/api/admin/login',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
-    }, { username: 'Zane Wick', password: 'WrongPassword123' });
+    }, { username: testAdminUsername, password: `${testAdminPassword}-wrong` });
     assert(wrongLogin.statusCode === 401, 'Login with wrong password returns 401');
     assert(wrongLogin.json?.error === 'Invalid username or password', 'Returns proper invalid credentials error message');
 
-    // 4. Login with correct credentials: Zane Wick / Zane@123
+    // 4. Login with configured admin credentials
     const correctLogin = await request({
       hostname: '127.0.0.1',
       port: 3000,
       path: '/api/admin/login',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
-    }, { username: 'Zane Wick', password: 'Zane@123' });
+    }, { username: testAdminUsername, password: testAdminPassword });
 
-    assert(correctLogin.statusCode === 200, 'Login with Zane Wick / Zane@123 returns 200');
+    assert(correctLogin.statusCode === 200, 'Configured admin login returns 200');
     assert(correctLogin.json?.success === true, 'Login response has success: true');
     assert(correctLogin.json?.user?.username === 'Zane Wick', 'Login returns user username "Zane Wick"');
 

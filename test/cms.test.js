@@ -4,6 +4,13 @@ import { loginUser, validateSession } from '../lib/auth.js';
 import { seedDatabaseIfNeeded } from '../lib/seed.js';
 import { getPublishedSnapshot, renderHtml } from '../lib/renderer.js';
 
+const testAdminUsername = process.env.TEST_ADMIN_USERNAME;
+const testAdminPassword = process.env.TEST_ADMIN_PASSWORD;
+if (!testAdminUsername || !testAdminPassword) {
+  throw new Error('Set TEST_ADMIN_USERNAME and TEST_ADMIN_PASSWORD for authentication tests.');
+}
+
+
 async function runTests() {
   console.log('--- STARTING CMS AUTOMATED ACCEPTANCE TESTS ---');
 
@@ -20,8 +27,8 @@ async function runTests() {
   console.log('   ✓ Seed is idempotent and protects live edits');
 
   // Test 3: Admin authentication - correct credentials
-  console.log('3. Testing login with initial credentials (Zane Wick / Zane@123)...');
-  const loginRes = await loginUser('Zane Wick', 'Zane@123', 'test-ip-1');
+  console.log('3. Testing admin login...');
+  const loginRes = await loginUser(testAdminUsername, testAdminPassword, '127.0.0.1');
   assert.ok(loginRes.token, 'Must return a session token');
   assert.strictEqual(loginRes.user.username, 'Zane Wick');
   console.log('   ✓ Correct login succeeds and generates session');
@@ -30,7 +37,7 @@ async function runTests() {
   console.log('4. Testing wrong password rejection...');
   let wrongPassFailed = false;
   try {
-    await loginUser('Zane Wick', 'WrongPassword!456', 'test-ip-2');
+    await loginUser(testAdminUsername, `${testAdminPassword}-wrong`, '127.0.0.1');
   } catch (err) {
     wrongPassFailed = true;
     assert.strictEqual(err.message, 'Invalid username or password');
