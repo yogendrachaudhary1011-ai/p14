@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
+import { initialSiteSettings } from '../data/initialData';
 import { IdCard } from '../components/home/IdCard';
 import { getPrewrittenMailtoUrl } from '../utils/emailUtils';
 
@@ -477,10 +478,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 <section className="about-panel about-profile-panel" id="about-profile">
                   <h2 className="display display-lg">ABOUT ME</h2>
                   <p className="lead">
-                    I design intuitive software interfaces, reusable UI components, and user-centered workflows. My process combines interaction design, usability testing, and close developer collaboration to make complex products easier to understand and use.
+                    {settings.aboutIntro ?? initialSiteSettings.aboutIntro}
                   </p>
                   <p style={{ marginTop: '16px', color: '#8e8ea0', lineHeight: 1.7 }}>
-                    Based in Kathmandu, Nepal, I work on multi-step workflows, enterprise software, service platforms, and responsive design systems. My focus is on making product states visible, actions safe, and component handoff precise.
+                    Based in {settings.location || initialSiteSettings.location}, {settings.aboutDetails ?? initialSiteSettings.aboutDetails}
                   </p>
                 </section>
 
