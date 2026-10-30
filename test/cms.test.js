@@ -93,7 +93,7 @@ async function runTests() {
   const { existsSync } = await import('fs');
   assert.strictEqual(existsSync('./database.json'), false, 'database.json must not exist');
   assert.strictEqual(existsSync('./db.sqlite'), false, 'db.sqlite must not exist');
-  console.log('   ✓ Production persistence is 100% Cloud Supabase/Firebase Storage');
+  console.log('   ✓ Production persistence is 100% Supabase Postgres/Supabase Storage');
 
   console.log('\n✅ ALL CMS TESTS PASSED SUCCESSFULLY!');
   process.exit(0);
