@@ -5,6 +5,8 @@ export interface SiteSettings {
   email: string;
   phone: string;
   location: string;
+  aboutIntro?: string;
+  aboutDetails?: string;
   behanceUrl?: string;
   linkedinUrl?: string;
   availabilityText: string;
@@ -388,3 +390,4 @@ export interface MediaAsset {
   size: number;
   uploadedAt: string;
 }
+
