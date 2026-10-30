@@ -7,7 +7,7 @@ import { ensureAdminUser } from './lib/auth.js';
 import { renderHtml, renderDynamicCaseStudy, getPublishedSnapshot } from './lib/renderer.js';
 import { seedDatabaseIfNeeded } from './lib/seed.js';
 import { checkFirestore, checkStorage, firestoreDatabaseId, config } from './lib/firebase.js';
-import { getMediaBlob } from './lib/media.js';
+import { getDriveMediaContent, getMediaBlob } from './lib/media.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -62,6 +62,22 @@ app.get('/api/media/blob/:id', async (req, res) => {
     res.send(Buffer.from(blob.buffer));
   } catch (err) {
     res.status(500).send('Error retrieving media asset');
+  }
+});
+
+// Public site media is streamed through the app so Drive files can remain private.
+app.get('/api/media/drive/:id', async (req, res) => {
+  try {
+    const asset = await getDriveMediaContent(req.params.id);
+    if (!asset) return res.status(404).send('Asset not found');
+    res.setHeader('Content-Type', asset.mimeType);
+    res.setHeader('Content-Length', asset.buffer.length);
+    res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.send(asset.buffer);
+  } catch (err) {
+    console.error('[Google Drive] Could not serve media:', err.message);
+    res.status(502).send('Media storage temporarily unavailable');
   }
 });
 
@@ -181,3 +197,4 @@ app.listen(PORT, HOST, async () => {
     console.warn('[Bootstrap] Startup check completed:', e.message);
   }
 });
+
