@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Project, CaseStudySection, MediaAsset } from '../../types';
 import { CaseStudyBuilder } from './CaseStudyBuilder';
 import { ProjectCaseStudyTemplate } from '../project-case-study/ProjectCaseStudyTemplate';
@@ -11,6 +11,7 @@ interface ProjectEditorProps {
   existingProjects: Project[];
   mediaLibrary: MediaAsset[];
   onSave: (projectData: Partial<Project>) => void;
+  onUploadMedia: (file: File) => Promise<MediaAsset>;
   onCancel: () => void;
 }
 
@@ -21,6 +22,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   existingProjects,
   mediaLibrary,
   onSave,
+  onUploadMedia,
   onCancel
 }) => {
   const isEditing = !!initialProject;
@@ -28,6 +30,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [projectMedia, setProjectMedia] = useState(mediaLibrary);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const projectMediaInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
   const [title, setTitle] = useState(initialProject?.title || '');
@@ -124,6 +130,36 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
         .replace(/(^-|-$)+/g, '');
       setSlug(autoSlug);
     }
+  };
+
+  const handleProjectMediaUpload = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploadingFiles(true);
+    setUploadMessage(null);
+    const uploaded: MediaAsset[] = [];
+    const failures: string[] = [];
+    for (const file of Array.from(files)) {
+      try {
+        uploaded.push(await onUploadMedia(file));
+      } catch (error) {
+        failures.push(`${file.name}: ${error instanceof Error ? error.message : 'Upload failed'}`);
+      }
+    }
+    if (uploaded.length) {
+      setProjectMedia((current) => [...uploaded, ...current.filter((asset) => !uploaded.some((item) => item.id === asset.id))]);
+      const firstImage = uploaded.find((asset) => !isVideoMedia(asset.url, asset.mimeType));
+      if (firstImage) {
+        setHeroImageUrl((current) => current || firstImage.url);
+        setCoverImage((current) => current || firstImage.url);
+        setSeoImage((current) => current || firstImage.url);
+      }
+    }
+    setUploadMessage([
+      uploaded.length ? `${uploaded.length} file${uploaded.length === 1 ? '' : 's'} uploaded to Supabase and added to this project.` : '',
+      failures.join(' · ')
+    ].filter(Boolean).join(' '));
+    setUploadingFiles(false);
+    if (projectMediaInputRef.current) projectMediaInputRef.current.value = '';
   };
 
   const getCleanFormData = (): Partial<Project> => {
@@ -227,11 +263,11 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               {isEditing ? 'edit_document' : 'add_circle'}
             </span>
             <h2 className="text-white font-bold text-lg">
-              {isEditing ? `Edit Case Study: ${initialProject.title}` : 'Create New Project Case Study'}
+              {isEditing ? `Edit project · ${initialProject.title}` : 'Create a project'}
             </h2>
           </div>
           <p className="text-zinc-400 text-xs">
-            Build and manage database-driven case study chapters, deliverables, metadata, and visual blocks.
+            Add the project details, upload its images, then save as a draft or publish it.
           </p>
         </div>
 
@@ -260,7 +296,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             className="px-4 py-2 rounded bg-[#ff853a] hover:bg-[#ff721a] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-[#ff853a]/20"
           >
             <span className="material-symbols-rounded text-sm">publish</span>
-            <span>Publish Case Study</span>
+            <span>Publish project</span>
           </button>
 
           <button
@@ -284,11 +320,11 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
       {/* Navigation Tabs */}
       <div className="flex items-center gap-1 border-b border-white/10 overflow-x-auto pb-1 scrollbar-none whitespace-nowrap">
         {[
-          { id: 'basic', label: '1. Basic Info & URL', icon: 'info' },
-          { id: 'hero', label: '2. Hero & Metadata', icon: 'overview' },
-          { id: 'caseStudy', label: '3. Case Study Builder', icon: 'view_quilt' },
-          { id: 'media', label: '4. Media Assets', icon: 'image' },
-          { id: 'seo', label: '5. SEO & Social', icon: 'search' }
+          { id: 'basic', label: 'Project details', icon: 'info' },
+          { id: 'media', label: 'Images & video', icon: 'image' },
+          { id: 'hero', label: 'Summary & links', icon: 'overview' },
+          { id: 'caseStudy', label: 'Project detail page', icon: 'view_quilt' },
+          { id: 'seo', label: 'Search preview', icon: 'search' }
         ].map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -563,13 +599,35 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
         <CaseStudyBuilder
           sections={sections}
           onChange={(newSections) => setSections(newSections)}
-          mediaLibrary={mediaLibrary}
+          mediaLibrary={projectMedia}
         />
       )}
 
       {/* TAB 4: MEDIA ASSETS */}
       {activeTab === 'media' && (
         <div className="p-6 rounded-[8px] bg-zinc-900/60 border border-white/10 flex flex-col gap-6">
+          <section className="rounded-xl border border-[#ff853a]/25 bg-[#ff853a]/[0.06] p-5 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-white text-base font-semibold">Upload project media</h3>
+                <p className="text-zinc-400 text-sm mt-1">Choose images or videos here. They upload to Supabase and become available throughout this project editor.</p>
+                <p className="text-zinc-500 text-xs mt-2">JPG, PNG, WebP, GIF, AVIF, MP4, WebM · up to 50 MB each</p>
+              </div>
+              <input
+                ref={projectMediaInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm"
+                multiple
+                className="hidden"
+                onChange={(event) => void handleProjectMediaUpload(event.target.files)}
+              />
+              <button type="button" disabled={uploadingFiles} onClick={() => projectMediaInputRef.current?.click()} className="shrink-0 rounded-lg bg-[#ff853a] hover:bg-[#ff721a] disabled:opacity-60 px-4 py-2.5 text-sm font-semibold text-white">
+                {uploadingFiles ? 'Uploading…' : 'Choose files'}
+              </button>
+            </div>
+            {uploadMessage && <p role="status" className="mt-4 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200">{uploadMessage}</p>}
+            {projectMedia.length > 0 && <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">{projectMedia.slice(0, 10).map((asset) => <div key={asset.id} className="overflow-hidden rounded-lg border border-white/10 bg-zinc-950"><div className="aspect-video"><MediaPreview src={asset.url} alt={asset.name} mimeType={asset.mimeType} className="h-full w-full object-cover" /></div><p className="truncate px-2.5 py-2 text-xs text-zinc-300">{asset.name}</p></div>)}</div>}
+          </section>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col gap-3">
               <label className="block text-xs font-mono uppercase text-zinc-400">
@@ -616,13 +674,13 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
           </div>
 
           {/* Quick select from media library */}
-          {mediaLibrary.length > 0 && (
+          {projectMedia.length > 0 && (
             <div className="flex flex-col gap-3 pt-4 border-t border-white/10">
               <div className="text-xs font-mono uppercase text-zinc-400">
                 Select from Media Library:
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {mediaLibrary.map((m) => (
+                {projectMedia.map((m) => (
                   <div
                     key={m.id}
                     onClick={() => {
