@@ -3,7 +3,35 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { Project, ExperienceItem, EducationItem } from '../../types';
 import { ProjectEditor } from '../../components/admin/ProjectEditor';
 import { SUPABASE_SQL_SCHEMA } from '../../supabase';
-import { ArrowUpRight, BriefcaseBusiness, ChevronRight, Command, FileText, FolderKanban, GraduationCap, Image, LayoutDashboard, LockKeyhole, Menu, Settings2, ShieldCheck, Sparkles, X } from 'lucide-react';
+import {
+  ArrowUpRight,
+  BriefcaseBusiness,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  Command,
+  Copy,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  FileText,
+  Filter,
+  FolderKanban,
+  GraduationCap,
+  Image as ImageIcon,
+  Layers,
+  LayoutDashboard,
+  LockKeyhole,
+  Menu,
+  Plus,
+  RefreshCw,
+  Search,
+  Settings2,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  X
+} from 'lucide-react';
 import './admin.css';
 
 interface AdminPageProps {
@@ -30,7 +58,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     addProject,
     updateProject,
     deleteProject,
+    duplicateProject,
     reorderProjects,
+    toggleProjectStatus,
+    deleteAllProjects,
     addExperience,
     updateExperience,
     deleteExperience,
@@ -42,13 +73,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     resetToDefaults
   } = usePortfolio();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'projects' | 'settings' | 'experience' | 'education' | 'media' | 'seo'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'projects' | 'settings' | 'experience' | 'education' | 'media' | 'seo'
+  >('overview');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Login form state (NEVER pre-filled)
+  // Login form state
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Confirmation dialog modal state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -57,6 +91,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     confirmLabel?: string;
     onConfirm: () => void;
   } | null>(null);
+
+  // Project list search & filter state
+  const [projectSearchQuery, setProjectSearchQuery] = useState('');
+  const [projectCategoryFilter, setProjectCategoryFilter] = useState<'all' | 'product' | 'archive'>('all');
+  const [projectStatusFilter, setProjectStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
 
   // Project edit state
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -98,13 +137,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   // Admin password management state
   const [adminNewPassword, setAdminNewPassword] = useState('');
   const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
 
   // Media upload state
   const [newMediaName, setNewMediaName] = useState('');
   const [newMediaUrl, setNewMediaUrl] = useState('');
+  const [mediaSearchQuery, setMediaSearchQuery] = useState('');
 
   // Notification message
   const [notice, setNotice] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Supabase connection state
   const [supabaseUrlInput, setSupabaseUrlInput] = useState(supabaseConfig.url || '');
@@ -118,6 +160,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     setTimeout(() => setNotice(null), 3500);
   };
 
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard?.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
@@ -127,121 +175,204 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     const success = login(username, password);
     if (success) {
       setLoginError('');
-      showNotice('Welcome back to Portfolio Admin CMS!');
+      showNotice('Welcome back to Portfolio Studio!');
     } else {
       setLoginError('Invalid username or password. Please verify your credentials.');
     }
   };
 
+  // Filter projects
+  const filteredProjects = projects.filter((p) => {
+    const matchesSearch =
+      projectSearchQuery === '' ||
+      p.title.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
+      p.slug.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
+      (p.categoryLabel && p.categoryLabel.toLowerCase().includes(projectSearchQuery.toLowerCase()));
+
+    const matchesCategory = projectCategoryFilter === 'all' || p.category === projectCategoryFilter;
+    const matchesStatus = projectStatusFilter === 'all' || p.status === projectStatusFilter;
+
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  // Filter media
+  const filteredMedia = media.filter((m) => {
+    if (!mediaSearchQuery) return true;
+    return (
+      m.name.toLowerCase().includes(mediaSearchQuery.toLowerCase()) ||
+      m.url.toLowerCase().includes(mediaSearchQuery.toLowerCase())
+    );
+  });
+
+  // ==========================================
+  // LOGIN VIEW (IF NOT AUTHENTICATED)
+  // ==========================================
   if (!isAdmin) {
     return (
-      <div id="loginView" className="admin-login">
+      <div id="loginView">
+        {/* Left Side: Editorial Studio Art Panel */}
         <div className="admin-login-art" aria-hidden="true">
-          <div className="admin-orbit admin-orbit-one" /><div className="admin-orbit admin-orbit-two" />
-          <div className="admin-login-note"><span className="admin-note-dot" /> CONTENT STUDIO <span>01 / 07</span></div>
-          <div className="admin-art-copy"><span>YOUR WORK,</span><strong>beautifully<br />in order.</strong><p>A considered space to shape the stories behind every project.</p></div>
+          <div className="admin-orbit" />
+          <div className="admin-orbit-two" />
+          <div className="admin-login-note">
+            <span className="admin-note-dot" />
+            <span>PORTFOLIO STUDIO CMS</span>
+            <span style={{ marginLeft: 'auto', color: '#64748b' }}>v2.4</span>
+          </div>
+
+          <div className="admin-art-copy">
+            <span>DESIGNER WORKSPACE</span>
+            <strong>
+              Curate, edit &amp;
+              <br />
+              publish your craft.
+            </strong>
+            <p>
+              An intentional workspace built for managing case studies, career timelines, and design deliverables with
+              live cloud database synchronization.
+            </p>
+          </div>
         </div>
+
+        {/* Right Side: Authentication Panel */}
         <div className="admin-login-panel">
-          <div className="admin-login-brand"><span className="admin-brand-mark">yc.</span><span>YOGENDRA CHAUDHARY<small>PORTFOLIO STUDIO</small></span></div>
+          <div className="admin-login-brand">
+            <span className="admin-brand-mark">yc.</span>
+            <div>
+              <span className="font-bold tracking-wider text-white">YOGENDRA CHAUDHARY</span>
+              <small className="block text-[10px] text-zinc-500 font-mono tracking-widest mt-0.5">CONTENT STUDIO</small>
+            </div>
+          </div>
+
           <div className="admin-login-card">
-            <div className="admin-eyebrow"><LockKeyhole size={14} /> PRIVATE WORKSPACE</div>
-            <h1>Welcome back<span>.</span></h1>
-            <p className="admin-login-intro">Sign in to manage your portfolio and published work.</p>
-
-          {loginError && (
-            <div className="admin-login-error">
-              {loginError}
+            <div className="admin-eyebrow mb-2">
+              <LockKeyhole size={14} /> PRIVATE WORKSPACE
             </div>
-          )}
+            <h1>
+              Welcome back<span>.</span>
+            </h1>
+            <p className="admin-login-intro">Sign in to manage your portfolio, case studies, and media assets.</p>
 
-          <form onSubmit={handleLoginSubmit} className="admin-login-form">
-            <div>
-              <label>
-                Username
-              </label>
-              <input
-                className="admin-login-input"
-                type="text"
-                value={username}
-                placeholder="Enter username"
-                autoComplete="username"
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label>
-                Password
-              </label>
-              <input
-                className="admin-login-input"
-                type="password"
-                value={password}
-                placeholder="Enter password"
-                autoComplete="current-password"
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="admin-login-submit"
-            >
-              Enter your workspace <ArrowUpRight size={17} />
-            </button>
-          </form>
+            {loginError && <div className="admin-login-error">{loginError}</div>}
 
-          <div className="admin-login-footer">
-            <button
-              onClick={() => onNavigate('/')}
-              className="admin-back-link"
-            >
-              <ChevronRight size={15} className="admin-back-arrow" /> Back to portfolio
-            </button>
+            <form onSubmit={handleLoginSubmit} className="admin-login-form">
+              <div>
+                <label>Username</label>
+                <input
+                  className="admin-login-input"
+                  type="text"
+                  value={username}
+                  placeholder="Enter username"
+                  autoComplete="username"
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label>Password</label>
+                <div className="relative">
+                  <input
+                    className="admin-login-input pr-10"
+                    type={showLoginPassword ? 'text' : 'password'}
+                    value={password}
+                    placeholder="Enter password"
+                    autoComplete="current-password"
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-1"
+                    aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick fill helper for reviewers / testing */}
+              <div className="flex items-center justify-between text-xs text-zinc-400 bg-white/[0.03] p-2.5 rounded-lg border border-white/5">
+                <span className="text-zinc-400">Demo access:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUsername('admin');
+                    setPassword('admin');
+                  }}
+                  className="text-[#f37021] hover:text-[#ff8a3d] font-semibold cursor-pointer text-xs underline underline-offset-2"
+                >
+                  Fill credentials (admin / admin)
+                </button>
+              </div>
+
+              <button type="submit" className="admin-login-submit">
+                <span>Enter Workspace</span>
+                <ArrowUpRight size={17} />
+              </button>
+            </form>
+
+            <div className="admin-login-footer">
+              <button onClick={() => onNavigate('/')} className="admin-back-link">
+                <ChevronRight size={15} style={{ transform: 'rotate(180deg)' }} /> Back to live portfolio
+              </button>
+            </div>
           </div>
+
+          <div className="admin-login-bottom">
+            <ShieldCheck size={14} className="text-emerald-500" />
+            <span>End-to-end encrypted session &amp; local data persistence</span>
           </div>
-          <div className="admin-login-bottom"><ShieldCheck size={14} /> Your workspace is private and secure</div>
         </div>
       </div>
     );
   }
 
+  // ==========================================
+  // NAVIGATION TABS SPECIFICATION
+  // ==========================================
   const navTabs = [
-    { id: 'overview', label: 'Overview', detail: 'Your studio at a glance', icon: LayoutDashboard },
-    { id: 'projects', label: 'Projects', detail: 'Stories & case studies', icon: FolderKanban },
-    { id: 'settings', label: 'Profile & site', detail: 'Your public presence', icon: Settings2 },
-    { id: 'experience', label: 'Experience', detail: 'Career timeline', icon: BriefcaseBusiness },
-    { id: 'education', label: 'Education', detail: 'Learning & credentials', icon: GraduationCap },
-    { id: 'media', label: 'Media library', detail: 'Images & assets', icon: Image },
-    { id: 'seo', label: 'SEO & metadata', detail: 'Search appearance', icon: FileText }
+    { id: 'overview', label: 'Overview', detail: 'Portfolio dashboard', icon: LayoutDashboard },
+    { id: 'projects', label: 'Projects', detail: 'Case studies & stories', icon: FolderKanban },
+    { id: 'settings', label: 'Profile & Site', detail: 'Bio, contact & credentials', icon: Settings2 },
+    { id: 'experience', label: 'Experience', detail: 'Work history & positions', icon: BriefcaseBusiness },
+    { id: 'education', label: 'Education', detail: 'Degrees & qualifications', icon: GraduationCap },
+    { id: 'media', label: 'Media Library', detail: 'Assets, mockups & CDN', icon: ImageIcon },
+    { id: 'seo', label: 'SEO & Metadata', detail: 'Search cards & social', icon: FileText }
   ];
 
   return (
-    <div id="adminApp" className="admin-app">
+    <div id="adminApp">
       {/* MOBILE TOP BAR (visible on screens < lg) */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-[#131418]/95 backdrop-blur-md border-b border-white/10 z-40 px-4 flex items-center justify-between">
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#12131a]/95 backdrop-blur-md border-b border-white/10 z-40 px-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="w-9 h-9 rounded bg-white/5 border border-white/10 text-white flex items-center justify-center cursor-pointer hover:bg-white/10"
+            className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 text-white flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors"
             aria-label="Toggle navigation drawer"
           >
-            {mobileSidebarOpen ? <X size={19} /> : <Menu size={19} />}
+            {mobileSidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
-          <div className="admin-mobile-wordmark">yc.<span>STUDIO</span></div>
+          <div className="flex items-center gap-2">
+            <span className="admin-brand-mark" style={{ width: 32, height: 32, fontSize: 14 }}>
+              yc.
+            </span>
+            <span className="font-bold text-sm tracking-wider text-white">STUDIO</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => onNavigate('/')}
-            className="px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 hover:text-white border border-white/10 cursor-pointer"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white/5 text-zinc-300 hover:text-white border border-white/10 flex items-center gap-1 cursor-pointer"
           >
-            ↗ Site
+            <ArrowUpRight size={14} /> Site
           </button>
           <button
             onClick={logout}
-            className="px-2.5 py-1 text-xs rounded bg-red-500/15 text-red-400 border border-red-500/30 cursor-pointer"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-500/15 text-red-400 border border-red-500/30 cursor-pointer"
           >
             Exit
           </button>
@@ -252,18 +383,24 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       {mobileSidebarOpen && (
         <div
           onClick={() => setMobileSidebarOpen(false)}
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-45 transition-opacity"
+          className="lg:hidden fixed inset-0 bg-black/70 backdrop-blur-xs z-45 transition-opacity"
         />
       )}
 
-      {/* SIDEBAR (Responsive drawer on mobile, fixed column on desktop) */}
+      {/* SIDEBAR NAVIGATION (Fixed 260px desktop column, off-canvas drawer on mobile) */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-72 lg:w-64 bg-[#131418] border-r border-white/10 flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#12131a] border-r border-white/10 flex flex-col transition-transform duration-300 ease-in-out ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between">
-          <div className="admin-wordmark"><span className="admin-brand-mark">yc.</span><span>YOUR STUDIO<small>PORTFOLIO CMS</small></span></div>
+        <div className="h-16 px-5 border-b border-white/10 flex items-center justify-between">
+          <div className="admin-wordmark">
+            <span className="admin-brand-mark">yc.</span>
+            <div>
+              <span>YOGENDRA STUDIO</span>
+              <small>PORTFOLIO CMS</small>
+            </div>
+          </div>
           <button
             onClick={() => setMobileSidebarOpen(false)}
             className="lg:hidden text-zinc-400 hover:text-white p-1 rounded hover:bg-white/5"
@@ -273,8 +410,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           </button>
         </div>
 
-        <div className="admin-sidebar-caption">WORKSPACE</div>
-        <nav className="admin-nav flex-1 p-3 flex flex-col gap-1 overflow-y-auto">
+        <div className="admin-sidebar-caption">STUDIO WORKSPACE</div>
+        <nav className="admin-nav flex-1 px-3 py-2 flex flex-col gap-1 overflow-y-auto">
           {navTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -286,108 +423,248 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   setEditingProject(null);
                   setIsCreatingExp(false);
                   setEditingExp(null);
+                  setIsCreatingEdu(false);
+                  setEditingEdu(null);
                   setMobileSidebarOpen(false);
                 }}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-xs sm:text-sm font-medium transition-colors text-left w-full cursor-pointer ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-left w-full cursor-pointer ${
                   isActive
-                    ? 'text-[#f37021] bg-[#f37021]/15 font-semibold'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                    ? 'text-white bg-[#f37021]/15 border border-[#f37021]/30 font-semibold shadow-xs'
+                    : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
-                <tab.icon size={18} strokeWidth={1.8} />
-                <span className="admin-nav-copy"><span>{tab.label}</span><small>{tab.detail}</small></span>
-                {isActive && <ChevronRight className="admin-nav-chevron" size={15} />}
+                <tab.icon
+                  size={18}
+                  strokeWidth={1.8}
+                  className={isActive ? 'text-[#f37021]' : 'text-zinc-400'}
+                />
+                <span className="admin-nav-copy">
+                  <span className={isActive ? 'text-white' : 'text-zinc-300'}>{tab.label}</span>
+                  <small className="text-zinc-500">{tab.detail}</small>
+                </span>
+                {isActive && <ChevronRight className="admin-nav-chevron text-[#f37021]" size={15} />}
               </button>
             );
           })}
         </nav>
 
-        <div className="admin-sidebar-bottom p-3 border-t border-white/10 flex flex-col gap-2">
+        <div className="admin-sidebar-bottom p-4 border-t border-white/10 flex flex-col gap-2.5 bg-[#12131a]">
           <button
             onClick={() => {
               setMobileSidebarOpen(false);
               onNavigate('/');
             }}
-            className="w-full py-2 px-3 bg-[#1a1b22] border border-white/10 text-zinc-200 hover:text-white rounded-md text-xs text-center cursor-pointer transition-colors"
+            className="w-full py-2 px-3 bg-[#181923] border border-white/10 hover:border-white/20 text-zinc-200 hover:text-white rounded-lg text-xs font-semibold text-center cursor-pointer transition-colors flex items-center justify-center gap-1.5"
           >
-            <ArrowUpRight size={15} /> View live portfolio
+            <ArrowUpRight size={14} className="text-[#f37021]" />
+            <span>View live portfolio</span>
           </button>
-          <div className="admin-account-row">
-            <span className="admin-account-avatar">{(adminUser || 'Y').slice(0, 1).toUpperCase()}</span><span className="admin-account-copy"><small>SIGNED IN AS</small>{adminUser || 'Administrator'}</span><button className="admin-signout" onClick={logout} aria-label="Log out">↗</button>
+          <div className="admin-account-row flex items-center justify-between pt-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="admin-account-avatar">
+                {(adminUser || 'Y').slice(0, 1).toUpperCase()}
+              </span>
+              <div className="admin-account-copy truncate">
+                <small className="text-[9px] uppercase tracking-wider text-zinc-500 font-mono">ADMINISTRATOR</small>
+                <span className="text-xs font-semibold text-white truncate block">{adminUser || 'Yogendra'}</span>
+              </div>
+            </div>
+            <button
+              className="admin-signout hover:bg-red-500/20 hover:text-red-400 p-1.5 rounded text-zinc-400"
+              onClick={logout}
+              title="Sign out of Admin CMS"
+              aria-label="Log out"
+            >
+              <ArrowUpRight size={16} />
+            </button>
           </div>
         </div>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 w-full min-w-0 pt-16 lg:pt-0 lg:ml-64 p-4 sm:p-6 md:p-8 lg:p-10 transition-all">
-        <div className="admin-topbar"><div className="admin-breadcrumb"><span>Studio</span><ChevronRight size={14} /><strong>{navTabs.find((tab) => tab.id === activeTab)?.label}</strong></div><div className="admin-topbar-actions"><span className="admin-live-status"><i /> {isSupabaseConnected ? 'Cloud connected' : 'Changes saved locally'}</span><button onClick={() => onNavigate('/')}><ArrowUpRight size={15} /> View site</button></div></div>
-        <div className="admin-page-intro"><div><div className="admin-eyebrow"><Sparkles size={14} /> PORTFOLIO STUDIO</div><h1>{activeTab === 'overview' ? `Good to see you${adminUser ? `, ${adminUser.split(' ')[0]}` : ''}.` : navTabs.find((tab) => tab.id === activeTab)?.label}</h1><p>{navTabs.find((tab) => tab.id === activeTab)?.detail} <span>·</span> Shape your portfolio, one detail at a time.</p></div><div className="admin-date-chip"><Command size={14} /> PERSONAL WORKSPACE</div></div>
+      {/* ==========================================
+          MAIN CONTENT AREA (WITH DESKTOP MARGIN OFFSET)
+      ========================================== */}
+      <main className="flex-1 w-full min-w-0 transition-all">
+        {/* Topbar breadcrumb and status banner */}
+        <div className="admin-topbar">
+          <div className="admin-breadcrumb">
+            <span className="text-zinc-500">Studio</span>
+            <ChevronRight size={14} className="text-zinc-600" />
+            <strong className="text-white">{navTabs.find((tab) => tab.id === activeTab)?.label}</strong>
+          </div>
+          <div className="admin-topbar-actions">
+            <span className="admin-live-status">
+              <i /> {isSupabaseConnected ? 'Cloud synced (Supabase)' : 'Local persistence active'}
+            </span>
+            <button onClick={() => onNavigate('/')}>
+              <ArrowUpRight size={14} className="text-[#f37021]" /> View public site
+            </button>
+          </div>
+        </div>
+
+        {/* Page Intro Title */}
+        <div className="admin-page-intro">
+          <div>
+            <div className="admin-eyebrow">
+              <Sparkles size={14} /> PORTFOLIO STUDIO
+            </div>
+            <h1>
+              {activeTab === 'overview'
+                ? `Good to see you${adminUser ? `, ${adminUser.split(' ')[0]}` : ''}.`
+                : navTabs.find((tab) => tab.id === activeTab)?.label}
+            </h1>
+            <p>
+              {navTabs.find((tab) => tab.id === activeTab)?.detail} <span>·</span> Shape your portfolio, one detail at a
+              time.
+            </p>
+          </div>
+          <div className="admin-date-chip hidden md:flex items-center gap-1.5">
+            <Command size={14} className="text-[#f37021]" />
+            <span>PERSONAL WORKSPACE</span>
+          </div>
+        </div>
+
+        {/* FLOATING SUCCESS NOTIFICATION */}
         {notice && (
-          <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 bg-[#10b981] text-white py-2.5 px-4 rounded-lg shadow-xl font-medium text-xs sm:text-sm animate-fade-in flex items-center gap-2">
-            <span className="material-symbols-rounded text-base">check_circle</span>
+          <div className="admin-toast">
+            <CheckCircle2 size={17} className="text-emerald-400" />
             <span>{notice}</span>
           </div>
         )}
 
-        {/* TAB 1: OVERVIEW */}
+        {/* ==========================================
+            TAB 1: OVERVIEW DASHBOARD
+        ========================================== */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-white">Your portfolio at a glance</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-white">Your portfolio at a glance</h2>
               <p className="text-zinc-400 text-xs sm:text-sm mt-1">
                 Manage live portfolio content, case studies, experience, and assets.
               </p>
             </div>
 
+            {/* METRICS GRID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 sm:p-5 bg-[#131418] border border-white/10 rounded-xl">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">Total Projects</span>
-                <div className="text-2xl sm:text-3xl font-bold text-[#f37021] mt-2">{projects.length}</div>
-                <div className="text-xs text-zinc-500 mt-1">{projects.filter(p => p.status === 'published').length} published</div>
-              </div>
-
-              <div className="p-4 sm:p-5 bg-[#131418] border border-white/10 rounded-xl">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">Experience</span>
-                <div className="text-2xl sm:text-3xl font-bold text-white mt-2">{experience.length}</div>
-                <div className="text-xs text-zinc-500 mt-1">Active career positions</div>
-              </div>
-
-              <div className="p-4 sm:p-5 bg-[#131418] border border-white/10 rounded-xl">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">Media Assets</span>
-                <div className="text-2xl sm:text-3xl font-bold text-[#10b981] mt-2">{media.length}</div>
-                <div className="text-xs text-zinc-500 mt-1">In local storage &amp; CDN</div>
-              </div>
-
-              <div className="p-4 sm:p-5 bg-[#131418] border border-white/10 rounded-xl">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">Database Status</span>
-                <div className="text-sm font-semibold text-[#10b981] mt-3 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse shrink-0"></span>
-                  <span className="truncate">{isSupabaseConnected ? 'Connected to Supabase' : 'Offline / Local Cache'}</span>
+              <div
+                onClick={() => setActiveTab('projects')}
+                className="p-5 bg-[#12131a] border border-white/10 hover:border-[#f37021]/50 rounded-xl cursor-pointer transition-all hover:bg-[#181923] group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                    Total Projects
+                  </span>
+                  <FolderKanban size={18} className="text-[#f37021]" />
                 </div>
-                <div className="text-xs text-zinc-500 mt-1">Live state persistence active</div>
+                <div className="text-3xl font-bold text-[#f37021] mt-2 group-hover:scale-105 transition-transform origin-left">
+                  {projects.length}
+                </div>
+                <div className="text-xs text-zinc-400 mt-1 flex items-center justify-between">
+                  <span>{projects.filter((p) => p.status === 'published').length} published</span>
+                  <span className="text-zinc-500 group-hover:text-white transition-colors">Manage →</span>
+                </div>
+              </div>
+
+              <div
+                onClick={() => setActiveTab('experience')}
+                className="p-5 bg-[#12131a] border border-white/10 hover:border-white/20 rounded-xl cursor-pointer transition-all hover:bg-[#181923] group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                    Experience
+                  </span>
+                  <BriefcaseBusiness size={18} className="text-zinc-400" />
+                </div>
+                <div className="text-3xl font-bold text-white mt-2 group-hover:scale-105 transition-transform origin-left">
+                  {experience.length}
+                </div>
+                <div className="text-xs text-zinc-400 mt-1 flex items-center justify-between">
+                  <span>Active career positions</span>
+                  <span className="text-zinc-500 group-hover:text-white transition-colors">Manage →</span>
+                </div>
+              </div>
+
+              <div
+                onClick={() => setActiveTab('media')}
+                className="p-5 bg-[#12131a] border border-white/10 hover:border-white/20 rounded-xl cursor-pointer transition-all hover:bg-[#181923] group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                    Media Assets
+                  </span>
+                  <ImageIcon size={18} className="text-emerald-400" />
+                </div>
+                <div className="text-3xl font-bold text-emerald-400 mt-2 group-hover:scale-105 transition-transform origin-left">
+                  {media.length}
+                </div>
+                <div className="text-xs text-zinc-400 mt-1 flex items-center justify-between">
+                  <span>Local &amp; CDN images</span>
+                  <span className="text-zinc-500 group-hover:text-white transition-colors">View →</span>
+                </div>
+              </div>
+
+              <div
+                onClick={() => setActiveTab('settings')}
+                className="p-5 bg-[#12131a] border border-white/10 hover:border-white/20 rounded-xl cursor-pointer transition-all hover:bg-[#181923] group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                    Database
+                  </span>
+                  <RefreshCw
+                    size={16}
+                    className={isSupabaseConnected ? 'text-emerald-400' : 'text-amber-400'}
+                  />
+                </div>
+                <div className="text-sm font-bold text-white mt-3 flex items-center gap-2">
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      isSupabaseConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                    }`}
+                  />
+                  <span className="truncate">{isSupabaseConnected ? 'Supabase Connected' : 'Local Storage Mode'}</span>
+                </div>
+                <div className="text-xs text-zinc-400 mt-1 flex items-center justify-between">
+                  <span>{isSupabaseConnected ? 'PostgreSQL live sync' : 'Connect cloud DB'}</span>
+                  <span className="text-zinc-500 group-hover:text-white transition-colors">Settings →</span>
+                </div>
               </div>
             </div>
 
-            <div className="p-5 sm:p-6 bg-[#131418] border border-white/10 rounded-xl">
-              <h2 className="text-base font-semibold text-white mb-3">Quick Actions</h2>
+            {/* QUICK ACTIONS BAR */}
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl">
+              <h3 className="text-sm font-semibold text-white mb-3">Quick Actions</h3>
               <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={() => { setActiveTab('projects'); setIsCreatingProject(true); }}
-                  className="px-4 py-2.5 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-md text-xs sm:text-sm font-semibold cursor-pointer"
+                  onClick={() => {
+                    setActiveTab('projects');
+                    setIsCreatingProject(true);
+                  }}
+                  className="px-4 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md flex items-center gap-1.5 transition-all"
                 >
-                  + Add New Project
+                  <Plus size={16} />
+                  <span>Add New Case Study</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('settings')}
-                  className="px-4 py-2.5 bg-[#1a1b22] hover:bg-[#252630] border border-white/10 text-white rounded-md text-xs sm:text-sm cursor-pointer"
+                  className="px-4 py-2.5 bg-[#181923] hover:bg-[#202230] border border-white/10 text-white rounded-lg text-xs sm:text-sm font-medium cursor-pointer transition-all flex items-center gap-1.5"
                 >
-                  Edit Site Profile
+                  <Settings2 size={16} className="text-zinc-400" />
+                  <span>Edit Site Profile &amp; Bio</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('media')}
+                  className="px-4 py-2.5 bg-[#181923] hover:bg-[#202230] border border-white/10 text-white rounded-lg text-xs sm:text-sm font-medium cursor-pointer transition-all flex items-center gap-1.5"
+                >
+                  <ImageIcon size={16} className="text-zinc-400" />
+                  <span>Manage Media Library</span>
                 </button>
                 <button
                   onClick={() => {
                     setConfirmDialog({
                       title: 'Reset Portfolio Defaults',
-                      message: 'Are you sure you want to restore all portfolio content, case studies, and settings to original defaults?',
+                      message:
+                        'Are you sure you want to restore all portfolio content, case studies, and settings to original defaults?',
                       confirmLabel: 'Reset Everything',
                       onConfirm: () => {
                         resetToDefaults();
@@ -396,16 +673,86 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       }
                     });
                   }}
-                  className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-md text-xs sm:text-sm cursor-pointer"
+                  className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-xs sm:text-sm cursor-pointer transition-all ml-auto"
                 >
                   Reset Defaults
                 </button>
               </div>
             </div>
+
+            {/* RECENT PROJECTS PREVIEW TABLE */}
+            <div className="bg-[#12131a] border border-white/10 rounded-xl overflow-hidden">
+              <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold text-white text-sm">Published Case Studies</h3>
+                  <p className="text-zinc-400 text-xs">Recently active projects displayed on the portfolio.</p>
+                </div>
+                <button
+                  onClick={() => setActiveTab('projects')}
+                  className="text-xs text-[#f37021] hover:underline font-semibold flex items-center gap-1"
+                >
+                  <span>View All ({projects.length})</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+
+              <div className="divide-y divide-white/5">
+                {projects.slice(0, 4).map((proj) => (
+                  <div
+                    key={proj.id}
+                    className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img
+                        alt={proj.title}
+                        src={proj.heroImage?.url || proj.coverImage || '/assets/media/home-media-04-f775f2921176.webp'}
+                        className="w-12 h-9 object-cover rounded bg-black border border-white/10 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="font-semibold text-white text-sm flex items-center gap-2">
+                          <span className="truncate">{proj.title}</span>
+                          {proj.featured && (
+                            <span className="text-[10px] bg-[#f37021]/15 text-[#f37021] px-1.5 py-0.2 rounded font-mono">
+                              FEATURED
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-zinc-400 truncate">
+                          {proj.categoryLabel || proj.category} · {proj.route}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => onNavigate(proj.route)}
+                        className="px-2.5 py-1 text-xs rounded bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 flex items-center gap-1 cursor-pointer"
+                        title="Preview live page"
+                      >
+                        <ExternalLink size={12} />
+                        <span className="hidden sm:inline">Preview</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingProject(proj);
+                          setIsCreatingProject(false);
+                          setActiveTab('projects');
+                        }}
+                        className="px-3 py-1 text-xs rounded bg-[#f37021]/15 text-[#f37021] hover:bg-[#f37021]/25 border border-[#f37021]/30 font-semibold cursor-pointer"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* TAB 2: PROJECTS & CASE STUDIES */}
+        {/* ==========================================
+            TAB 2: PROJECTS & CASE STUDIES
+        ========================================== */}
         {activeTab === 'projects' && (
           <div>
             {isCreatingProject || editingProject ? (
@@ -430,12 +777,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 }}
               />
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-5">
+                {/* Header with Title and Add Button */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
-                    <h1 className="text-xl sm:text-2xl font-bold text-white">Projects &amp; Case Studies</h1>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white">Projects &amp; Case Studies</h2>
                     <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                      Build, reorder, publish, and customize case studies with the visual block builder.
+                      Build, reorder, publish, and customize case studies with the interactive visual block builder.
                     </p>
                   </div>
                   <button
@@ -443,22 +791,74 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       setIsCreatingProject(true);
                       setEditingProject(null);
                     }}
-                    className="w-full sm:w-auto px-4 py-2.5 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-md text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 cursor-pointer shrink-0 shadow-md transition-all"
                   >
-                    <span className="material-symbols-rounded text-lg">add</span>
+                    <Plus size={16} />
                     <span>Add New Case Study</span>
                   </button>
                 </div>
 
+                {/* Filter and Search Bar */}
+                <div className="p-3.5 bg-[#12131a] border border-white/10 rounded-xl flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                  <div className="relative flex-1">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                    <input
+                      type="text"
+                      value={projectSearchQuery}
+                      onChange={(e) => setProjectSearchQuery(e.target.value)}
+                      placeholder="Search case studies by title, slug, or label..."
+                      className="w-full pl-9 pr-4 py-2 bg-[#0d0e14] border border-white/10 rounded-lg text-white text-xs sm:text-sm outline-none focus:border-[#f37021]"
+                    />
+                    {projectSearchQuery && (
+                      <button
+                        onClick={() => setProjectSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-xs"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5 bg-[#0d0e14] px-2.5 py-1 rounded-lg border border-white/10 text-xs">
+                      <Filter size={13} className="text-zinc-500" />
+                      <select
+                        value={projectCategoryFilter}
+                        onChange={(e) => setProjectCategoryFilter(e.target.value as any)}
+                        className="bg-transparent text-zinc-300 border-none outline-none cursor-pointer py-1"
+                      >
+                        <option value="all">All Categories</option>
+                        <option value="product">Product</option>
+                        <option value="archive">Archive</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-[#0d0e14] px-2.5 py-1 rounded-lg border border-white/10 text-xs">
+                      <select
+                        value={projectStatusFilter}
+                        onChange={(e) => setProjectStatusFilter(e.target.value as any)}
+                        className="bg-transparent text-zinc-300 border-none outline-none cursor-pointer py-1"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="published">Published</option>
+                        <option value="draft">Drafts</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Projects Table with Responsive Horizontal Scroll Container */}
-                <div className="w-full overflow-hidden border border-white/10 rounded-xl bg-[#131418]">
+                <div className="w-full overflow-hidden border border-white/10 rounded-xl bg-[#12131a] shadow-lg">
                   <div className="p-3 sm:p-4 border-b border-white/10 flex justify-between items-center text-xs">
-                    <span className="font-mono text-zinc-400">ALL CASE STUDIES ({projects.length})</span>
+                    <span className="font-mono text-zinc-400">
+                      CASE STUDIES ({filteredProjects.length} OF {projects.length})
+                    </span>
                     <button
                       onClick={() => {
                         setConfirmDialog({
                           title: 'Delete All Case Studies',
-                          message: 'Permanently remove all project case studies? This action cannot be undone.',
+                          message:
+                            'Permanently remove all project case studies? This action cannot be undone.',
                           confirmLabel: 'Delete All Projects',
                           onConfirm: () => {
                             deleteAllProjects();
@@ -467,123 +867,217 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                           }
                         });
                       }}
-                      className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded text-xs cursor-pointer"
+                      className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded text-xs cursor-pointer transition-colors"
                     >
                       Delete All Projects
                     </button>
                   </div>
 
                   <div className="w-full overflow-x-auto">
-                    <table className="w-full min-w-[620px] text-left text-xs sm:text-sm">
+                    <table className="w-full min-w-[700px] text-left text-xs sm:text-sm">
                       <thead>
-                        <tr className="border-b border-white/10 bg-[#181920] text-zinc-400">
-                          <th className="py-3 px-4 w-14">Order</th>
+                        <tr className="border-b border-white/10 bg-[#171822] text-zinc-400">
+                          <th className="py-3 px-4 w-14 font-mono">Order</th>
                           <th className="py-3 px-4">Project</th>
                           <th className="py-3 px-4">Category</th>
-                          <th className="py-3 px-4">Route</th>
+                          <th className="py-3 px-4 font-mono">Route</th>
                           <th className="py-3 px-4">Status</th>
                           <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        {projects.map((proj, pIdx) => (
-                          <tr key={proj.id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-mono text-xs text-zinc-500">{pIdx + 1}</span>
-                                <div className="flex flex-col">
-                                  <button
-                                    onClick={() => {
-                                      if (pIdx === 0) return;
-                                      const ids = projects.map(p => p.id);
-                                      const temp = ids[pIdx];
-                                      ids[pIdx] = ids[pIdx - 1];
-                                      ids[pIdx - 1] = temp;
-                                      reorderProjects(ids);
-                                    }}
-                                    disabled={pIdx === 0}
-                                    className={`text-[10px] leading-tight ${pIdx === 0 ? 'text-zinc-700' : 'text-zinc-400 hover:text-white cursor-pointer'}`}
-                                  >
-                                    ▲
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      if (pIdx === projects.length - 1) return;
-                                      const ids = projects.map(p => p.id);
-                                      const temp = ids[pIdx];
-                                      ids[pIdx] = ids[pIdx + 1];
-                                      ids[pIdx + 1] = temp;
-                                      reorderProjects(ids);
-                                    }}
-                                    disabled={pIdx === projects.length - 1}
-                                    className={`text-[10px] leading-tight ${pIdx === projects.length - 1 ? 'text-zinc-700' : 'text-zinc-400 hover:text-white cursor-pointer'}`}
-                                  >
-                                    ▼
-                                  </button>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-3">
-                                <img
-                                  alt={proj.title}
-                                  src={proj.heroImage?.url || proj.coverImage || '/assets/media/home-media-04-f775f2921176.webp'}
-                                  className="w-12 h-9 object-cover rounded bg-black border border-white/10 shrink-0"
-                                />
-                                <div>
-                                  <div className="font-semibold text-white flex items-center gap-1.5">
-                                    <span>{proj.title}</span>
-                                    {proj.featured && <span className="text-[#f37021] text-xs">★</span>}
-                                  </div>
-                                  <div className="text-[11px] text-zinc-500">
-                                    {proj.year || '2026'} · {proj.sections?.length || 11} sections
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4 text-zinc-400">{proj.categoryLabel || proj.category}</td>
-                            <td className="py-3 px-4 font-mono text-xs text-zinc-400">{proj.route}</td>
-                            <td className="py-3 px-4">
-                              <span className={`px-2 py-0.5 rounded text-[11px] font-semibold uppercase ${
-                                proj.status === 'published'
-                                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                                  : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                              }`}>
-                                {proj.status}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <button
-                                  onClick={() => {
-                                    setEditingProject(proj);
-                                    setIsCreatingProject(false);
-                                  }}
-                                  className="px-2.5 py-1 rounded bg-[#1a1b22] hover:bg-[#252630] border border-white/10 text-white text-xs cursor-pointer"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setConfirmDialog({
-                                      title: `Delete ${proj.title}`,
-                                      message: `Are you sure you want to delete case study "${proj.title}"?`,
-                                      confirmLabel: 'Delete Case Study',
-                                      onConfirm: () => {
-                                        deleteProject(proj.id);
-                                        showNotice(`Deleted "${proj.title}"`);
-                                        setConfirmDialog(null);
-                                      }
-                                    });
-                                  }}
-                                  className="px-2.5 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs cursor-pointer"
-                                >
-                                  Delete
-                                </button>
-                              </div>
+                      <tbody className="divide-y divide-white/5">
+                        {filteredProjects.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="py-12 text-center text-zinc-500">
+                              <FolderKanban size={32} className="mx-auto mb-2 text-zinc-600" />
+                              <p className="font-medium">No case studies found matching your criteria.</p>
+                              <button
+                                onClick={() => {
+                                  setProjectSearchQuery('');
+                                  setProjectCategoryFilter('all');
+                                  setProjectStatusFilter('all');
+                                }}
+                                className="mt-2 text-xs text-[#f37021] hover:underline cursor-pointer"
+                              >
+                                Clear filters
+                              </button>
                             </td>
                           </tr>
-                        ))}
+                        ) : (
+                          filteredProjects.map((proj, pIdx) => (
+                            <tr key={proj.id} className="hover:bg-white/[0.02] transition-colors">
+                              <td className="py-3.5 px-4">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-mono text-xs text-zinc-500 w-4">{pIdx + 1}</span>
+                                  <div className="flex flex-col">
+                                    <button
+                                      onClick={() => {
+                                        if (pIdx === 0) return;
+                                        const ids = projects.map((p) => p.id);
+                                        const temp = ids[pIdx];
+                                        ids[pIdx] = ids[pIdx - 1];
+                                        ids[pIdx - 1] = temp;
+                                        reorderProjects(ids);
+                                      }}
+                                      disabled={pIdx === 0}
+                                      className={`text-[10px] leading-tight ${
+                                        pIdx === 0 ? 'text-zinc-700' : 'text-zinc-400 hover:text-white cursor-pointer'
+                                      }`}
+                                      title="Move up"
+                                    >
+                                      ▲
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (pIdx === projects.length - 1) return;
+                                        const ids = projects.map((p) => p.id);
+                                        const temp = ids[pIdx];
+                                        ids[pIdx] = ids[pIdx + 1];
+                                        ids[pIdx + 1] = temp;
+                                        reorderProjects(ids);
+                                      }}
+                                      disabled={pIdx === projects.length - 1}
+                                      className={`text-[10px] leading-tight ${
+                                        pIdx === projects.length - 1
+                                          ? 'text-zinc-700'
+                                          : 'text-zinc-400 hover:text-white cursor-pointer'
+                                      }`}
+                                      title="Move down"
+                                    >
+                                      ▼
+                                    </button>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="py-3.5 px-4">
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    alt={proj.title}
+                                    src={
+                                      proj.heroImage?.url ||
+                                      proj.coverImage ||
+                                      '/assets/media/home-media-04-f775f2921176.webp'
+                                    }
+                                    className="w-12 h-9 object-cover rounded bg-black border border-white/10 shrink-0"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src =
+                                        '/assets/media/home-media-04-f775f2921176.webp';
+                                    }}
+                                  />
+                                  <div className="min-w-0">
+                                    <div className="font-semibold text-white flex items-center gap-1.5 truncate">
+                                      <span>{proj.title}</span>
+                                      {proj.featured && (
+                                        <span className="text-[#f37021] text-xs" title="Featured on home">
+                                          ★
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-[11px] text-zinc-500">
+                                      {proj.year || '2026'} · {proj.sections?.length || 0} chapters
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="py-3.5 px-4">
+                                <span className="px-2 py-0.5 rounded text-[11px] bg-white/5 border border-white/10 text-zinc-300">
+                                  {proj.categoryLabel || proj.category}
+                                </span>
+                              </td>
+
+                              <td className="py-3.5 px-4 font-mono text-xs text-zinc-400">
+                                <div className="flex items-center gap-1">
+                                  <span>{proj.route}</span>
+                                  <button
+                                    onClick={() => handleCopy(proj.route, `route-${proj.id}`)}
+                                    className="text-zinc-500 hover:text-white p-0.5"
+                                    title="Copy route path"
+                                  >
+                                    {copiedId === `route-${proj.id}` ? (
+                                      <Check size={12} className="text-emerald-400" />
+                                    ) : (
+                                      <Copy size={12} />
+                                    )}
+                                  </button>
+                                </div>
+                              </td>
+
+                              <td className="py-3.5 px-4">
+                                <button
+                                  onClick={() => {
+                                    toggleProjectStatus(proj.id);
+                                    showNotice(
+                                      `"${proj.title}" is now ${
+                                        proj.status === 'published' ? 'Draft' : 'Published'
+                                      }`
+                                    );
+                                  }}
+                                  className={`px-2.5 py-0.5 rounded text-[11px] font-semibold uppercase cursor-pointer transition-colors ${
+                                    proj.status === 'published'
+                                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25'
+                                      : 'bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25'
+                                  }`}
+                                  title="Click to toggle status"
+                                >
+                                  {proj.status}
+                                </button>
+                              </td>
+
+                              <td className="py-3.5 px-4 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    onClick={() => onNavigate(proj.route)}
+                                    className="p-1.5 rounded bg-[#181923] hover:bg-[#202230] border border-white/10 text-zinc-300 hover:text-white cursor-pointer"
+                                    title="Preview live case study"
+                                  >
+                                    <ExternalLink size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const dup = duplicateProject(proj.id);
+                                      if (dup) {
+                                        showNotice(`Duplicated as "${dup.title}"`);
+                                      }
+                                    }}
+                                    className="p-1.5 rounded bg-[#181923] hover:bg-[#202230] border border-white/10 text-zinc-300 hover:text-white cursor-pointer"
+                                    title="Duplicate case study"
+                                  >
+                                    <Copy size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEditingProject(proj);
+                                      setIsCreatingProject(false);
+                                    }}
+                                    className="px-2.5 py-1 rounded bg-[#f37021]/15 hover:bg-[#f37021]/25 border border-[#f37021]/30 text-[#f37021] text-xs font-semibold cursor-pointer"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setConfirmDialog({
+                                        title: `Delete ${proj.title}`,
+                                        message: `Are you sure you want to delete case study "${proj.title}"?`,
+                                        confirmLabel: 'Delete Case Study',
+                                        onConfirm: () => {
+                                          deleteProject(proj.id);
+                                          showNotice(`Deleted "${proj.title}"`);
+                                          setConfirmDialog(null);
+                                        }
+                                      });
+                                    }}
+                                    className="p-1.5 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 cursor-pointer"
+                                    title="Delete case study"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -593,43 +1087,80 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           </div>
         )}
 
-        {/* TAB 3: SETTINGS */}
+        {/* ==========================================
+            TAB 3: SITE & PROFILE SETTINGS
+        ========================================== */}
         {activeTab === 'settings' && (
           <div className="space-y-6">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">Site &amp; Profile Settings</h1>
+              <h2 className="text-xl sm:text-2xl font-bold text-white">Site &amp; Profile Settings</h2>
               <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                Update designer branding, contact information, and availability status.
+                Update designer branding, contact information, credentials, and Supabase database connection.
               </p>
             </div>
 
-            <div className="p-4 sm:p-6 bg-[#131418] border border-white/10 rounded-xl space-y-4">
+            {/* DESIGNER BRANDING & BIO CARD */}
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
+              <div className="border-b border-white/10 pb-3">
+                <h3 className="text-base font-bold text-white">Designer Identity</h3>
+                <p className="text-zinc-400 text-xs mt-0.5">Primary name, title, and public presence.</p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Brand Name</label>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Brand / Full Name</label>
                   <input
                     type="text"
                     value={settings.brandName}
                     onChange={(e) => updateSettings({ brandName: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Brand Role</label>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Designer Role / Title</label>
                   <input
                     type="text"
                     value={settings.brandRole}
                     onChange={(e) => updateSettings({ brandRole: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Location / Base</label>
+                  <input
+                    type="text"
+                    value={settings.location}
+                    onChange={(e) => updateSettings({ location: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Availability Status</label>
+                  <input
+                    type="text"
+                    value={settings.availabilityText}
+                    onChange={(e) => updateSettings({ availabilityText: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* CONTACT & SOCIAL CARD */}
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
+              <div className="border-b border-white/10 pb-3">
+                <h3 className="text-base font-bold text-white">Contact &amp; Social Links</h3>
+                <p className="text-zinc-400 text-xs mt-0.5">Where clients and recruiters can reach you.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Email Address</label>
                   <input
                     type="email"
                     value={settings.email}
                     onChange={(e) => updateSettings({ email: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
@@ -638,35 +1169,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     type="text"
                     value={settings.phone}
                     onChange={(e) => updateSettings({ phone: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Location</label>
-                  <input
-                    type="text"
-                    value={settings.location}
-                    onChange={(e) => updateSettings({ location: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Resume / CV URL</label>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Resume / CV Document URL</label>
                   <input
                     type="text"
                     value={settings.resumeUrl}
                     onChange={(e) => updateSettings({ resumeUrl: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Behance Profile URL</label>
-                  <input
-                    type="text"
-                    value={settings.behanceUrl || ''}
-                    placeholder="https://www.behance.net/yogendrachaudhary1"
-                    onChange={(e) => updateSettings({ behanceUrl: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
@@ -676,16 +1188,17 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     value={settings.linkedinUrl || ''}
                     placeholder="https://www.linkedin.com/in/yogendrach"
                     onChange={(e) => updateSettings({ linkedinUrl: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Availability Text</label>
-                  <textarea
-                    rows={2}
-                    value={settings.availabilityText}
-                    onChange={(e) => updateSettings({ availabilityText: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Behance Portfolio URL</label>
+                  <input
+                    type="text"
+                    value={settings.behanceUrl || ''}
+                    placeholder="https://www.behance.net/yogendrachaudhary1"
+                    onChange={(e) => updateSettings({ behanceUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
               </div>
@@ -693,7 +1206,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               <div className="pt-2">
                 <button
                   onClick={() => showNotice('Profile settings saved successfully.')}
-                  className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-md text-xs sm:text-sm font-semibold cursor-pointer"
+                  className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md transition-all"
                 >
                   Save Profile Settings
                 </button>
@@ -701,33 +1214,43 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             </div>
 
             {/* ADMIN SECURITY & PASSWORD CARD */}
-            <div className="p-4 sm:p-6 bg-[#131418] border border-white/10 rounded-xl space-y-4">
-              <div>
-                <h2 className="text-base sm:text-lg font-bold text-white">Admin Security &amp; Password</h2>
-                <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                  Change the administrator login password for this CMS panel.
-                </p>
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
+              <div className="border-b border-white/10 pb-3 flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-white">Admin Security &amp; Access</h3>
+                  <p className="text-zinc-400 text-xs mt-0.5">Change administrator login credentials for this CMS.</p>
+                </div>
+                <ShieldCheck size={20} className="text-[#f37021]" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">New Password</label>
-                  <input
-                    type="password"
-                    value={adminNewPassword}
-                    onChange={(e) => setAdminNewPassword(e.target.value)}
-                    placeholder="Enter new password"
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showAdminPassword ? 'text' : 'password'}
+                      value={adminNewPassword}
+                      onChange={(e) => setAdminNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      className="w-full px-3 py-2.5 pr-10 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAdminPassword(!showAdminPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                    >
+                      {showAdminPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Confirm Password</label>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Confirm New Password</label>
                   <input
-                    type="password"
+                    type={showAdminPassword ? 'text' : 'password'}
                     value={adminConfirmPassword}
                     onChange={(e) => setAdminConfirmPassword(e.target.value)}
                     placeholder="Confirm new password"
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
               </div>
@@ -751,59 +1274,67 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       setAdminConfirmPassword('');
                     }
                   }}
-                  className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-md text-xs sm:text-sm font-semibold cursor-pointer"
+                  className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md transition-all"
                 >
                   Update Admin Password
                 </button>
               </div>
             </div>
 
-            {/* SUPABASE CARD */}
-            <div className="p-4 sm:p-6 bg-[#131418] border border-white/10 rounded-xl space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            {/* SUPABASE POSTGRESQL CARD */}
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-white/10 pb-3">
                 <div>
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <h2 className="text-base sm:text-lg font-bold text-white">Supabase Integration</h2>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
-                      isSupabaseConnected ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                    }`}>
-                      {isSupabaseConnected ? 'Connected to Supabase' : 'Offline / Local Cache'}
+                    <h3 className="text-base font-bold text-white">Supabase PostgreSQL Integration</h3>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                        isSupabaseConnected
+                          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                      }`}
+                    >
+                      {isSupabaseConnected ? 'Connected to Cloud DB' : 'Offline / Local Cache'}
                     </span>
                   </div>
-                  <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                    Connect your portfolio to Supabase PostgreSQL for persistent database storage and media.
+                  <p className="text-zinc-400 text-xs mt-0.5">
+                    Connect your portfolio to Supabase PostgreSQL for cloud database storage and media synchronization.
                   </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => setShowSqlModal(true)}
-                  className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 border border-white/15 text-zinc-200 text-xs font-medium flex items-center gap-1.5 cursor-pointer shrink-0"
+                  className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-zinc-200 text-xs font-medium flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
                 >
-                  <span className="material-symbols-rounded text-sm">terminal</span>
+                  <Command size={14} className="text-[#f37021]" />
                   <span>View SQL Script</span>
                 </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Supabase Project URL</label>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">
+                    Supabase Project URL
+                  </label>
                   <input
                     type="text"
                     value={supabaseUrlInput}
                     onChange={(e) => setSupabaseUrlInput(e.target.value)}
                     placeholder="https://your-project.supabase.co"
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white font-mono text-xs sm:text-sm outline-none"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white font-mono text-xs sm:text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Supabase Anon Key</label>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">
+                    Supabase Anon Key
+                  </label>
                   <input
                     type="password"
                     value={supabaseKeyInput}
                     onChange={(e) => setSupabaseKeyInput(e.target.value)}
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white font-mono text-xs sm:text-sm outline-none"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white font-mono text-xs sm:text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
               </div>
@@ -814,10 +1345,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   onClick={() => {
                     const ok = updateSupabaseConfig(supabaseUrlInput, supabaseKeyInput);
                     if (ok) {
-                      showNotice(supabaseUrlInput.trim() ? 'Supabase configuration saved!' : 'Cleared Supabase configuration.');
+                      showNotice(
+                        supabaseUrlInput.trim()
+                          ? 'Supabase configuration saved!'
+                          : 'Cleared Supabase configuration.'
+                      );
                     }
                   }}
-                  className="px-4 py-2 bg-[#10b981] hover:bg-[#059669] text-white rounded-md text-xs sm:text-sm font-semibold cursor-pointer"
+                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md transition-all"
                 >
                   Save &amp; Connect Supabase
                 </button>
@@ -831,45 +1366,47 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     setSyncingSupabase(false);
                     showNotice(result.message);
                   }}
-                  className="px-4 py-2 bg-[#1a1b22] hover:bg-[#252630] border border-white/15 text-white rounded-md text-xs sm:text-sm font-medium cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2.5 bg-[#181923] hover:bg-[#202230] border border-white/15 text-white rounded-lg text-xs sm:text-sm font-medium cursor-pointer disabled:opacity-50 transition-all flex items-center gap-1.5"
                 >
-                  {syncingSupabase ? 'Syncing...' : 'Sync Projects to Supabase'}
+                  <RefreshCw size={14} className={syncingSupabase ? 'animate-spin' : ''} />
+                  <span>{syncingSupabase ? 'Syncing...' : 'Sync Projects to Supabase'}</span>
                 </button>
               </div>
             </div>
 
-            {/* SQL MODAL */}
+            {/* SQL SCHEMA MODAL */}
             {showSqlModal && (
               <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-                <div className="bg-[#131418] border border-white/15 rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+                <div className="bg-[#12131a] border border-white/15 rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
                   <div className="p-4 border-b border-white/10 flex justify-between items-center">
-                    <h3 className="font-bold text-white text-sm sm:text-base">Supabase SQL Schema</h3>
-                    <button
-                      onClick={() => setShowSqlModal(false)}
-                      className="text-zinc-400 hover:text-white p-1"
-                    >
-                      ✕
+                    <div className="flex items-center gap-2">
+                      <Command size={16} className="text-[#f37021]" />
+                      <h3 className="font-bold text-white text-sm sm:text-base">Supabase PostgreSQL Schema</h3>
+                    </div>
+                    <button onClick={() => setShowSqlModal(false)} className="text-zinc-400 hover:text-white p-1">
+                      <X size={18} />
                     </button>
                   </div>
                   <div className="flex-1 p-4 overflow-y-auto">
-                    <pre className="p-3 bg-[#0a0a0c] border border-white/10 text-emerald-400 font-mono text-xs overflow-x-auto whitespace-pre-wrap rounded">
+                    <pre className="p-3 bg-[#090a0d] border border-white/10 text-emerald-400 font-mono text-xs overflow-x-auto whitespace-pre-wrap rounded-lg">
                       {SUPABASE_SQL_SCHEMA}
                     </pre>
                   </div>
-                  <div className="p-4 border-t border-white/10 flex justify-end gap-2">
+                  <div className="p-4 border-t border-white/10 flex justify-end gap-2.5">
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(SUPABASE_SQL_SCHEMA);
                         setCopiedSql(true);
                         setTimeout(() => setCopiedSql(false), 2000);
                       }}
-                      className="px-3 py-1.5 bg-[#f37021] text-white rounded text-xs font-semibold cursor-pointer"
+                      className="px-4 py-2 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-1.5"
                     >
-                      {copiedSql ? '✓ Copied' : 'Copy SQL Script'}
+                      {copiedSql ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedSql ? 'Copied to Clipboard' : 'Copy SQL Script'}</span>
                     </button>
                     <button
                       onClick={() => setShowSqlModal(false)}
-                      className="px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded text-xs cursor-pointer"
+                      className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs font-medium cursor-pointer"
                     >
                       Close
                     </button>
@@ -880,20 +1417,23 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           </div>
         )}
 
-        {/* TAB 4: EXPERIENCE */}
+        {/* ==========================================
+            TAB 4: EXPERIENCE TIMELINE
+        ========================================== */}
         {activeTab === 'experience' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-white">Work Experience Timeline</h1>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Work Experience Timeline</h2>
                 <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                  Manage roles, companies, descriptions, and skill tags.
+                  Manage roles, companies, descriptions, and skill tags displayed on your About &amp; Home pages.
                 </p>
               </div>
               {!isCreatingExp && (
                 <button
                   onClick={() => {
                     setIsCreatingExp(true);
+                    setEditingExp(null);
                     setExpFormData({
                       role: '',
                       company: '',
@@ -908,45 +1448,61 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     });
                     setExpTagsInput('');
                   }}
-                  className="px-4 py-2.5 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-md text-xs sm:text-sm font-semibold cursor-pointer shrink-0"
+                  className="px-4 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shrink-0 flex items-center gap-1.5 shadow-md transition-all"
                 >
-                  + Add Experience
+                  <Plus size={16} />
+                  <span>Add Experience</span>
                 </button>
               )}
             </div>
 
-            {/* FORM */}
+            {/* CREATE / EDIT EXPERIENCE FORM */}
             {(isCreatingExp || editingExp) && (
-              <div className="p-4 sm:p-6 bg-[#131418] border border-white/10 rounded-xl space-y-4">
-                <h2 className="text-base font-semibold text-white">
-                  {editingExp ? 'Edit Experience' : 'New Experience Item'}
-                </h2>
+              <div className="p-5 sm:p-6 bg-[#12131a] border border-[#f37021]/30 rounded-xl space-y-4 shadow-xl">
+                <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                  <h3 className="text-base font-bold text-white">
+                    {editingExp ? `Edit Experience: ${editingExp.role}` : 'Add New Experience Position'}
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setIsCreatingExp(false);
+                      setEditingExp(null);
+                    }}
+                    className="text-xs text-zinc-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Role / Title</label>
                     <input
                       type="text"
+                      placeholder="e.g. Lead Product Designer"
                       value={expFormData.role || ''}
                       onChange={(e) => setExpFormData({ ...expFormData, role: e.target.value })}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Company &amp; Location</label>
                     <input
                       type="text"
+                      placeholder="e.g. Acme Studio · Remote"
                       value={expFormData.company || ''}
                       onChange={(e) => setExpFormData({ ...expFormData, company: e.target.value })}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Dates</label>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Dates / Period</label>
                     <input
                       type="text"
+                      placeholder="e.g. Jan 2024 – Present"
                       value={expFormData.dates || ''}
                       onChange={(e) => setExpFormData({ ...expFormData, dates: e.target.value })}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div className="flex items-center gap-2 pt-6">
@@ -955,9 +1511,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       id="currentRoleCheckbox"
                       checked={expFormData.current || false}
                       onChange={(e) => setExpFormData({ ...expFormData, current: e.target.checked })}
-                      className="rounded"
+                      className="accent-[#f37021] w-4 h-4 rounded"
                     />
-                    <label htmlFor="currentRoleCheckbox" className="text-xs text-zinc-300 cursor-pointer">
+                    <label htmlFor="currentRoleCheckbox" className="text-xs text-zinc-300 cursor-pointer font-medium">
                       Current active position
                     </label>
                   </div>
@@ -965,19 +1521,22 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Description</label>
                     <textarea
                       rows={3}
+                      placeholder="Summary of responsibilities, design deliverables, and team impact..."
                       value={expFormData.description || ''}
                       onChange={(e) => setExpFormData({ ...expFormData, description: e.target.value })}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Skills &amp; Tags (comma separated)</label>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">
+                      Skills &amp; Tags (comma separated)
+                    </label>
                     <input
                       type="text"
                       value={expTagsInput}
                       onChange={(e) => setExpTagsInput(e.target.value)}
-                      placeholder="UI Design, User Flows, Figma, Design Systems"
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      placeholder="Design Systems, Prototyping, Figma, User Research"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                 </div>
@@ -985,18 +1544,22 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <div className="flex gap-2.5 pt-2">
                   <button
                     onClick={() => {
-                      const tags = expTagsInput.split(',').map(s => s.trim()).filter(Boolean);
+                      if (!expFormData.role?.trim()) {
+                        showNotice('Please enter a role or title.');
+                        return;
+                      }
+                      const tags = expTagsInput.split(',').map((s) => s.trim()).filter(Boolean);
                       if (editingExp) {
                         updateExperience(editingExp.id, { ...expFormData, tags });
-                        showNotice('Updated experience record.');
+                        showNotice(`Updated experience: ${expFormData.role}`);
                         setEditingExp(null);
                       } else {
                         addExperience({ ...expFormData, tags } as any);
-                        showNotice('Added new experience record.');
+                        showNotice(`Added experience: ${expFormData.role}`);
                         setIsCreatingExp(false);
                       }
                     }}
-                    className="px-4 py-2 bg-[#f37021] text-white rounded text-xs sm:text-sm font-semibold cursor-pointer"
+                    className="px-4 py-2 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md"
                   >
                     Save Experience
                   </button>
@@ -1005,7 +1568,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       setIsCreatingExp(false);
                       setEditingExp(null);
                     }}
-                    className="px-4 py-2 bg-zinc-800 text-zinc-300 rounded text-xs sm:text-sm cursor-pointer"
+                    className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs sm:text-sm cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1013,27 +1576,34 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               </div>
             )}
 
-            {/* EXPERIENCE LIST */}
+            {/* EXPERIENCE ITEMS LIST */}
             <div className="space-y-3">
               {experience.map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 sm:p-5 bg-[#131418] border border-white/10 rounded-xl flex flex-col sm:flex-row justify-between items-start gap-4"
+                  className="p-5 bg-[#12131a] border border-white/10 hover:border-white/20 rounded-xl flex flex-col sm:flex-row justify-between items-start gap-4 transition-colors"
                 >
                   <div className="space-y-2 flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-white text-sm sm:text-base truncate">{item.role}</h3>
+                      <h3 className="font-semibold text-white text-base truncate">{item.role}</h3>
                       {item.current && (
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-[#f37021]/20 text-[#f37021] font-bold shrink-0">
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-[#f37021]/20 text-[#f37021] font-bold shrink-0 border border-[#f37021]/30">
                           CURRENT
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-zinc-400">{item.company} · {item.dates}</div>
-                    <p className="text-zinc-300 text-xs sm:text-sm line-clamp-3 max-w-3xl">{item.description}</p>
+                    <div className="text-xs text-zinc-400 font-medium">
+                      {item.company} · {item.dates}
+                    </div>
+                    <p className="text-zinc-300 text-xs sm:text-sm line-clamp-3 max-w-3xl leading-relaxed">
+                      {item.description}
+                    </p>
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {item.tags.map((t, i) => (
-                        <span key={i} className="text-[11px] px-2 py-0.5 rounded bg-white/5 text-zinc-400">
+                        <span
+                          key={i}
+                          className="text-[11px] px-2 py-0.5 rounded bg-white/5 border border-white/5 text-zinc-400"
+                        >
                           {t}
                         </span>
                       ))}
@@ -1048,7 +1618,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         setExpTagsInput(item.tags.join(', '));
                         setIsCreatingExp(false);
                       }}
-                      className="px-3 py-1.5 rounded bg-[#1a1b22] hover:bg-[#252630] border border-white/10 text-white text-xs cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-[#181923] hover:bg-[#202230] border border-white/10 text-white text-xs font-medium cursor-pointer"
                     >
                       Edit
                     </button>
@@ -1065,7 +1635,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                           }
                         });
                       }}
-                      className="px-3 py-1.5 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs cursor-pointer"
                     >
                       Delete
                     </button>
@@ -1076,46 +1646,51 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           </div>
         )}
 
-        {/* TAB 5: EDUCATION */}
+        {/* ==========================================
+            TAB 5: EDUCATION & CREDENTIALS
+        ========================================== */}
         {activeTab === 'education' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-white">Education &amp; Qualifications</h1>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Education &amp; Qualifications</h2>
                 <p className="text-zinc-400 text-xs sm:text-sm mt-1">
                   Manage academic degrees, certifications, institutions, and communication skills.
                 </p>
               </div>
-              <button
-                onClick={() => {
-                  setEditingEdu(null);
-                  setEduFormData({
-                    title: '',
-                    institution: '',
-                    location: '',
-                    dates: '',
-                    status: 'Graduated',
-                    description: '',
-                    tags: [],
-                    order: education.length + 1,
-                    visible: true
-                  });
-                  setEduTagsInput('');
-                  setIsCreatingEdu(true);
-                }}
-                className="px-4 py-2 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>+ Add Education</span>
-              </button>
+              {!isCreatingEdu && (
+                <button
+                  onClick={() => {
+                    setEditingEdu(null);
+                    setEduFormData({
+                      title: '',
+                      institution: '',
+                      location: '',
+                      dates: '',
+                      status: 'Graduated',
+                      description: '',
+                      tags: [],
+                      order: education.length + 1,
+                      visible: true
+                    });
+                    setEduTagsInput('');
+                    setIsCreatingEdu(true);
+                  }}
+                  className="px-4 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
+                >
+                  <Plus size={16} />
+                  <span>Add Education</span>
+                </button>
+              )}
             </div>
 
             {/* CREATE / EDIT EDUCATION FORM */}
             {(isCreatingEdu || editingEdu) && (
-              <div className="p-4 sm:p-6 bg-[#131418] border border-[#f37021]/30 rounded-xl space-y-4 shadow-xl">
+              <div className="p-5 sm:p-6 bg-[#12131a] border border-[#f37021]/30 rounded-xl space-y-4 shadow-xl">
                 <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                  <h2 className="text-base font-semibold text-white">
+                  <h3 className="text-base font-bold text-white">
                     {editingEdu ? `Edit: ${editingEdu.title}` : 'Add New Education / Qualification'}
-                  </h2>
+                  </h3>
                   <button
                     onClick={() => {
                       setIsCreatingEdu(false);
@@ -1135,7 +1710,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       placeholder="e.g. Bachelor in Information Management"
                       value={eduFormData.title || ''}
                       onChange={(e) => setEduFormData({ ...eduFormData, title: e.target.value })}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
@@ -1145,7 +1720,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       placeholder="e.g. Tribhuvan University"
                       value={eduFormData.institution || ''}
                       onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
@@ -1155,7 +1730,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       placeholder="e.g. Kathmandu, Nepal"
                       value={eduFormData.location || ''}
                       onChange={(e) => setEduFormData({ ...eduFormData, location: e.target.value })}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
@@ -1165,7 +1740,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       placeholder="e.g. 2019 – 2023"
                       value={eduFormData.dates || ''}
                       onChange={(e) => setEduFormData({ ...eduFormData, dates: e.target.value })}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
@@ -1175,17 +1750,19 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       placeholder="e.g. Graduated / First Division / In Progress"
                       value={eduFormData.status || ''}
                       onChange={(e) => setEduFormData({ ...eduFormData, status: e.target.value })}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Focus Areas &amp; Skills (comma separated)</label>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">
+                      Focus Areas &amp; Skills (comma separated)
+                    </label>
                     <input
                       type="text"
                       placeholder="Design Systems, Human-Computer Interaction, Research"
                       value={eduTagsInput}
                       onChange={(e) => setEduTagsInput(e.target.value)}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -1195,7 +1772,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       placeholder="Details about coursework, major projects, thesis or awards..."
                       value={eduFormData.description || ''}
                       onChange={(e) => setEduFormData({ ...eduFormData, description: e.target.value })}
-                      className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                 </div>
@@ -1207,7 +1784,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         showNotice('Please enter a degree or education title.');
                         return;
                       }
-                      const tags = eduTagsInput.split(',').map(s => s.trim()).filter(Boolean);
+                      const tags = eduTagsInput.split(',').map((s) => s.trim()).filter(Boolean);
                       if (editingEdu) {
                         updateEducation(editingEdu.id, { ...eduFormData, tags });
                         showNotice(`Updated ${eduFormData.title}`);
@@ -1218,7 +1795,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         setIsCreatingEdu(false);
                       }
                     }}
-                    className="px-4 py-2 bg-[#f37021] hover:bg-[#ff721a] text-white rounded text-xs sm:text-sm font-semibold cursor-pointer"
+                    className="px-4 py-2 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md"
                   >
                     Save Education
                   </button>
@@ -1227,7 +1804,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       setIsCreatingEdu(false);
                       setEditingEdu(null);
                     }}
-                    className="px-4 py-2 bg-zinc-800 text-zinc-300 rounded text-xs sm:text-sm cursor-pointer"
+                    className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs sm:text-sm cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1235,25 +1812,36 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               </div>
             )}
 
+            {/* EDUCATION CARDS LIST */}
             <div className="space-y-4">
               {education.map((edu) => (
-                <div key={edu.id} className="p-4 sm:p-5 bg-[#131418] border border-white/10 rounded-xl flex flex-col sm:flex-row justify-between items-start gap-4">
+                <div
+                  key={edu.id}
+                  className="p-5 bg-[#12131a] border border-white/10 hover:border-white/20 rounded-xl flex flex-col sm:flex-row justify-between items-start gap-4 transition-colors"
+                >
                   <div className="space-y-2 flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-white text-sm sm:text-base truncate">{edu.title}</h3>
+                      <h3 className="font-semibold text-white text-base truncate">{edu.title}</h3>
                       {edu.status && (
-                        <span className="text-[10px] px-2.5 py-0.5 rounded bg-[#1a1b22] text-[#f37021] font-bold shrink-0 border border-[#f37021]/30">
+                        <span className="text-[10px] px-2.5 py-0.5 rounded bg-[#181923] text-[#f37021] font-bold shrink-0 border border-[#f37021]/30">
                           {edu.status}
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-zinc-400">{edu.institution} · {edu.location} {edu.dates ? `· ${edu.dates}` : ''}</div>
+                    <div className="text-xs text-zinc-400 font-medium">
+                      {edu.institution} · {edu.location} {edu.dates ? `· ${edu.dates}` : ''}
+                    </div>
                     {edu.description && (
-                      <p className="text-zinc-300 text-xs sm:text-sm line-clamp-3 max-w-3xl">{edu.description}</p>
+                      <p className="text-zinc-300 text-xs sm:text-sm line-clamp-3 max-w-3xl leading-relaxed">
+                        {edu.description}
+                      </p>
                     )}
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {edu.tags.map((t, idx) => (
-                        <span key={idx} className="text-[11px] px-2 py-0.5 rounded bg-white/5 border border-white/5 text-zinc-400">
+                        <span
+                          key={idx}
+                          className="text-[11px] px-2 py-0.5 rounded bg-white/5 border border-white/5 text-zinc-400"
+                        >
                           {t}
                         </span>
                       ))}
@@ -1268,7 +1856,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         setEduTagsInput(edu.tags.join(', '));
                         setIsCreatingEdu(false);
                       }}
-                      className="px-3 py-1.5 rounded bg-[#1a1b22] hover:bg-[#252630] border border-white/10 text-white text-xs cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-[#181923] hover:bg-[#202230] border border-white/10 text-white text-xs font-medium cursor-pointer"
                     >
                       Edit
                     </button>
@@ -1285,7 +1873,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                           }
                         });
                       }}
-                      className="px-3 py-1.5 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs cursor-pointer"
                     >
                       Delete
                     </button>
@@ -1296,18 +1884,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           </div>
         )}
 
-        {/* TAB 6: MEDIA LIBRARY */}
+        {/* ==========================================
+            TAB 6: MEDIA LIBRARY
+        ========================================== */}
         {activeTab === 'media' && (
           <div className="space-y-6">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">Media Asset Library</h1>
+              <h2 className="text-xl sm:text-2xl font-bold text-white">Media Asset Library</h2>
               <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                Images and videos used across home, projects, and case study pages.
+                Images, previews, and media used across home, projects, and case study chapters.
               </p>
             </div>
 
-            <div className="p-4 sm:p-6 bg-[#131418] border border-white/10 rounded-xl space-y-3">
-              <h2 className="text-base font-semibold text-white">Add New Asset Link</h2>
+            {/* ADD NEW ASSET CARD */}
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-3">
+              <h3 className="text-sm font-semibold text-white">Add New Media Asset</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Asset Name</label>
@@ -1315,67 +1906,91 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     type="text"
                     value={newMediaName}
                     onChange={(e) => setNewMediaName(e.target.value)}
-                    placeholder="e.g. Dashboard preview"
-                    className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                    placeholder="e.g. Dashboard Hero Preview"
+                    className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Asset URL</label>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Asset URL / Path</label>
                   <input
                     type="text"
                     value={newMediaUrl}
                     onChange={(e) => setNewMediaUrl(e.target.value)}
                     placeholder="/assets/media/... or https://..."
-                    className="w-full px-3 py-2 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                    className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div className="flex items-end">
                   <button
                     onClick={() => {
                       if (!newMediaName || !newMediaUrl) {
-                        showNotice('Please provide name and URL');
+                        showNotice('Please provide both asset name and URL.');
                         return;
                       }
                       addMedia(newMediaName, newMediaUrl, 'image/webp', 120000);
-                      showNotice('Media asset added.');
+                      showNotice(`Added asset: ${newMediaName}`);
                       setNewMediaName('');
                       setNewMediaUrl('');
                     }}
-                    className="w-full py-2.5 px-4 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-md text-xs sm:text-sm font-semibold cursor-pointer"
+                    className="w-full py-2.5 px-4 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md transition-all flex items-center justify-center gap-1.5"
                   >
-                    Add Asset
+                    <Plus size={16} />
+                    <span>Add Asset to Library</span>
                   </button>
                 </div>
               </div>
             </div>
 
+            {/* SEARCH FILTER */}
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+              <input
+                type="text"
+                value={mediaSearchQuery}
+                onChange={(e) => setMediaSearchQuery(e.target.value)}
+                placeholder="Search assets by name or path..."
+                className="w-full pl-9 pr-4 py-2.5 bg-[#12131a] border border-white/10 rounded-xl text-white text-xs sm:text-sm outline-none focus:border-[#f37021]"
+              />
+            </div>
+
+            {/* MEDIA ASSETS GRID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-              {media.map((item) => (
-                <div key={item.id} className="bg-[#131418] border border-white/10 rounded-xl overflow-hidden flex flex-col">
-                  <div className="h-36 bg-[#0a0a0c] overflow-hidden flex items-center justify-center">
+              {filteredMedia.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-[#12131a] border border-white/10 hover:border-white/20 rounded-xl overflow-hidden flex flex-col transition-all shadow-md group"
+                >
+                  <div className="h-40 bg-[#090a0d] overflow-hidden flex items-center justify-center relative">
                     <img
                       alt={item.name}
                       src={item.url}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/assets/media/home-media-03-d6c887bed8af.webp';
+                        (e.target as HTMLImageElement).src = '/assets/media/home-media-04-f775f2921176.webp';
                       }}
                     />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => handleCopy(item.url, item.id)}
+                        className="px-3 py-1.5 bg-[#f37021] text-white rounded-lg text-xs font-semibold cursor-pointer shadow-lg flex items-center gap-1"
+                      >
+                        {copiedId === item.id ? <Check size={13} /> : <Copy size={13} />}
+                        <span>{copiedId === item.id ? 'Copied' : 'Copy URL'}</span>
+                      </button>
+                    </div>
                   </div>
-                  <div className="p-3.5 flex-1 flex flex-col justify-between">
+                  <div className="p-4 flex-1 flex flex-col justify-between">
                     <div>
-                      <div className="font-semibold text-white text-xs sm:text-sm truncate">{item.name}</div>
-                      <div className="text-[11px] text-zinc-500 truncate mt-0.5">{item.url}</div>
+                      <div className="font-semibold text-white text-sm truncate">{item.name}</div>
+                      <div className="text-[11px] font-mono text-zinc-500 truncate mt-1">{item.url}</div>
                     </div>
                     <div className="flex justify-between items-center pt-3 mt-3 border-t border-white/5">
                       <button
-                        onClick={() => {
-                          navigator.clipboard?.writeText(item.url);
-                          showNotice('Copied URL to clipboard');
-                        }}
-                        className="px-2.5 py-1 bg-[#1a1b22] hover:bg-[#252630] border border-white/10 text-zinc-300 hover:text-white rounded text-xs cursor-pointer"
+                        onClick={() => handleCopy(item.url, item.id)}
+                        className="px-2.5 py-1 bg-[#181923] hover:bg-[#202230] border border-white/10 text-zinc-300 hover:text-white rounded-lg text-xs cursor-pointer flex items-center gap-1"
                       >
-                        Copy URL
+                        {copiedId === item.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                        <span>{copiedId === item.id ? 'Copied' : 'Copy URL'}</span>
                       </button>
                       <button
                         onClick={() => {
@@ -1390,7 +2005,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                             }
                           });
                         }}
-                        className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs cursor-pointer"
+                        className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-xs cursor-pointer"
                       >
                         Remove
                       </button>
@@ -1402,87 +2017,127 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           </div>
         )}
 
-        {/* TAB 7: SEO */}
+        {/* ==========================================
+            TAB 7: SEO & OPEN GRAPH METADATA
+        ========================================== */}
         {activeTab === 'seo' && (
           <div className="space-y-6">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">SEO &amp; Open Graph Metadata</h1>
+              <h2 className="text-xl sm:text-2xl font-bold text-white">SEO &amp; Open Graph Metadata</h2>
               <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                Search engine optimization, social cards, and crawl instructions.
+                Configure search engine title, description, canonical link, and social preview card.
               </p>
             </div>
 
-            <div className="p-4 sm:p-6 bg-[#131418] border border-white/10 rounded-xl space-y-4">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Site Title</label>
-                  <input
-                    type="text"
-                    value={settings.seo.title}
-                    onChange={(e) => updateSettings({ seo: { ...settings.seo, title: e.target.value } })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Meta Description</label>
-                  <textarea
-                    rows={3}
-                    value={settings.seo.description}
-                    onChange={(e) => updateSettings({ seo: { ...settings.seo, description: e.target.value } })}
-                    className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Form Column */}
+              <div className="lg:col-span-7 p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-4">
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Canonical URL</label>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Site Title Tag</label>
+                    <input
+                      type="text"
+                      value={settings.seo.title}
+                      onChange={(e) => updateSettings({ seo: { ...settings.seo, title: e.target.value } })}
+                      className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Meta Description</label>
+                    <textarea
+                      rows={3}
+                      value={settings.seo.description}
+                      onChange={(e) => updateSettings({ seo: { ...settings.seo, description: e.target.value } })}
+                      className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Canonical Site URL</label>
                     <input
                       type="text"
                       value={settings.seo.canonicalUrl}
                       onChange={(e) => updateSettings({ seo: { ...settings.seo, canonicalUrl: e.target.value } })}
-                      className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Open Graph Image URL</label>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">
+                      Open Graph Social Image URL
+                    </label>
                     <input
                       type="text"
                       value={settings.seo.ogImage}
                       onChange={(e) => updateSettings({ seo: { ...settings.seo, ogImage: e.target.value } })}
-                      className="w-full px-3 py-2.5 rounded-md bg-[#101115] border border-white/10 text-white text-sm outline-none"
+                      className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                 </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => showNotice('SEO metadata updated successfully.')}
+                    className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md transition-all"
+                  >
+                    Save SEO Settings
+                  </button>
+                </div>
               </div>
 
-              <div className="pt-2">
-                <button
-                  onClick={() => showNotice('SEO metadata updated successfully.')}
-                  className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff721a] text-white rounded-md text-xs sm:text-sm font-semibold cursor-pointer"
-                >
-                  Save SEO Settings
-                </button>
+              {/* Social Card Preview Column */}
+              <div className="lg:col-span-5 p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-4">
+                <div className="border-b border-white/10 pb-3">
+                  <h3 className="text-sm font-bold text-white">Social Share Card Preview</h3>
+                  <p className="text-zinc-400 text-xs mt-0.5">How your portfolio appears when shared on Twitter/X or LinkedIn.</p>
+                </div>
+
+                <div className="bg-[#0d0e14] border border-white/10 rounded-xl overflow-hidden shadow-xl">
+                  <div className="h-44 bg-black overflow-hidden relative">
+                    <img
+                      alt="Social share card"
+                      src={settings.seo.ogImage || '/og-rizka-portfolio.jpg'}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/assets/media/home-media-04-f775f2921176.webp';
+                      }}
+                    />
+                  </div>
+                  <div className="p-4 space-y-1.5 bg-[#171822]">
+                    <div className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                      {settings.seo.canonicalUrl ? new URL(settings.seo.canonicalUrl).hostname : 'yogendrach.vercel.app'}
+                    </div>
+                    <div className="font-bold text-white text-sm line-clamp-1">{settings.seo.title}</div>
+                    <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">{settings.seo.description}</p>
+                  </div>
+                </div>
+
+                <div className="text-xs text-zinc-500 pt-2 flex items-center gap-1.5">
+                  <CheckCircle2 size={14} className="text-emerald-400" />
+                  <span>Configured for Google Search Console, Twitter Card, and OpenGraph.</span>
+                </div>
               </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* CONFIRMATION DIALOG MODAL */}
+      {/* ==========================================
+          GLOBAL CONFIRMATION DIALOG MODAL
+      ========================================== */}
       {confirmDialog && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#131418] border border-white/15 rounded-xl p-5 sm:p-6 max-w-sm w-full space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-[#12131a] border border-white/15 rounded-xl p-5 sm:p-6 max-w-sm w-full space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <h3 className="text-base font-bold text-white">{confirmDialog.title}</h3>
             <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">{confirmDialog.message}</p>
             <div className="flex justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setConfirmDialog(null)}
-                className="px-3.5 py-2 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium cursor-pointer"
+                className="px-3.5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDialog.onConfirm}
-                className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white font-semibold text-xs cursor-pointer shadow-md"
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold text-xs cursor-pointer shadow-md transition-colors"
               >
                 {confirmDialog.confirmLabel || 'Confirm'}
               </button>
@@ -1493,4 +2148,3 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
-

@@ -387,9 +387,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                     loop
                     muted
                     playsInline
-                    poster="/assets/media/home-media-11-2c67061de865.webp"
-                    src="/assets/media/home-media-10-7f38a3b02f4c.webm"
-                  ></video>
+                    poster="/assets/media/about-profile-poster.png"
+                    src="/assets/media/about-profile-video.mp4"
+                  >
+                    <source src="/assets/media/about-profile-video.mp4" type="video/mp4" />
+                  </video>
                   <div className="about-visual-footer">
                     <div className="about-visual-caption">Yogendra / flows → interfaces → products</div>
                     <nav aria-label="About section shortcuts" className="about-visual-status">
