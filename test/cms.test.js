@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { db, doc, getDoc, setDoc, checkFirestore } from '../lib/firebase.js';
+import { db, doc, getDoc, setDoc, checkSupabase } from '../lib/supabase.js';
 import { loginUser, validateSession } from '../lib/auth.js';
 import { seedDatabaseIfNeeded } from '../lib/seed.js';
 import { getPublishedSnapshot, renderHtml } from '../lib/renderer.js';
@@ -15,10 +15,10 @@ async function runTests() {
   console.log('--- STARTING CMS AUTOMATED ACCEPTANCE TESTS ---');
 
   // Test 1: Health & Database connection
-  console.log('1. Testing Firestore connection...');
-  const isConnected = await checkFirestore();
-  assert.strictEqual(isConnected, true, 'Firestore must be connected');
-  console.log('   ✓ Firestore is online and connected to ai-studio-pf11-f733d483-d6eb-49d4-b39f-52d8a40fba86');
+  console.log('1. Testing Supabase connection...');
+  const isConnected = await checkSupabase();
+  assert.strictEqual(isConnected, true, 'Supabase must be connected');
+  console.log('   ✓ Supabase is online and connected to ai-studio-pf11-f733d483-d6eb-49d4-b39f-52d8a40fba86');
 
   // Test 2: Seed idempotency
   console.log('2. Testing seed idempotency...');
@@ -93,7 +93,7 @@ async function runTests() {
   const { existsSync } = await import('fs');
   assert.strictEqual(existsSync('./database.json'), false, 'database.json must not exist');
   assert.strictEqual(existsSync('./db.sqlite'), false, 'db.sqlite must not exist');
-  console.log('   ✓ Production persistence is 100% Cloud Firestore/Firebase Storage');
+  console.log('   ✓ Production persistence is 100% Cloud Supabase/Firebase Storage');
 
   console.log('\n✅ ALL CMS TESTS PASSED SUCCESSFULLY!');
   process.exit(0);
