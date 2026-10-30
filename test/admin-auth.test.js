@@ -67,18 +67,18 @@ async function runTests() {
       path: '/api/admin/login',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
-    }, { username: 'Zane Wick', password: 'WrongPassword123' });
+    }, { username: testAdminUsername, password: `${testAdminPassword}-wrong` });
     assert(wrongLogin.statusCode === 401, 'Login with wrong password returns 401');
     assert(wrongLogin.json?.error === 'Invalid username or password', 'Returns proper invalid credentials error message');
 
-    // 4. Login with correct credentials: Zane Wick / Zane@123
+    // 4. Login with configured admin credentials
     const correctLogin = await request({
       hostname: '127.0.0.1',
       port: 3000,
       path: '/api/admin/login',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
-    }, { username: 'Zane Wick', password: 'Zane@123' });
+    }, { username: testAdminUsername, password: testAdminPassword });
 
     assert(correctLogin.statusCode === 200, 'Login with Zane Wick / Zane@123 returns 200');
     assert(correctLogin.json?.success === true, 'Login response has success: true');
