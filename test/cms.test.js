@@ -18,7 +18,7 @@ async function runTests() {
   console.log('1. Testing Supabase connection...');
   const isConnected = await checkSupabase();
   assert.strictEqual(isConnected, true, 'Supabase must be connected');
-  console.log('   ✓ Supabase is online and connected to ai-studio-pf11-f733d483-d6eb-49d4-b39f-52d8a40fba86');
+  console.log('   ✓ Supabase is online and connected');
 
   // Test 2: Seed idempotency
   console.log('2. Testing seed idempotency...');
