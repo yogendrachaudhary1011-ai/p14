@@ -2,11 +2,7 @@ import React from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { getPrewrittenMailtoUrl } from '../../utils/emailUtils';
 
-interface FooterProps {
-  onNavigate: (path: string) => void;
-}
-
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+export const Footer: React.FC = () => {
   const { settings } = usePortfolio();
   const emailUrl = getPrewrittenMailtoUrl(settings.email || 'yogendrachaudhary2061@gmail.com');
 
@@ -48,16 +44,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           >
             LinkedIn
           </a>
-          <button
-            type="button"
-            onClick={() => onNavigate('/admin')}
-            className="text-xs text-zinc-500 hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
-            title="Open Admin Panel"
-          >
-            CMS
-          </button>
         </nav>
       </div>
     </footer>
   );
 };
+
