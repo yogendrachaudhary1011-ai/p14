@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { SiteSettings, Project, ExperienceItem, EducationItem, MediaAsset } from '../types';
 import { initialSiteSettings, initialProjects, initialExperience, initialEducation } from '../data/initialData';
 import { normalizeProjectSections } from '../utils/caseStudyUtils';
@@ -6,15 +6,13 @@ import { safeStorage } from '../utils/storage';
 import {
   getSavedCredentials,
   saveSupabaseCredentials,
-  isSupabaseConfigured
+  isSupabaseConfigured,
+  getSupabase
 } from '../supabase';
 import {
-  fetchProjectsFromSupabase,
-  saveProjectToSupabase,
-  deleteProjectFromSupabase,
-  subscribeToSupabaseProjects,
-  fetchSettingsFromSupabase,
-  saveSettingsToSupabase
+  fetchPortfolioSnapshot,
+  savePortfolioSnapshot,
+  subscribeToPortfolioSnapshot
 } from '../utils/supabaseService';
 
 interface PortfolioContextType {
@@ -29,9 +27,9 @@ interface PortfolioContextType {
   supabaseConfig: { url: string; key: string };
   updateSupabaseConfig: (url: string, key: string) => boolean;
   syncAllProjectsToSupabase: () => Promise<{ success: boolean; count: number; message: string }>;
-  login: (u: string, p: string) => boolean;
-  logout: () => void;
-  changeAdminPassword: (newPass: string) => boolean;
+  login: (u: string, p: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  changeAdminPassword: (newPass: string) => Promise<boolean>;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
   addProject: (project: Partial<Project>) => Project;
   updateProject: (id: string, updates: Partial<Project>) => void;
@@ -154,15 +152,11 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   });
 
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-    try {
-      return safeStorage.getItem(STORAGE_KEYS.AUTH) === 'true';
-    } catch {
-      return false;
-    }
+    return false;
   });
 
   const [adminUser, setAdminUser] = useState<string | null>(() => {
-    return isAdmin ? 'Yogendra Chaudhary' : null;
+    return null;
   });
 
   const [supabaseConfig, setSupabaseConfigState] = useState<{ url: string; key: string }>(() => {
@@ -170,8 +164,11 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   });
 
   const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(() => {
-    return isSupabaseConfigured();
+    return false;
   });
+  const [cloudReady, setCloudReady] = useState(false);
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
+  const lastCloudSnapshot = useRef<string | null>(null);
 
   // Sync to local storage for fast boot
   useEffect(() => {
@@ -191,6 +188,14 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [projects]);
 
   useEffect(() => {
+    safeStorage.setItem(STORAGE_KEYS.EXPERIENCE, JSON.stringify(experience));
+  }, [experience]);
+
+  useEffect(() => {
+    safeStorage.setItem(STORAGE_KEYS.EDUCATION, JSON.stringify(education));
+  }, [education]);
+
+  useEffect(() => {
     try {
       safeStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(media));
     } catch (e) {
@@ -198,55 +203,88 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [media]);
 
-  // Supabase Data Sync & Live Subscription
+  // Supabase session, initial cloud load, and live snapshot subscription.
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
+    let active = true;
 
     async function initSupabase() {
+      setCloudReady(false);
       if (!isSupabaseConfigured()) {
         setIsSupabaseConnected(false);
         return;
       }
 
       try {
-        const remoteProjects = await fetchProjectsFromSupabase();
-        if (remoteProjects && remoteProjects.length > 0) {
-          const sorted = remoteProjects.sort((a, b) => (a.order || 0) - (b.order || 0));
-          setProjects(sorted);
-          setIsSupabaseConnected(true);
-        } else if (remoteProjects && remoteProjects.length === 0) {
-          setIsSupabaseConnected(true);
-        } else {
-          setIsSupabaseConnected(false);
+        const supabase = getSupabase();
+        const { data: sessionData } = await supabase!.auth.getSession();
+        if (!active) return;
+        const session = sessionData.session;
+        setIsAdmin(Boolean(session));
+        setAdminUser(session?.user.email || null);
+        if (session) safeStorage.setItem(STORAGE_KEYS.AUTH, 'true');
+        else safeStorage.removeItem(STORAGE_KEYS.AUTH);
+
+        const { snapshot, connected, error } = await fetchPortfolioSnapshot();
+        if (!active) return;
+        setIsSupabaseConnected(connected);
+        if (error) console.error('Supabase portfolio load failed:', error);
+        lastCloudSnapshot.current = snapshot ? JSON.stringify(snapshot) : null;
+        if (snapshot) {
+          setSettings(snapshot.settings);
+          setProjects(snapshot.projects);
+          setExperience(snapshot.experience);
+          setEducation(snapshot.education);
+          setMedia(snapshot.media);
         }
 
-        const remoteSettings = await fetchSettingsFromSupabase();
-        if (remoteSettings) {
-          setSettings(remoteSettings);
-        }
-
-        // Subscribe to live project changes
-        unsubscribe = subscribeToSupabaseProjects((liveProjects) => {
-          if (liveProjects && liveProjects.length > 0) {
-            const sorted = liveProjects.sort((a, b) => (a.order || 0) - (b.order || 0));
-            setProjects(sorted);
-          }
+        unsubscribe = subscribeToPortfolioSnapshot((fresh) => {
+          if (!active) return;
+          const serialized = JSON.stringify(fresh);
+          if (serialized === lastCloudSnapshot.current) return;
+          lastCloudSnapshot.current = serialized;
+          setSettings(fresh.settings);
+          setProjects(fresh.projects);
+          setExperience(fresh.experience);
+          setEducation(fresh.education);
+          setMedia(fresh.media);
         });
+        setCloudReady(connected && Boolean(session));
       } catch (err) {
         console.warn('Supabase initialization notice:', err);
         setIsSupabaseConnected(false);
+        setCloudReady(false);
       }
     }
 
-    initSupabase();
+    void initSupabase();
     return () => {
+      active = false;
       if (unsubscribe) unsubscribe();
     };
   }, [supabaseConfig]);
 
+  // Queue atomic saves so rapid edits cannot finish out of order and overwrite newer state.
+  useEffect(() => {
+    if (!cloudReady) return;
+    const snapshot = { settings, projects, experience, education, media };
+    const serialized = JSON.stringify(snapshot);
+    if (serialized === lastCloudSnapshot.current) return;
+    const timer = window.setTimeout(() => {
+      saveQueue.current = saveQueue.current.then(async () => {
+        const result = await savePortfolioSnapshot(snapshot);
+        setIsSupabaseConnected(result.success);
+        if (result.success) lastCloudSnapshot.current = serialized;
+        if (!result.success) console.error('Supabase portfolio save failed:', result.error);
+      });
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [cloudReady, settings, projects, experience, education, media]);
+
   const updateSupabaseConfig = (url: string, key: string): boolean => {
     const success = saveSupabaseCredentials(url, key);
     if (success) {
+      setCloudReady(false);
       setSupabaseConfigState({ url: url.trim(), key: key.trim() });
       setIsSupabaseConnected(isSupabaseConfigured());
     }
@@ -259,16 +297,13 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
 
     try {
-      let count = 0;
-      for (const proj of projects) {
-        const saved = await saveProjectToSupabase(proj);
-        if (saved) count++;
-      }
+      const result = await savePortfolioSnapshot({ settings, projects, experience, education, media });
+      if (!result.success) throw new Error(result.error || 'Cloud save failed.');
       setIsSupabaseConnected(true);
       return {
         success: true,
-        count,
-        message: `Successfully synchronized ${count} projects to Supabase.`
+        count: projects.length,
+        message: `Portfolio snapshot saved. ${projects.length} projects are in Supabase.`
       };
     } catch (err: any) {
       return {
@@ -277,34 +312,31 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         message: `Sync failed: ${err.message || 'Unknown error'}`
       };
     }
-  }, [projects]);
+  }, [settings, projects, experience, education, media]);
 
-  const login = (u: string, p: string): boolean => {
-    const userClean = u.trim();
-    const passClean = p.trim();
-    if (!userClean || !passClean) return false;
-
-    // Check custom saved admin password if set
-    const customPass = safeStorage.getItem('yc_portfolio_admin_custom_password');
-    if (customPass) {
-      if (passClean !== customPass) {
-        return false;
-      }
-    }
-
+  const login = async (email: string, password: string): Promise<boolean> => {
+    const supabase = getSupabase();
+    if (!supabase || !email.trim() || !password) return false;
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error || !data.session) return false;
     setIsAdmin(true);
-    setAdminUser(userClean.toLowerCase() === 'zane-wick' ? 'Zane Wick' : userClean === 'admin' ? 'Yogendra Chaudhary' : userClean);
+    setAdminUser(data.user.email || email.trim());
+    setCloudReady(true);
     safeStorage.setItem(STORAGE_KEYS.AUTH, 'true');
     return true;
   };
 
-  const changeAdminPassword = (newPassword: string): boolean => {
-    if (!newPassword || newPassword.trim().length === 0) return false;
-    safeStorage.setItem('yc_portfolio_admin_custom_password', newPassword.trim());
-    return true;
+  const changeAdminPassword = async (newPassword: string): Promise<boolean> => {
+    const supabase = getSupabase();
+    if (!supabase || newPassword.trim().length < 8) return false;
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    return !error;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const supabase = getSupabase();
+    if (supabase) await supabase.auth.signOut();
+    setCloudReady(false);
     setIsAdmin(false);
     setAdminUser(null);
     safeStorage.removeItem(STORAGE_KEYS.AUTH);
@@ -320,7 +352,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           ...(newSettings.seo || {})
         }
       };
-      saveSettingsToSupabase(merged);
       return merged;
     });
   };
@@ -392,7 +423,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     setProjects((prev) => [...prev, newProj]);
-    saveProjectToSupabase(newProj);
     return newProj;
   };
 
@@ -408,7 +438,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           if (updates.slug && updates.slug !== p.slug) {
             updated.route = `/${updates.slug}`;
           }
-          saveProjectToSupabase(updated);
           return updated;
         }
         return p;
@@ -418,7 +447,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const deleteProject = (id: string) => {
     setProjects((prev) => prev.filter((p) => p.id !== id));
-    deleteProjectFromSupabase(id);
   };
 
   const duplicateProject = (id: string): Project | null => {
@@ -452,7 +480,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (item) {
           const updated = { ...item, order: idx + 1, displayOrder: idx + 1 };
           reordered.push(updated);
-          saveProjectToSupabase(updated);
           map.delete(pid);
         }
       });
@@ -472,7 +499,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const deleteAllProjects = () => {
-    projects.forEach((p) => deleteProjectFromSupabase(p.id));
     setProjects([]);
   };
 
@@ -582,3 +608,4 @@ export const usePortfolio = () => {
   }
   return context;
 };
+

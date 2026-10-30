@@ -166,18 +166,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
-      setLoginError('Please enter both your username and password.');
+      setLoginError('Enter your Supabase Auth email and password.');
       return;
     }
-    const success = login(username, password);
+    const success = await login(username, password);
     if (success) {
       setLoginError('');
       showNotice('Welcome back to Portfolio Studio!');
     } else {
-      setLoginError('Invalid username or password. Please verify your credentials.');
+      setLoginError('Sign-in failed. Check your Supabase Auth email and password.');
     }
   };
 
@@ -251,19 +251,19 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             <h1>
               Welcome back<span>.</span>
             </h1>
-            <p className="admin-login-intro">Sign in to manage your portfolio, case studies, and media assets.</p>
+            <p className="admin-login-intro">Sign in with the administrator account created in Supabase Auth.</p>
 
             {loginError && <div className="admin-login-error">{loginError}</div>}
 
             <form onSubmit={handleLoginSubmit} className="admin-login-form">
               <div>
-                <label>Username</label>
+                <label>Email address</label>
                 <input
                   className="admin-login-input"
-                  type="text"
+                  type="email"
                   value={username}
-                  placeholder="Enter username"
-                  autoComplete="username"
+                  placeholder="you@example.com"
+                  autoComplete="email"
                   onChange={(e) => setUsername(e.target.value)}
                   required
                 />
@@ -290,21 +290,6 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     {showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-              </div>
-
-              {/* Quick fill helper for reviewers / testing */}
-              <div className="flex items-center justify-between text-xs text-zinc-400 bg-white/[0.03] p-2.5 rounded-lg border border-white/5">
-                <span className="text-zinc-400">Demo access:</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('admin');
-                    setPassword('admin');
-                  }}
-                  className="text-[#f37021] hover:text-[#ff8a3d] font-semibold cursor-pointer text-xs underline underline-offset-2"
-                >
-                  Fill credentials (admin / admin)
-                </button>
               </div>
 
               <button type="submit" className="admin-login-submit">
@@ -1258,7 +1243,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               <div className="pt-1">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     if (!adminNewPassword.trim()) {
                       showNotice('Please enter a new password.');
                       return;
@@ -1267,11 +1252,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       showNotice('Passwords do not match. Please try again.');
                       return;
                     }
-                    const ok = changeAdminPassword(adminNewPassword);
+                    const ok = await changeAdminPassword(adminNewPassword);
                     if (ok) {
-                      showNotice('Admin password successfully updated!');
+                      showNotice('Your Supabase Auth password was updated.');
                       setAdminNewPassword('');
                       setAdminConfirmPassword('');
+                    } else {
+                      showNotice('Password update failed. Use at least 8 characters and try again.');
                     }
                   }}
                   className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md transition-all"
@@ -1298,7 +1285,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     </span>
                   </div>
                   <p className="text-zinc-400 text-xs mt-0.5">
-                    Connect your portfolio to Supabase PostgreSQL for cloud database storage and media synchronization.
+                    Save the entire portfolio as one cloud snapshot. Run the SQL setup once and sign in with your Supabase Auth administrator account.
                   </p>
                 </div>
 
@@ -1361,7 +1348,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   disabled={syncingSupabase || !supabaseUrlInput.trim()}
                   onClick={async () => {
                     setSyncingSupabase(true);
-                    showNotice('Synchronizing projects to Supabase...');
+                    showNotice('Saving the complete portfolio to Supabase...');
                     const result = await syncAllProjectsToSupabase();
                     setSyncingSupabase(false);
                     showNotice(result.message);
@@ -1369,7 +1356,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   className="px-4 py-2.5 bg-[#181923] hover:bg-[#202230] border border-white/15 text-white rounded-lg text-xs sm:text-sm font-medium cursor-pointer disabled:opacity-50 transition-all flex items-center gap-1.5"
                 >
                   <RefreshCw size={14} className={syncingSupabase ? 'animate-spin' : ''} />
-                  <span>{syncingSupabase ? 'Syncing...' : 'Sync Projects to Supabase'}</span>
+                  <span>{syncingSupabase ? 'Syncing...' : 'Save Full Portfolio to Supabase'}</span>
                 </button>
               </div>
             </div>
@@ -2148,3 +2135,4 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
+

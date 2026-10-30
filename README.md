@@ -41,3 +41,14 @@ This repository contains the complete portfolio and dynamic admin CMS for Yogend
 - `npm run build`: Builds the production bundle with Vite.
 - `npm run preview`: Previews the production build on `0.0.0.0:3000`.
 - `npm run lint`: Verifies lint status.
+
+## Supabase setup
+
+The admin panel stores the complete portfolio (site settings, projects, experience, education, and media references) in `public.portfolio_state` as one atomic snapshot.
+
+1. Run [`supabase/migrations/20261030_portfolio_state.sql`](supabase/migrations/20261030_portfolio_state.sql) in the Supabase SQL Editor.
+2. In Supabase Authentication, disable public sign-ups and create the administrator account. The `/admin` sign-in uses that account's email and password.
+3. Keep the project's URL and anon key configured in the app. The anon key is public; RLS allows public reads and restricts writes to signed-in Supabase users.
+
+The supplied project's tables were absent when this setup was checked, so the SQL migration must be run before cloud saves can succeed. Local browser storage remains a startup cache; the dashboard reports the cloud connection status after it verifies the database.
+

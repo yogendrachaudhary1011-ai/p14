@@ -1,5 +1,82 @@
 import { getSupabase } from '../supabase';
-import { Project, SiteSettings, MediaAsset } from '../types';
+import { Project, SiteSettings, ExperienceItem, EducationItem, MediaAsset } from '../types';
+
+export interface PortfolioSnapshot {
+  settings: SiteSettings;
+  projects: Project[];
+  experience: ExperienceItem[];
+  education: EducationItem[];
+  media: MediaAsset[];
+}
+
+export interface PortfolioLoadResult {
+  snapshot: PortfolioSnapshot | null;
+  connected: boolean;
+  error?: string;
+}
+
+/** Loads the complete portfolio from its single cloud snapshot row. */
+export async function fetchPortfolioSnapshot(): Promise<PortfolioLoadResult> {
+  const supabase = getSupabase();
+  if (!supabase) return { snapshot: null, connected: false, error: 'Supabase is not configured.' };
+
+  try {
+    const { data, error } = await supabase
+      .from('portfolio_state')
+      .select('data')
+      .eq('id', 'primary')
+      .maybeSingle();
+
+    if (error) return { snapshot: null, connected: false, error: error.message };
+    if (!data) return { snapshot: null, connected: true };
+
+    const stored = data.data as Partial<PortfolioSnapshot> & SiteSettings;
+    // Accept the older site_settings payload as well, so a migration does not discard it.
+    const snapshot: PortfolioSnapshot = {
+      settings: ('settings' in stored ? stored.settings : stored) as SiteSettings,
+      projects: Array.isArray(stored.projects) ? stored.projects : [],
+      experience: Array.isArray(stored.experience) ? stored.experience : [],
+      education: Array.isArray(stored.education) ? stored.education : [],
+      media: Array.isArray(stored.media) ? stored.media : []
+    };
+    return { snapshot, connected: true };
+  } catch (error) {
+    return { snapshot: null, connected: false, error: error instanceof Error ? error.message : 'Unknown Supabase error.' };
+  }
+}
+
+/** Saves settings and every editable collection atomically in one cloud row. */
+export async function savePortfolioSnapshot(snapshot: PortfolioSnapshot): Promise<{ success: boolean; error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { success: false, error: 'Supabase is not configured.' };
+
+  try {
+    const { error } = await supabase.from('portfolio_state').upsert({
+      id: 'primary',
+      data: snapshot,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown Supabase error.' };
+  }
+}
+
+export function subscribeToPortfolioSnapshot(onUpdate: (snapshot: PortfolioSnapshot) => void): (() => void) | null {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+
+  const channel = supabase
+    .channel('portfolio_state_realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'portfolio_state' }, async () => {
+      const result = await fetchPortfolioSnapshot();
+      if (result.snapshot) onUpdate(result.snapshot);
+    })
+    .subscribe();
+
+  return () => { void supabase.removeChannel(channel); };
+}
 
 /**
  * Transforms a Supabase row to a client Project object
@@ -259,3 +336,4 @@ export async function uploadMediaToSupabase(file: File): Promise<string | null> 
     return null;
   }
 }
+

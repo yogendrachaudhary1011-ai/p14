@@ -6,9 +6,9 @@ const STORAGE_KEYS = {
   KEY: 'yc_portfolio_supabase_key'
 };
 
-// User's provided publishable key and derived project ref
-export const DEFAULT_SUPABASE_KEY = 'sb_publishable_bCfbWy8B6nP3cmJdSc3vEg_glw51TUT';
-export const SUGGESTED_SUPABASE_URL = 'https://bcfbwy8b6np3cmjdsc3veg.supabase.co';
+// Supabase anon keys are intended for browser use; database access is controlled by RLS.
+export const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVieGdsbmdwc3F5cnBsenh5Y2l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMzU2NDMsImV4cCI6MjEwODkxMTY0M30.9WOc-4UDzQudkESGE4MUhVlS2-r4CzmRpdov69zKx_s';
+export const SUGGESTED_SUPABASE_URL = 'https://ubxglngpsqyrplzxyciw.supabase.co';
 
 // Helper to normalize any entered URL or project ID into full https URL
 export function normalizeSupabaseUrl(input: string): string {
@@ -32,8 +32,8 @@ export function getSavedCredentials(): { url: string; key: string } {
   const localUrl = safeStorage.getItem(STORAGE_KEYS.URL) || '';
   const localKey = safeStorage.getItem(STORAGE_KEYS.KEY) || '';
 
-  const effectiveKey = envKey || localKey || '';
-  const effectiveUrl = (envUrl || localUrl) ? normalizeSupabaseUrl(envUrl || localUrl) : '';
+  const effectiveKey = envKey || localKey || DEFAULT_SUPABASE_KEY;
+  const effectiveUrl = normalizeSupabaseUrl(envUrl || localUrl || SUGGESTED_SUPABASE_URL);
 
   return {
     url: effectiveUrl,
@@ -42,6 +42,7 @@ export function getSavedCredentials(): { url: string; key: string } {
 }
 
 let supabaseInstance: SupabaseClient | null = null;
+let supabaseInstanceConfig = '';
 
 export function getSupabase(): SupabaseClient | null {
   const { url, key } = getSavedCredentials();
@@ -49,7 +50,8 @@ export function getSupabase(): SupabaseClient | null {
     return null;
   }
 
-  if (!supabaseInstance) {
+  const configKey = `${url}:${key}`;
+  if (!supabaseInstance || supabaseInstanceConfig !== configKey) {
     try {
       supabaseInstance = createClient(url, key, {
         auth: {
@@ -57,6 +59,7 @@ export function getSupabase(): SupabaseClient | null {
           autoRefreshToken: true
         }
       });
+      supabaseInstanceConfig = configKey;
     } catch (err) {
       console.warn('Failed to initialize Supabase client:', err);
       return null;
@@ -82,6 +85,7 @@ export function saveSupabaseCredentials(url: string, key: string): boolean {
     safeStorage.setItem(STORAGE_KEYS.KEY, cleanedKey);
     try {
       supabaseInstance = createClient(cleanedUrl, cleanedKey);
+      supabaseInstanceConfig = `${cleanedUrl}:${cleanedKey}`;
       return true;
     } catch (err) {
       console.error('Invalid Supabase configuration:', err);
@@ -91,97 +95,34 @@ export function saveSupabaseCredentials(url: string, key: string): boolean {
     safeStorage.removeItem(STORAGE_KEYS.URL);
     safeStorage.removeItem(STORAGE_KEYS.KEY);
     supabaseInstance = null;
+    supabaseInstanceConfig = '';
     return true;
   }
 }
 
-/**
- * Complete SQL Migration script for user to execute in Supabase SQL Editor
- */
-export const SUPABASE_SQL_SCHEMA = `-- 1. PROJECTS TABLE
-CREATE TABLE IF NOT EXISTS projects (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  slug TEXT NOT NULL UNIQUE,
-  short_summary TEXT,
-  hero_subtitle TEXT,
-  introduction TEXT,
-  summary TEXT,
-  category TEXT DEFAULT 'product',
-  category_label TEXT DEFAULT 'Case Study',
-  cover_image TEXT,
-  hero_image JSONB,
-  year TEXT DEFAULT '2026',
-  display_order INTEGER DEFAULT 1,
-  status TEXT DEFAULT 'published',
-  featured BOOLEAN DEFAULT true,
-  route TEXT,
-  role TEXT,
-  duration TEXT,
-  deliverables TEXT[],
-  figma_url TEXT,
-  figma_button_text TEXT,
-  external_project_url TEXT,
-  sections JSONB,
-  problem JSONB,
-  challenge JSONB,
-  insights JSONB,
-  key_decisions JSONB,
-  seo JSONB,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Enable Row Level Security (RLS)
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
-
--- Allow public read access to published projects
-CREATE POLICY "Public read published projects" 
-  ON projects FOR SELECT 
-  USING (true);
-
--- Allow full access to authenticated users or anon with key
-CREATE POLICY "Allow anon insert/update/delete" 
-  ON projects FOR ALL 
-  USING (true) 
-  WITH CHECK (true);
-
--- 2. SITE SETTINGS TABLE
-CREATE TABLE IF NOT EXISTS site_settings (
+/** Safe migration: public visitors may read; Supabase-authenticated users may edit. */
+export const SUPABASE_SQL_SCHEMA = `CREATE TABLE IF NOT EXISTS public.portfolio_state (
   id TEXT PRIMARY KEY DEFAULT 'primary',
   data JSONB NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.portfolio_state ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON public.portfolio_state TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.portfolio_state TO authenticated;
 
-CREATE POLICY "Public read site_settings" 
-  ON site_settings FOR SELECT 
+DROP POLICY IF EXISTS "portfolio_state_public_read" ON public.portfolio_state;
+CREATE POLICY "portfolio_state_public_read"
+  ON public.portfolio_state FOR SELECT TO anon, authenticated
   USING (true);
 
-CREATE POLICY "Allow anon modify site_settings" 
-  ON site_settings FOR ALL 
-  USING (true) 
-  WITH CHECK (true);
+DROP POLICY IF EXISTS "portfolio_state_authenticated_write" ON public.portfolio_state;
+CREATE POLICY "portfolio_state_authenticated_write"
+  ON public.portfolio_state FOR ALL TO authenticated
+  USING (true) WITH CHECK (true);
 
--- 3. MEDIA ASSETS TABLE
-CREATE TABLE IF NOT EXISTS media_assets (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  url TEXT NOT NULL,
-  mime_type TEXT,
-  size BIGINT,
-  uploaded_at TIMESTAMPTZ DEFAULT NOW()
-);
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.portfolio_state;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;`;
 
-ALTER TABLE media_assets ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public read media_assets" 
-  ON media_assets FOR SELECT 
-  USING (true);
-
-CREATE POLICY "Allow anon modify media_assets" 
-  ON media_assets FOR ALL 
-  USING (true) 
-  WITH CHECK (true);
-`;
