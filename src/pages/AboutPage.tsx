@@ -97,6 +97,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                 <p className="lead">
                   I design intuitive software interfaces, reusable UI components, and user-centered workflows. My process combines interaction design, usability testing, and close developer collaboration to make complex products easier to understand and use.
                 </p>
+                <p style={{ marginTop: '16px', color: '#8e8ea0', lineHeight: 1.7 }}>
+                  Based in Kathmandu, Nepal, I work on multi-step workflows, enterprise software, service platforms, and responsive design systems. My focus is on making product states visible, actions safe, and component handoff precise.
+                </p>
               </section>
 
               <section className="about-panel about-experience-panel" id="about-experience" style={{ marginTop: '48px' }}>
