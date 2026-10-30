@@ -18,7 +18,7 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({ block }) => {
             <MediaPreview
               src={img.url}
               alt={img.alt || `Gallery item ${idx + 1}`}
-              className="w-full h-auto object-cover max-h-[500px] transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+              className="w-full h-auto object-cover max-h-[500px]"
               loading="lazy"
               fallbackSrc="https://placehold.co/800x600/181c26/ffffff?text=Gallery+Asset"
             />
@@ -31,3 +31,4 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({ block }) => {
     </div>
   );
 };
+
