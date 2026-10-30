@@ -13,7 +13,7 @@ import {
   orderBy, 
   writeBatch,
   checkSupabase,
-  checkStorage
+  checkSupabaseStorage
 } from '../lib/supabase.js';
 import { 
   loginUser, 
