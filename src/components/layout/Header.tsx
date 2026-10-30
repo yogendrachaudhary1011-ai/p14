@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 
 interface HeaderProps {
@@ -9,6 +9,28 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
   const { settings, isAdmin } = usePortfolio();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [progressWidth, setProgressWidth] = useState(0);
+
+  const isCaseStudy = currentPath !== '/' && currentPath !== '/projects' && currentPath !== '/about' && currentPath !== '/admin';
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 16 || isCaseStudy);
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = maxScroll > 0 ? Math.min(100, Math.max(0, (scrollY / maxScroll) * 100)) : 0;
+      setProgressWidth(pct);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [isCaseStudy]);
 
   const handleNavClick = (e: React.MouseEvent, path: string) => {
     e.preventDefault();
@@ -16,10 +38,18 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
     onNavigate(path);
   };
 
-  const isCaseStudy = currentPath !== '/' && currentPath !== '/projects' && currentPath !== '/about' && currentPath !== '/admin';
-
   return (
-    <header className={`header ${isCaseStudy ? 'is-scrolled' : ''}`} id="siteHeader">
+    <>
+      <div
+        className="progress"
+        id="progress"
+        style={{ width: `${progressWidth}%` }}
+        role="progressbar"
+        aria-valuenow={Math.round(progressWidth)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      />
+      <header className={`header ${isScrolled ? 'is-scrolled' : ''}`} id="siteHeader">
       <nav aria-label="Main navigation" className="shell nav">
         <a
           className="brand"
@@ -156,5 +186,6 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
         </div>
       </nav>
     </header>
+    </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { IdCard } from '../components/home/IdCard';
 
@@ -16,12 +16,28 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     .filter(p => filter === 'all' || p.category === filter)
     .sort((a, b) => a.order - b.order);
 
-  const heroWords = [
-    'A', 'UI/UX', 'and', 'Product', 'Designer', 'focused', 'on', 'intuitive', 'software',
-    'interfaces,', 'reusable', 'components,', 'and', 'user-centered', 'workflows—turning',
-    'complex', 'product', 'requirements', 'into', 'clear,', 'usable', 'experiences', 'that',
-    'people', 'can', 'navigate', 'with', 'confidence.'
+  const phraseGroups = [
+    'A UI/UX and Product Designer',
+    'focused on intuitive software interfaces and reusable components',
+    '—turning complex product requirements into clear workflows',
+    'and usable experiences people can navigate with confidence.'
   ];
+
+  // Calculate cumulative words and delays
+  let currentDelay = 0.34;
+  const renderedPhrases = phraseGroups.map((phrase, groupIdx) => {
+    const words = phrase.split(/\s+/).filter(Boolean);
+    const wordsWithDelay = words.map((word) => {
+      const delay = currentDelay;
+      currentDelay += 0.055;
+      return { word, delay };
+    });
+    return {
+      id: groupIdx + 1,
+      phrase,
+      words: wordsWithDelay
+    };
+  });
 
   const handleScrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -29,6 +45,135 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       el.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  useEffect(() => {
+    // 1. Sync title role width with name width
+    const syncHomeRoleWidth = () => {
+      const home = document.getElementById('homeView');
+      const name = home?.querySelector('.hero-title-line--name');
+      if (!home || !name) return;
+      const width = Math.ceil(name.getBoundingClientRect().width);
+      if (width > 0) home.style.setProperty('--home-name-line-width', `${width}px`);
+    };
+
+    const runSync = () => requestAnimationFrame(() => requestAnimationFrame(syncHomeRoleWidth));
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(runSync);
+    }
+    runSync();
+    window.addEventListener('resize', runSync, { passive: true });
+    window.addEventListener('orientationchange', runSync, { passive: true });
+
+    // 2. Scroll effects: hero scroll parallax, timeline progress
+    const handleScroll = () => {
+      // Hero scroll parallax
+      const hero = document.getElementById('home');
+      if (hero) {
+        const progress = Math.max(0, Math.min(1, window.scrollY / (hero.offsetHeight * 0.9)));
+        hero.style.setProperty('--hero-scroll', progress.toFixed(3));
+      }
+
+      // Experience timeline dynamic line
+      const aboutTimeline = document.querySelector('.about-timeline') as HTMLElement | null;
+      if (aboutTimeline) {
+        const rect = aboutTimeline.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const trackTop = 11;
+        const trackBottom = 0;
+        const trackHeight = Math.max(0, rect.height - trackTop - trackBottom);
+        const headerHeight = 72;
+        const shrinkEndLine = Math.max(headerHeight + 24, viewportHeight * 0.12);
+        const fullHoldLine = Math.max(headerHeight + 132, Math.min(viewportHeight * 0.27, 220));
+        const presentPoint = rect.top + trackTop;
+        const fillRatio =
+          presentPoint >= fullHoldLine
+            ? 1
+            : Math.max(0, Math.min(1, (presentPoint - shrinkEndLine) / (fullHoldLine - shrinkEndLine)));
+        const scrollProgress = trackHeight * fillRatio;
+        aboutTimeline.style.setProperty('--timeline-progress', `${scrollProgress.toFixed(1)}px`);
+
+        const items = document.querySelectorAll('.about-timeline > .timeline-item');
+        let activeIndex = -1;
+        items.forEach((item, index) => {
+          const itemRect = item.getBoundingClientRect();
+          const hasPassed = itemRect.top < viewportHeight * 0.9;
+          item.classList.toggle('is-revealed', hasPassed);
+          if (hasPassed) activeIndex = index;
+        });
+        items.forEach((item, index) => item.classList.toggle('is-active', index === activeIndex));
+      }
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // 3. About panels active tab intersection observer
+    const aboutPanels = document.querySelectorAll('.about-panel[id]');
+    const aboutObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id as 'about-profile' | 'about-experience' | 'about-education';
+            setActiveAboutTab(id);
+          }
+        });
+      },
+      { rootMargin: '-30% 0px -55% 0px', threshold: 0.06 }
+    );
+    aboutPanels.forEach((panel) => aboutObserver.observe(panel));
+
+    // 4. Reveal on scroll observer
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll('[data-reveal]').forEach((el) => revealObserver.observe(el));
+
+    // 5. Parallax on project cards
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    const cards = document.querySelectorAll('.project-card');
+    const cleanupFns: Array<() => void> = [];
+
+    if (!reduceMotion) {
+      cards.forEach((card) => {
+        const onCardMove = (e: Event) => {
+          const event = e as PointerEvent;
+          if (window.matchMedia('(hover: none)').matches) return;
+          const rect = (card as HTMLElement).getBoundingClientRect();
+          const x = ((event.clientX - rect.left) / rect.width - 0.5) * 8;
+          const y = ((event.clientY - rect.top) / rect.height - 0.5) * 6;
+          (card as HTMLElement).style.setProperty('--card-x', `${x.toFixed(2)}px`);
+          (card as HTMLElement).style.setProperty('--card-y', `${y.toFixed(2)}px`);
+        };
+        const onCardLeave = () => {
+          (card as HTMLElement).style.setProperty('--card-x', '0px');
+          (card as HTMLElement).style.setProperty('--card-y', '0px');
+        };
+        card.addEventListener('pointermove', onCardMove as EventListener, { passive: true });
+        card.addEventListener('pointerleave', onCardLeave);
+        cleanupFns.push(() => {
+          card.removeEventListener('pointermove', onCardMove as EventListener);
+          card.removeEventListener('pointerleave', onCardLeave);
+        });
+      });
+    }
+
+    return () => {
+      window.removeEventListener('resize', runSync);
+      window.removeEventListener('orientationchange', runSync);
+      window.removeEventListener('scroll', handleScroll);
+      aboutObserver.disconnect();
+      revealObserver.disconnect();
+      cleanupFns.forEach((fn) => fn());
+    };
+  }, [projects, experience]);
 
   return (
     <div className="page-view route-entered" data-page="home" id="homeView">
@@ -39,25 +184,35 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             <div className="hero-kicker eyebrow">Portfolio / UI/UX &amp; Product Design</div>
             <h1 aria-label="Yogendra Chaudhary — UI/UX & Product Designer" className="hero-title hero-title-static">
               <span className="static-title">
-                <span className="hero-title-line hero-title-line--one hero-title-line--name">
+                <span className="hero-title-line hero-title-line--one hero-title-line--name portfolio-v3-title-line">
                   <span className="hero-name-word">YOGENDRA</span>
-                  <span className="hero-name-word">CHAUDHARY</span>
                 </span>
-                <span className="hero-title-line hero-title-line--two">UI/UX <i aria-hidden="true">—</i></span>
-                <span className="hero-title-line hero-title-line--three">
-                  <b><span>PRODUCT</span><span>DESIGNER</span></b>
+                <span className="hero-title-line hero-title-line--two portfolio-v3-title-line">
+                  CHAUDHARY <span className="portfolio-v3-dash" aria-hidden="true"></span>
+                </span>
+                <span className="hero-title-line hero-title-line--three portfolio-v3-title-line portfolio-v3-title-line--role">
+                  <span>PRODUCT</span> <span>DESIGNER</span>
                 </span>
               </span>
             </h1>
 
-            <p className="hero-copy" id="heroCopy">
-              {heroWords.map((word, idx) => (
+            <p className="hero-copy" id="heroCopy" aria-label={phraseGroups.join(' ')}>
+              {renderedPhrases.map((group) => (
                 <span
-                  key={idx}
-                  className="copy-word"
-                  style={{ '--word-delay': `${(0.34 + idx * 0.055).toFixed(3)}s` } as React.CSSProperties}
+                  key={group.id}
+                  className="highlight-phrase"
+                  tabIndex={0}
+                  data-highlight-phrase={group.id}
                 >
-                  {word}{' '}
+                  {group.words.map((item, idx) => (
+                    <span
+                      key={idx}
+                      className="copy-word"
+                      style={{ '--word-delay': `${item.delay.toFixed(3)}s` } as React.CSSProperties}
+                    >
+                      {item.word}{' '}
+                    </span>
+                  ))}
                 </span>
               ))}
             </p>
@@ -96,7 +251,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         </section>
 
         {/* WORK SECTION */}
-        <section className="section" id="work">
+        <section className="section" id="work" data-reveal>
           <div className="shell">
             <div className="work-top">
               <div>
@@ -173,7 +328,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 )}
               </div>
             ) : (
-              <div aria-live="polite" className="projects-grid" id="projectsGrid">
+              <div aria-live="polite" className="projects-grid" id="projectsGrid" data-active-filter={filter}>
                 {filteredProjects.map((project) => (
                   <article key={project.id} className="project" data-category={project.category}>
                     <a
@@ -217,7 +372,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         </section>
 
         {/* ABOUT SECTION */}
-        <section className="section about" id="about">
+        <section className="section about" id="about" data-reveal>
           <div className="shell">
             <div className="about-journey">
               <div className="about-media-stack">
