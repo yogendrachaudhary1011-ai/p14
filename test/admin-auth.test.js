@@ -1,5 +1,12 @@
 import http from 'http';
 
+const testAdminUsername = process.env.TEST_ADMIN_USERNAME;
+const testAdminPassword = process.env.TEST_ADMIN_PASSWORD;
+if (!testAdminUsername || !testAdminPassword) {
+  throw new Error('Set TEST_ADMIN_USERNAME and TEST_ADMIN_PASSWORD for authentication tests.');
+}
+
+
 function request(options, postData = null) {
   return new Promise((resolve, reject) => {
     const req = http.request(options, (res) => {
@@ -80,7 +87,7 @@ async function runTests() {
       headers: { 'Content-Type': 'application/json' }
     }, { username: testAdminUsername, password: testAdminPassword });
 
-    assert(correctLogin.statusCode === 200, 'Login with Zane Wick / Zane@123 returns 200');
+    assert(correctLogin.statusCode === 200, 'Configured admin login returns 200');
     assert(correctLogin.json?.success === true, 'Login response has success: true');
     assert(correctLogin.json?.user?.username === 'Zane Wick', 'Login returns user username "Zane Wick"');
 
