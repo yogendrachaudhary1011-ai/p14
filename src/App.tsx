@@ -17,15 +17,30 @@ export const App: React.FC = () => {
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname || '/');
+      const targetId = window.location.hash.slice(1);
+      if (targetId) {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }));
+      }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const navigate = (path: string) => {
-    window.history.pushState(null, '', path);
-    setCurrentPath(path);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const destination = new URL(path, window.location.origin);
+    const destinationPath = destination.pathname || '/';
+    window.history.pushState(null, '', `${destinationPath}${destination.search}${destination.hash}`);
+    setCurrentPath(destinationPath);
+    const targetId = destination.hash.slice(1);
+    if (targetId) {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }));
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Robust path normalization
