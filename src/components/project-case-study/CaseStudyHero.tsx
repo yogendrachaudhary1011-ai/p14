@@ -4,7 +4,6 @@ interface CaseStudyHeroProps {
   title: string;
   subtitle?: string;
   year?: string;
-  onNavigate?: (path: string) => void;
   copy: Record<string, string>;
 }
 
@@ -12,20 +11,19 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
   title,
   subtitle,
   year,
-  onNavigate,
   copy
 }) => {
   return (
     <div className="w-full flex flex-col items-center relative z-10 pt-2 sm:pt-4">
       {/* Top back navigation bar */}
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-2 sm:pt-4 pb-4 sm:pb-6 flex justify-between items-center gap-2 box-border animate-cs-fade-in">
-        <button
-          onClick={() => (onNavigate ? onNavigate('/#work') : window.location.assign('/#work'))}
+        <a
+          href="/#work"
           className="inline-flex items-center gap-1.5 sm:gap-2 text-zinc-400 hover:text-white transition-all duration-200 text-xs sm:text-sm font-medium py-1.5 px-2.5 sm:px-3 rounded hover:bg-white/5 hover:-translate-x-1 cursor-pointer"
         >
           <span className="material-symbols-rounded text-base sm:text-lg">arrow_back</span>
           <span>{copy.backToProjects}</span>
-        </button>
+        </a>
         <div className="text-[11px] sm:text-xs font-mono tracking-wider text-[#8be28b] uppercase shrink-0">
           {copy.caseStudyLabel} {year ? `· ${year}` : ''}
         </div>
