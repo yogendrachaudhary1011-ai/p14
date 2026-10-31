@@ -27,7 +27,7 @@ export const initialSiteSettings: SiteSettings = {
     emptyProjectsHeading: 'No projects currently published', emptyProjectsDescription: 'New case studies can be created anytime from the admin panel.', emptyProjectsButton: '+ Add Project',
     aboutHeading: 'ABOUT ME', aboutCaption: 'Yogendra / flows → interfaces → products', aboutNavAbout: '01 / About', aboutNavExperience: '02 / Experience', aboutNavEducation: '03 / Education',
     viewResume: 'View Resume', behance: 'Behance', linkedIn: 'LinkedIn',
-    experienceHeading: 'Experience', educationHeading: 'EDUCATION', currentLabel: 'CURRENT', connectHeading: "LET'S CONNECT",
+    experienceHeading: 'Experience', certificatesHeading: 'Certificates & Credentials', certificateView: 'View certificate / PDF', educationHeading: 'EDUCATION', currentLabel: 'CURRENT', connectHeading: "LET'S CONNECT",
     footerEmail: 'Email', footerResume: 'Resume',
     backToOverview: 'Back to Overview', backToProjects: 'Back to All Projects', backToTop: 'Back to top', caseStudyLabel: 'Case Study',
     roleLabel: 'My Role:', durationLabel: 'Duration:', deliverablesLabel: 'Deliverables', figmaButton: 'View Figma File', liveProjectButton: 'Live Project URL',
