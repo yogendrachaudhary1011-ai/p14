@@ -51,14 +51,21 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
       }
 
       if (navSections.length === 0) return;
-      const scrollPos = window.scrollY + 200;
-      for (let i = navSections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(navSections[i].id);
-        if (el && el.offsetTop <= scrollPos) {
-          setActiveSection(navSections[i].id);
+      // Change the active item only once a section reaches the content reading line.
+      // Using offsetTop + a fixed scroll offset switched the nav before the section appeared.
+      const readingLine = 140;
+      let currentSection = navSections[0]?.id || '';
+      for (const section of navSections) {
+        const element = document.getElementById(section.id);
+        if (!element) continue;
+        const bounds = element.getBoundingClientRect();
+        if (bounds.top <= readingLine) currentSection = section.id;
+        if (bounds.top <= readingLine && bounds.bottom > readingLine) {
+          currentSection = section.id;
           break;
         }
       }
+      setActiveSection((previous) => previous === currentSection ? previous : currentSection);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -66,7 +73,6 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
   }, [navSections]);
 
   const scrollToSection = (id: string) => {
-    setActiveSection(id);
     const element = document.getElementById(id);
     if (element) {
       const yOffset = -90;
@@ -102,11 +108,11 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
   }
 
   return (
-    <div className="w-full bg-black text-white font-sans flex flex-col items-center selection:bg-[#ff853a] selection:text-white">
+    <div className="w-full bg-black text-white font-sans flex flex-col items-center selection:bg-[#8be28b] selection:text-black">
       {/* Sleek Top Reading Scroll Progress Bar */}
       <div className="fixed top-0 left-0 w-full h-[2.5px] z-50 pointer-events-none bg-white/5">
         <div
-          className="h-full bg-gradient-to-r from-white via-[#ff853a] to-white transition-all duration-150 ease-out shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+          className="h-full bg-gradient-to-r from-transparent via-[#8be28b] to-transparent transition-all duration-150 ease-out shadow-[0_0_10px_rgba(139,226,139,0.65)]"
           style={{ width: `${scrollProgress}%` }}
         />
       </div>
@@ -181,7 +187,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
             <div className="pt-12 pb-16 border-t border-white/20 flex flex-col sm:flex-row justify-between items-center gap-6">
               <button
                 onClick={() => (onNavigate ? onNavigate('/projects') : window.history.back())}
-                className="inline-flex items-center gap-2 text-white hover:text-[#ff853a] transition-all duration-200 hover:-translate-x-1.5 text-base font-medium cursor-pointer group"
+                className="inline-flex items-center gap-2 text-white hover:text-[#8be28b] transition-all duration-200 hover:-translate-x-1.5 text-base font-medium cursor-pointer group"
               >
                 <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-x-1">arrow_back</span>
                 <span>{copy.backToProjects}</span>
@@ -200,3 +206,4 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
     </div>
   );
 };
+
