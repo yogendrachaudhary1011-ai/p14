@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
-import { getPrewrittenMailtoUrl } from '../../utils/emailUtils';
+import { getGmailComposeUrl } from '../../utils/emailUtils';
 import { initialSiteSettings } from '../../data/initialData';
 
 interface HeaderProps {
@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [progressWidth, setProgressWidth] = useState(0);
 
-  const emailUrl = getPrewrittenMailtoUrl(settings.email || 'yogendrachaudhary2061@gmail.com');
+  const emailUrl = getGmailComposeUrl(settings.email || 'yogendrachaudhary2061@gmail.com');
 
   const isCaseStudy = currentPath !== '/' && currentPath !== '/projects' && currentPath !== '/about' && currentPath !== '/admin';
 
@@ -93,9 +93,11 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
           </div>
 
           <a
-            aria-label="Email Yogendra"
+            aria-label="Open Gmail to email Yogendra"
             className="nav-talk"
             href={emailUrl}
+            target="_blank"
+            rel="noopener noreferrer"
           >
             {copy.navContact}
             <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
