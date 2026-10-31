@@ -63,7 +63,7 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                   }`}
                 >
                   <span>{item.label}</span>
-                  {isActive && <div className="w-2 h-2 rounded-full bg-[#ff853a]" />}
+                  {isActive && <div className="w-2 h-2 rounded-full bg-[#8be28b] shadow-[0_0_8px_rgba(139,226,139,0.55)]" />}
                 </button>
               );
             })}
@@ -90,14 +90,12 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                 onClick={() => onSelectSection(item.id)}
                 className={`w-full text-left py-1.5 px-0 relative flex items-center justify-between text-lg font-['Plus_Jakarta_Sans',sans-serif] leading-6 transition-all duration-200 cursor-pointer group ${
                   isActive
-                    ? 'text-white font-medium translate-x-1'
+                    ? 'text-[#8be28b] font-medium translate-x-1'
                     : 'text-zinc-400 hover:text-white hover:translate-x-0.5'
                 }`}
               >
-                <span className="truncate pr-2">{item.label}</span>
-                {isActive ? (
-                  <span className="w-6 h-0.5 bg-white shrink-0 rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-                ) : (
+                <span className={`inline-block min-w-0 truncate pr-2 ${isActive ? 'border-b-2 border-[#8be28b] pb-1' : ''}`}>{item.label}</span>
+                {!isActive && (
                   <span className="w-2 h-0.5 bg-white/0 group-hover:bg-white/40 shrink-0 transition-all duration-200 rounded-full" />
                 )}
               </button>
@@ -108,3 +106,4 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
     </>
   );
 };
+
