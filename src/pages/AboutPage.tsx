@@ -54,15 +54,15 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
                 <a
-                  aria-label="Download Yogendra Chaudhary CV"
+                  aria-label="View Yogendra Chaudhary resume"
                   className="about-cv-button"
                   href={settings.resumeUrl || '/assets/Yogendra_Chaudhary_CV.pdf'}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <span>{copy.downloadCv}</span>
+                  <span>{copy.viewResume}</span>
                   <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
-                    download
+                    open_in_new
                   </span>
                 </a>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
