@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { getPrewrittenMailtoUrl } from '../../utils/emailUtils';
+import { initialSiteSettings } from '../../data/initialData';
 
 interface HeaderProps {
   currentPath: string;
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
   const { settings } = usePortfolio();
+  const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [progressWidth, setProgressWidth] = useState(0);
@@ -61,19 +63,19 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             className={currentPath === '/' ? 'is-active' : ''}
             onClick={(e) => handleNavClick(e, '/')}
           >
-            Home
+            {copy.navHome}
           </a>
           <a
             href="/#work"
             onClick={(e) => handleNavClick(e, '/#work')}
           >
-            Work
+            {copy.navWork}
           </a>
           <a
             href="/#about"
             onClick={(e) => handleNavClick(e, '/#about')}
           >
-            About
+            {copy.navAbout}
           </a>
         </div>
 
@@ -95,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             className="nav-talk"
             href={emailUrl}
           >
-            Let's Talk
+            {copy.navContact}
             <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
               arrow_outward
             </span>
@@ -116,12 +118,12 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
         </button>
 
         <div className={`mobile-nav ${mobileMenuOpen ? 'is-open' : ''}`} id="mobileNav">
-          <a href="/" onClick={(e) => handleNavClick(e, '/')}>Home</a>
+          <a href="/" onClick={(e) => handleNavClick(e, '/')}>{copy.navHome}</a>
           <a href="/#work" onClick={(e) => handleNavClick(e, '/#work')}>
-            Work
+            {copy.navWork}
           </a>
           <a href="/#about" onClick={(e) => handleNavClick(e, '/#about')}>
-            About
+            {copy.navAbout}
           </a>
           <span className="mobile-availability">
             <i aria-hidden="true"></i>
@@ -132,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             className="mobile-talk"
             href={emailUrl}
           >
-            Let's Talk
+            {copy.navContact}
             <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
               arrow_outward
             </span>

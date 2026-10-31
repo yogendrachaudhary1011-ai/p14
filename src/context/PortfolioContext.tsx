@@ -62,6 +62,17 @@ const STORAGE_KEYS = {
 
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
+const mergeSiteSettings = (saved: Partial<SiteSettings> | undefined): SiteSettings => ({
+  ...initialSiteSettings,
+  ...(saved || {}),
+  siteCopy: { ...initialSiteSettings.siteCopy, ...(saved?.siteCopy || {}) },
+  homeSections: { ...initialSiteSettings.homeSections, ...(saved?.homeSections || {}) },
+  homeSectionOrder: Array.isArray(saved?.homeSectionOrder) ? saved.homeSectionOrder : initialSiteSettings.homeSectionOrder,
+  aboutSections: { ...initialSiteSettings.aboutSections, ...(saved?.aboutSections || {}) },
+  aboutSectionOrder: Array.isArray(saved?.aboutSectionOrder) ? saved.aboutSectionOrder : initialSiteSettings.aboutSectionOrder,
+  seo: { ...initialSiteSettings.seo, ...(saved?.seo || {}) }
+});
+
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<SiteSettings>(() => {
     try {
@@ -74,7 +85,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (!parsed.linkedinUrl || parsed.linkedinUrl.includes('linkedin.com/in/yogendrach')) {
           parsed.linkedinUrl = 'https://www.linkedin.com/in/yogendrach';
         }
-        return { ...initialSiteSettings, ...parsed };
+        return mergeSiteSettings(parsed);
       }
       return initialSiteSettings;
     } catch {
@@ -244,7 +255,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
         lastCloudSnapshot.current = snapshot ? JSON.stringify(snapshot) : null;
         if (snapshot) {
-          setSettings(snapshot.settings);
+          setSettings(mergeSiteSettings(snapshot.settings));
           setProjects(snapshot.projects);
           setExperience(snapshot.experience);
           setEducation(snapshot.education);
@@ -256,7 +267,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           const serialized = JSON.stringify(fresh);
           if (serialized === lastCloudSnapshot.current) return;
           lastCloudSnapshot.current = serialized;
-          setSettings(fresh.settings);
+          setSettings(mergeSiteSettings(fresh.settings));
           setProjects(fresh.projects);
           setExperience(fresh.experience);
           setEducation(fresh.education);

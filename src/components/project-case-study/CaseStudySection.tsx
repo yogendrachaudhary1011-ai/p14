@@ -15,9 +15,10 @@ import { stackProductSectionImages } from '../../utils/caseStudyUtils';
 interface CaseStudySectionProps {
   section: CaseStudySectionType;
   index: number;
+  copy: Record<string, string>;
 }
 
-export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, index }) => {
+export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, index, copy }) => {
   const [sectionRef, isInView] = useInView<HTMLElement>({
     threshold: 0.05,
     rootMargin: '0px 0px -40px 0px',
@@ -35,9 +36,9 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
       case 'cardGrid':
         return <CardGridBlock key={block.id} block={block} />;
       case 'decisionList':
-        return <DecisionBlock key={block.id} block={block} />;
+        return <DecisionBlock key={block.id} block={block} copy={copy} />;
       case 'twoColumnComparison':
-        return <TwoColumnComparisonBlock key={block.id} block={block} />;
+        return <TwoColumnComparisonBlock key={block.id} block={block} copy={copy} />;
       case 'image':
       case 'fullWidthImage':
         return <ImageBlock key={block.id} block={block} />;

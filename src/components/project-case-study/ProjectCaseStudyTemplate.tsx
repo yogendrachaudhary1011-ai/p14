@@ -5,6 +5,8 @@ import { CaseStudyHero } from './CaseStudyHero';
 import { ProjectOverview } from './ProjectOverview';
 import { SectionNavigation } from './SectionNavigation';
 import { CaseStudySection } from './CaseStudySection';
+import { usePortfolio } from '../../context/PortfolioContext';
+import { initialSiteSettings } from '../../data/initialData';
 
 interface ProjectCaseStudyTemplateProps {
   project: Project;
@@ -17,6 +19,8 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
   onNavigate,
   isAdminPreview = false
 }) => {
+  const { settings } = usePortfolio();
+  const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
   // Normalize project sections
   const sections = useMemo(() => normalizeProjectSections(project), [project]);
 
@@ -140,6 +144,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
           subtitle={subtitle}
           year={project.year}
           onNavigate={onNavigate}
+          copy={copy}
         />
 
         {/* Project Overview (Hero Image + Metadata + Links) */}
@@ -153,6 +158,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
           figmaUrl={project.figmaUrl}
           figmaButtonText={project.figmaButtonText}
           externalProjectUrl={project.externalProjectUrl}
+          copy={copy}
         />
 
         {/* Two-Column Case Study Section with Left Sticky Navigation */}
@@ -162,12 +168,13 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
             sections={navSections}
             activeSection={activeSection}
             onSelectSection={scrollToSection}
+            copy={copy}
           />
 
           {/* Right Column: Case Study Sections */}
           <main className="w-full min-w-0 flex-1 max-w-[1200px] flex flex-col gap-12 sm:gap-16 lg:gap-20 self-stretch">
             {sections.map((section, idx) => (
-              <CaseStudySection key={section.id} section={section} index={idx} />
+              <CaseStudySection key={section.id} section={section} index={idx} copy={copy} />
             ))}
 
             {/* Bottom Footer Navigation Bar inside Case Study */}
@@ -177,13 +184,13 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
                 className="inline-flex items-center gap-2 text-white hover:text-[#ff853a] transition-all duration-200 hover:-translate-x-1.5 text-base font-medium cursor-pointer group"
               >
                 <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-x-1">arrow_back</span>
-                <span>Explore all projects</span>
+                <span>{copy.backToProjects}</span>
               </button>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-all duration-200 hover:-translate-y-1 text-sm cursor-pointer group"
               >
-                <span>Back to top</span>
+                <span>{copy.backToTop}</span>
                 <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-y-1">arrow_upward</span>
               </button>
             </div>

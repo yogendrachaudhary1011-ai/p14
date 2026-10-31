@@ -1,11 +1,9 @@
-Warning: truncated output (original token count: 28608)
-Total output lines: 2253
-
 import React, { useRef, useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { Project, ExperienceItem, EducationItem } from '../../types';
 import { initialSiteSettings } from '../../data/initialData';
 import { ProjectEditor } from '../../components/admin/ProjectEditor';
+import { MediaUploadField } from '../../components/admin/MediaUploadField';
 import { MediaPreview } from '../../components/MediaPreview';
 import { SUPABASE_SQL_SCHEMA } from '../../supabase';
 import { uploadMediaToSupabase } from '../../utils/supabaseService';
@@ -665,7 +663,1195 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   <span>Edit Site Profile &amp; Bio</span>
                 </button>
                 <button
-   …14608 tokens truncated…          </div>
+                  onClick={() => setActiveTab('media')}
+                  className="px-4 py-2.5 bg-[#181923] hover:bg-[#202230] border border-white/10 text-white rounded-lg text-xs sm:text-sm font-medium cursor-pointer transition-all flex items-center gap-1.5"
+                >
+                  <ImageIcon size={16} className="text-zinc-400" />
+                  <span>Manage Media Library</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setConfirmDialog({
+                      title: 'Reset Portfolio Defaults',
+                      message:
+                        'Are you sure you want to restore all portfolio content, case studies, and settings to original defaults?',
+                      confirmLabel: 'Reset Everything',
+                      onConfirm: () => {
+                        resetToDefaults();
+                        showNotice('Portfolio restored to initial defaults.');
+                        setConfirmDialog(null);
+                      }
+                    });
+                  }}
+                  className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-xs sm:text-sm cursor-pointer transition-all ml-auto"
+                >
+                  Reset Defaults
+                </button>
+              </div>
+            </div>
+
+            {/* RECENT PROJECTS PREVIEW TABLE */}
+            <div className="bg-[#12131a] border border-white/10 rounded-xl overflow-hidden">
+              <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold text-white text-sm">Published Case Studies</h3>
+                  <p className="text-zinc-400 text-xs">Recently active projects displayed on the portfolio.</p>
+                </div>
+                <button
+                  onClick={() => setActiveTab('projects')}
+                  className="text-xs text-[#f37021] hover:underline font-semibold flex items-center gap-1"
+                >
+                  <span>View All ({projects.length})</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+
+              <div className="divide-y divide-white/5">
+                {projects.slice(0, 4).map((proj) => (
+                  <div
+                    key={proj.id}
+                    className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img
+                        alt={proj.title}
+                        src={proj.heroImage?.url || proj.coverImage || '/assets/media/home-media-04-f775f2921176.webp'}
+                        className="w-12 h-9 object-cover rounded bg-black border border-white/10 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="font-semibold text-white text-sm flex items-center gap-2">
+                          <span className="truncate">{proj.title}</span>
+                          {proj.featured && (
+                            <span className="text-[10px] bg-[#f37021]/15 text-[#f37021] px-1.5 py-0.2 rounded font-mono">
+                              FEATURED
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-zinc-400 truncate">
+                          {proj.categoryLabel || proj.category} · {proj.route}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => onNavigate(proj.route)}
+                        className="px-2.5 py-1 text-xs rounded bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 flex items-center gap-1 cursor-pointer"
+                        title="Preview live page"
+                      >
+                        <ExternalLink size={12} />
+                        <span className="hidden sm:inline">Preview</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingProject(proj);
+                          setIsCreatingProject(false);
+                          setActiveTab('projects');
+                        }}
+                        className="px-3 py-1 text-xs rounded bg-[#f37021]/15 text-[#f37021] hover:bg-[#f37021]/25 border border-[#f37021]/30 font-semibold cursor-pointer"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 2: PROJECTS & CASE STUDIES
+        ========================================== */}
+        {activeTab === 'projects' && (
+          <div>
+            {isCreatingProject || editingProject ? (
+              <ProjectEditor
+                initialProject={editingProject}
+                existingProjects={projects}
+                mediaLibrary={media}
+                onUploadMedia={async (file) => {
+                  if (!isAdmin) throw new Error('Sign in to Supabase Auth before uploading project media.');
+                  const result = await uploadMediaToSupabase(file);
+                  if (!result.url) throw new Error(result.error || 'Upload failed.');
+                  const asset = addMedia(file.name.replace(/\.[^.]+$/, ''), result.url, file.type || inferMediaMimeType(file.name), file.size);
+                  return asset;
+                }}
+                onSave={(data) => {
+                  if (editingProject) {
+                    updateProject(editingProject.id, data);
+                    showNotice(`Updated case study "${data.title || editingProject.title}"`);
+                  } else {
+                    addProject(data as any);
+                    showNotice(`Created new case study "${data.title}"`);
+                  }
+                  setIsCreatingProject(false);
+                  setEditingProject(null);
+                }}
+                onCancel={() => {
+                  setIsCreatingProject(false);
+                  setEditingProject(null);
+                }}
+              />
+            ) : (
+              <div className="space-y-5">
+                {/* Header with Title and Add Button */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white">Projects &amp; Case Studies</h2>
+                    <p className="text-zinc-400 text-xs sm:text-sm mt-1">
+                      Build, reorder, publish, and customize case studies with the interactive visual block builder.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsCreatingProject(true);
+                      setEditingProject(null);
+                    }}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 cursor-pointer shrink-0 shadow-md transition-all"
+                  >
+                    <Plus size={16} />
+                    <span>Add New Case Study</span>
+                  </button>
+                </div>
+
+                {/* Filter and Search Bar */}
+                <div className="p-3.5 bg-[#12131a] border border-white/10 rounded-xl flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                  <div className="relative flex-1">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                    <input
+                      type="text"
+                      value={projectSearchQuery}
+                      onChange={(e) => setProjectSearchQuery(e.target.value)}
+                      placeholder="Search case studies by title, slug, or label..."
+                      className="w-full pl-9 pr-4 py-2 bg-[#0d0e14] border border-white/10 rounded-lg text-white text-xs sm:text-sm outline-none focus:border-[#f37021]"
+                    />
+                    {projectSearchQuery && (
+                      <button
+                        onClick={() => setProjectSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-xs"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5 bg-[#0d0e14] px-2.5 py-1 rounded-lg border border-white/10 text-xs">
+                      <Filter size={13} className="text-zinc-500" />
+                      <select
+                        value={projectCategoryFilter}
+                        onChange={(e) => setProjectCategoryFilter(e.target.value as any)}
+                        className="bg-transparent text-zinc-300 border-none outline-none cursor-pointer py-1"
+                      >
+                        <option value="all">All Categories</option>
+                        <option value="product">Product</option>
+                        <option value="archive">Archive</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-[#0d0e14] px-2.5 py-1 rounded-lg border border-white/10 text-xs">
+                      <select
+                        value={projectStatusFilter}
+                        onChange={(e) => setProjectStatusFilter(e.target.value as any)}
+                        className="bg-transparent text-zinc-300 border-none outline-none cursor-pointer py-1"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="published">Published</option>
+                        <option value="draft">Drafts</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Projects Table with Responsive Horizontal Scroll Container */}
+                <div className="w-full overflow-hidden border border-white/10 rounded-xl bg-[#12131a] shadow-lg">
+                  <div className="p-3 sm:p-4 border-b border-white/10 flex justify-between items-center text-xs">
+                    <span className="font-mono text-zinc-400">
+                      CASE STUDIES ({filteredProjects.length} OF {projects.length})
+                    </span>
+                    <button
+                      onClick={() => {
+                        setConfirmDialog({
+                          title: 'Delete All Case Studies',
+                          message:
+                            'Permanently remove all project case studies? This action cannot be undone.',
+                          confirmLabel: 'Delete All Projects',
+                          onConfirm: () => {
+                            deleteAllProjects();
+                            showNotice('All projects removed.');
+                            setConfirmDialog(null);
+                          }
+                        });
+                      }}
+                      className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded text-xs cursor-pointer transition-colors"
+                    >
+                      Delete All Projects
+                    </button>
+                  </div>
+
+                  <div className="w-full overflow-x-auto">
+                    <table className="w-full min-w-[700px] text-left text-xs sm:text-sm">
+                      <thead>
+                        <tr className="border-b border-white/10 bg-[#171822] text-zinc-400">
+                          <th className="py-3 px-4 w-14 font-mono">Order</th>
+                          <th className="py-3 px-4">Project</th>
+                          <th className="py-3 px-4">Category</th>
+                          <th className="py-3 px-4 font-mono">Route</th>
+                          <th className="py-3 px-4">Status</th>
+                          <th className="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {filteredProjects.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="py-12 text-center text-zinc-500">
+                              <FolderKanban size={32} className="mx-auto mb-2 text-zinc-600" />
+                              <p className="font-medium">No case studies found matching your criteria.</p>
+                              <button
+                                onClick={() => {
+                                  setProjectSearchQuery('');
+                                  setProjectCategoryFilter('all');
+                                  setProjectStatusFilter('all');
+                                }}
+                                className="mt-2 text-xs text-[#f37021] hover:underline cursor-pointer"
+                              >
+                                Clear filters
+                              </button>
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredProjects.map((proj, pIdx) => (
+                            <tr key={proj.id} className="hover:bg-white/[0.02] transition-colors">
+                              <td className="py-3.5 px-4">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-mono text-xs text-zinc-500 w-4">{pIdx + 1}</span>
+                                  <div className="flex flex-col">
+                                    <button
+                                      onClick={() => {
+                                        if (pIdx === 0) return;
+                                        const ids = projects.map((p) => p.id);
+                                        const temp = ids[pIdx];
+                                        ids[pIdx] = ids[pIdx - 1];
+                                        ids[pIdx - 1] = temp;
+                                        reorderProjects(ids);
+                                      }}
+                                      disabled={pIdx === 0}
+                                      className={`text-[10px] leading-tight ${
+                                        pIdx === 0 ? 'text-zinc-700' : 'text-zinc-400 hover:text-white cursor-pointer'
+                                      }`}
+                                      title="Move up"
+                                    >
+                                      ▲
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (pIdx === projects.length - 1) return;
+                                        const ids = projects.map((p) => p.id);
+                                        const temp = ids[pIdx];
+                                        ids[pIdx] = ids[pIdx + 1];
+                                        ids[pIdx + 1] = temp;
+                                        reorderProjects(ids);
+                                      }}
+                                      disabled={pIdx === projects.length - 1}
+                                      className={`text-[10px] leading-tight ${
+                                        pIdx === projects.length - 1
+                                          ? 'text-zinc-700'
+                                          : 'text-zinc-400 hover:text-white cursor-pointer'
+                                      }`}
+                                      title="Move down"
+                                    >
+                                      ▼
+                                    </button>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="py-3.5 px-4">
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    alt={proj.title}
+                                    src={
+                                      proj.heroImage?.url ||
+                                      proj.coverImage ||
+                                      '/assets/media/home-media-04-f775f2921176.webp'
+                                    }
+                                    className="w-12 h-9 object-cover rounded bg-black border border-white/10 shrink-0"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src =
+                                        '/assets/media/home-media-04-f775f2921176.webp';
+                                    }}
+                                  />
+                                  <div className="min-w-0">
+                                    <div className="font-semibold text-white flex items-center gap-1.5 truncate">
+                                      <span>{proj.title}</span>
+                                      {proj.featured && (
+                                        <span className="text-[#f37021] text-xs" title="Featured on home">
+                                          ★
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-[11px] text-zinc-500">
+                                      {proj.year || '2026'} · {proj.sections?.length || 0} chapters
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="py-3.5 px-4">
+                                <span className="px-2 py-0.5 rounded text-[11px] bg-white/5 border border-white/10 text-zinc-300">
+                                  {proj.categoryLabel || proj.category}
+                                </span>
+                              </td>
+
+                              <td className="py-3.5 px-4 font-mono text-xs text-zinc-400">
+                                <div className="flex items-center gap-1">
+                                  <span>{proj.route}</span>
+                                  <button
+                                    onClick={() => handleCopy(proj.route, `route-${proj.id}`)}
+                                    className="text-zinc-500 hover:text-white p-0.5"
+                                    title="Copy route path"
+                                  >
+                                    {copiedId === `route-${proj.id}` ? (
+                                      <Check size={12} className="text-emerald-400" />
+                                    ) : (
+                                      <Copy size={12} />
+                                    )}
+                                  </button>
+                                </div>
+                              </td>
+
+                              <td className="py-3.5 px-4">
+                                <button
+                                  onClick={() => {
+                                    toggleProjectStatus(proj.id);
+                                    showNotice(
+                                      `"${proj.title}" is now ${
+                                        proj.status === 'published' ? 'Draft' : 'Published'
+                                      }`
+                                    );
+                                  }}
+                                  className={`px-2.5 py-0.5 rounded text-[11px] font-semibold uppercase cursor-pointer transition-colors ${
+                                    proj.status === 'published'
+                                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25'
+                                      : 'bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25'
+                                  }`}
+                                  title="Click to toggle status"
+                                >
+                                  {proj.status}
+                                </button>
+                              </td>
+
+                              <td className="py-3.5 px-4 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    onClick={() => onNavigate(proj.route)}
+                                    className="p-1.5 rounded bg-[#181923] hover:bg-[#202230] border border-white/10 text-zinc-300 hover:text-white cursor-pointer"
+                                    title="Preview live case study"
+                                  >
+                                    <ExternalLink size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const dup = duplicateProject(proj.id);
+                                      if (dup) {
+                                        showNotice(`Duplicated as "${dup.title}"`);
+                                      }
+                                    }}
+                                    className="p-1.5 rounded bg-[#181923] hover:bg-[#202230] border border-white/10 text-zinc-300 hover:text-white cursor-pointer"
+                                    title="Duplicate case study"
+                                  >
+                                    <Copy size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEditingProject(proj);
+                                      setIsCreatingProject(false);
+                                    }}
+                                    className="px-2.5 py-1 rounded bg-[#f37021]/15 hover:bg-[#f37021]/25 border border-[#f37021]/30 text-[#f37021] text-xs font-semibold cursor-pointer"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setConfirmDialog({
+                                        title: `Delete ${proj.title}`,
+                                        message: `Are you sure you want to delete case study "${proj.title}"?`,
+                                        confirmLabel: 'Delete Case Study',
+                                        onConfirm: () => {
+                                          deleteProject(proj.id);
+                                          showNotice(`Deleted "${proj.title}"`);
+                                          setConfirmDialog(null);
+                                        }
+                                      });
+                                    }}
+                                    className="p-1.5 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 cursor-pointer"
+                                    title="Delete case study"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 3: SITE & PROFILE SETTINGS
+        ========================================== */}
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-white">Site &amp; Profile Settings</h2>
+              <p className="text-zinc-400 text-xs sm:text-sm mt-1">
+                Update designer branding, contact information, credentials, and Supabase database connection.
+              </p>
+            </div>
+
+            {/* DESIGNER BRANDING & BIO CARD */}
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
+              <div className="border-b border-white/10 pb-3">
+                <h3 className="text-base font-bold text-white">Designer Identity</h3>
+                <p className="text-zinc-400 text-xs mt-0.5">Primary name, title, and public presence.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Brand / Full Name</label>
+                  <input
+                    type="text"
+                    value={settings.brandName}
+                    onChange={(e) => updateSettings({ brandName: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Designer Role / Title</label>
+                  <input
+                    type="text"
+                    value={settings.brandRole}
+                    onChange={(e) => updateSettings({ brandRole: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Location / Base</label>
+                  <input
+                    type="text"
+                    value={settings.location}
+                    onChange={(e) => updateSettings({ location: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Availability Status</label>
+                  <input
+                    type="text"
+                    value={settings.availabilityText}
+                    onChange={(e) => updateSettings({ availabilityText: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-white/10 pt-5">
+                <label className="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Floating ID Card Portrait</label>
+                <MediaUploadField
+                  value={settings.profileImage || initialSiteSettings.profileImage || ''}
+                  onChange={(profileImage) => updateSettings({ profileImage })}
+                  mediaLibrary={media}
+                  label="ID card portrait"
+                  onUploadMedia={async (file) => {
+                    if (!isAdmin) throw new Error('Sign in to Supabase Auth before uploading media.');
+                    const result = await uploadMediaToSupabase(file);
+                    if (!result.url) throw new Error(result.error || 'Image upload failed.');
+                    return addMedia(file.name.replace(/\.[^.]+$/, '') || file.name, result.url, file.type, file.size);
+                  }}
+                />
+              </div>
+
+              <div className="border-t border-white/10 pt-5 space-y-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-white">About Section Content</h4>
+                  <p className="text-zinc-400 text-xs mt-1">These shared fields update the About section on both the landing page and the About page.</p>
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">About Introduction</label>
+                  <textarea
+                    rows={3}
+                    value={settings.aboutIntro ?? initialSiteSettings.aboutIntro}
+                    placeholder="Describe your design approach and the work you do."
+                    onChange={(e) => updateSettings({ aboutIntro: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021] resize-y"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">About Details</label>
+                  <textarea
+                    rows={3}
+                    value={settings.aboutDetails ?? initialSiteSettings.aboutDetails}
+                    placeholder="Describe your focus, specialties, and the products you work on."
+                    onChange={(e) => updateSettings({ aboutDetails: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021] resize-y"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-white/10 pt-5 space-y-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-white">Landing Page Sections</h4>
+                  <p className="text-zinc-400 text-xs mt-1">Show or hide the main sections. Their project cards, experience entries, education entries, and case study sections are edited in their own tabs.</p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {(['hero', 'work', 'about', 'connect'] as const).map((section) => (
+                    <label key={section} className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2 text-xs text-zinc-200 capitalize">
+                      <input
+                        type="checkbox"
+                        checked={(settings.homeSections ?? initialSiteSettings.homeSections)[section]}
+                        onChange={(event) => updateSettings({ homeSections: { ...(settings.homeSections ?? initialSiteSettings.homeSections), [section]: event.target.checked } })}
+                        className="accent-[#f37021]"
+                      />
+                      {section === 'connect' ? 'Contact section' : `${section} section`}
+                    </label>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {(['hero', 'work', 'about', 'connect'] as const).map((section) => {
+                    const order = settings.homeSectionOrder || initialSiteSettings.homeSectionOrder;
+                    return (
+                      <label key={`order-${section}`} className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2 text-xs text-zinc-300">
+                        <span className="capitalize">{section === 'connect' ? 'Contact section' : `${section} section`} order</span>
+                        <select
+                          value={Math.max(0, order.indexOf(section))}
+                          onChange={(event) => {
+                            const next = [...order];
+                            const from = next.indexOf(section);
+                            const to = Number(event.target.value);
+                            next.splice(from, 1);
+                            next.splice(to, 0, section);
+                            updateSettings({ homeSectionOrder: next });
+                          }}
+                          className="rounded bg-[#171822] border border-white/10 px-2 py-1 text-white"
+                        >
+                          {order.map((_, index) => <option key={index} value={index}>{index + 1}</option>)}
+                        </select>
+                      </label>
+                    );
+                  })}
+                </div>
+                <div className="border-t border-white/10 pt-4 space-y-3">
+                  <h5 className="text-xs font-semibold uppercase tracking-wide text-zinc-300">About page sections</h5>
+                  <div className="flex flex-wrap gap-3">
+                    {(['profile', 'experience', 'education'] as const).map((section) => (
+                      <label key={`about-${section}`} className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2 text-xs text-zinc-200 capitalize">
+                        <input
+                          type="checkbox"
+                          checked={(settings.aboutSections ?? initialSiteSettings.aboutSections)[section]}
+                          onChange={(event) => updateSettings({ aboutSections: { ...(settings.aboutSections ?? initialSiteSettings.aboutSections), [section]: event.target.checked } })}
+                          className="accent-[#f37021]"
+                        />
+                        {section}
+                      </label>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {(['profile', 'experience', 'education'] as const).map((section) => {
+                      const order = settings.aboutSectionOrder || initialSiteSettings.aboutSectionOrder;
+                      return (
+                        <label key={`about-order-${section}`} className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2 text-xs text-zinc-300 capitalize">
+                          <span>{section} order</span>
+                          <select value={Math.max(0, order.indexOf(section))} onChange={(event) => {
+                            const next = [...order];
+                            const from = next.indexOf(section);
+                            const to = Number(event.target.value);
+                            next.splice(from, 1);
+                            next.splice(to, 0, section);
+                            updateSettings({ aboutSectionOrder: next });
+                          }} className="rounded bg-[#171822] border border-white/10 px-2 py-1 text-white">
+                            {order.map((_, index) => <option key={index} value={index}>{index + 1}</option>)}
+                          </select>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-white/10 pt-5 space-y-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-white">Text, Labels &amp; Chips</h4>
+                  <p className="text-zinc-400 text-xs mt-1">Edit the public-facing copy used across the header, landing page, work page, About section, and project details. Updates save to the shared Supabase portfolio data.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(initialSiteSettings.siteCopy || {}).map(([key, defaultValue]) => {
+                    const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (letter) => letter.toUpperCase());
+                    const value = settings.siteCopy?.[key] ?? defaultValue;
+                    const longText = defaultValue.length > 72 || key.toLowerCase().includes('description');
+                    return (
+                      <div key={key} className={longText ? 'md:col-span-2' : ''}>
+                        <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">{label}</label>
+                        {longText ? (
+                          <textarea rows={3} value={value} onChange={(event) => updateSettings({ siteCopy: { ...(settings.siteCopy || initialSiteSettings.siteCopy), [key]: event.target.value } })} className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021] resize-y" />
+                        ) : (
+                          <input type="text" value={value} onChange={(event) => updateSettings({ siteCopy: { ...(settings.siteCopy || initialSiteSettings.siteCopy), [key]: event.target.value } })} className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* CONTACT & SOCIAL CARD */}
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
+              <div className="border-b border-white/10 pb-3">
+                <h3 className="text-base font-bold text-white">Contact &amp; Social Links</h3>
+                <p className="text-zinc-400 text-xs mt-0.5">Where clients and recruiters can reach you.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Email Address</label>
+                  <input
+                    type="email"
+                    value={settings.email}
+                    onChange={(e) => updateSettings({ email: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Phone Number</label>
+                  <input
+                    type="text"
+                    value={settings.phone}
+                    onChange={(e) => updateSettings({ phone: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Resume / CV Document URL</label>
+                  <input
+                    type="text"
+                    value={settings.resumeUrl}
+                    onChange={(e) => updateSettings({ resumeUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">LinkedIn Profile URL</label>
+                  <input
+                    type="text"
+                    value={settings.linkedinUrl || ''}
+                    placeholder="https://www.linkedin.com/in/yogendrach"
+                    onChange={(e) => updateSettings({ linkedinUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Behance Portfolio URL</label>
+                  <input
+                    type="text"
+                    value={settings.behanceUrl || ''}
+                    placeholder="https://www.behance.net/yogendrachaudhary1"
+                    onChange={(e) => updateSettings({ behanceUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={async () => {
+                    const result = await syncAllProjectsToSupabase();
+                    showNotice(result.message);
+                  }}
+                  className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md transition-all"
+                >
+                  Save Profile Settings
+                </button>
+              </div>
+            </div>
+
+            {/* ADMIN SECURITY & PASSWORD CARD */}
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
+              <div className="border-b border-white/10 pb-3 flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-white">Admin Security &amp; Access</h3>
+                  <p className="text-zinc-400 text-xs mt-0.5">Change administrator login credentials for this CMS.</p>
+                </div>
+                <ShieldCheck size={20} className="text-[#f37021]" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showAdminPassword ? 'text' : 'password'}
+                      value={adminNewPassword}
+                      onChange={(e) => setAdminNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      className="w-full px-3 py-2.5 pr-10 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAdminPassword(!showAdminPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                    >
+                      {showAdminPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Confirm New Password</label>
+                  <input
+                    type={showAdminPassword ? 'text' : 'password'}
+                    value={adminConfirmPassword}
+                    onChange={(e) => setAdminConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!adminNewPassword.trim()) {
+                      showNotice('Please enter a new password.');
+                      return;
+                    }
+                    if (adminNewPassword !== adminConfirmPassword) {
+                      showNotice('Passwords do not match. Please try again.');
+                      return;
+                    }
+                    const ok = await changeAdminPassword(adminNewPassword);
+                    if (ok) {
+                      showNotice('Your Supabase Auth password was updated.');
+                      setAdminNewPassword('');
+                      setAdminConfirmPassword('');
+                    } else {
+                      showNotice('Password update failed. Use at least 8 characters and try again.');
+                    }
+                  }}
+                  className="px-5 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md transition-all"
+                >
+                  Update Admin Password
+                </button>
+              </div>
+            </div>
+
+            {/* SUPABASE POSTGRESQL CARD */}
+            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-white/10 pb-3">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <h3 className="text-base font-bold text-white">Supabase PostgreSQL Integration</h3>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                        isSupabaseConnected
+                          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                      }`}
+                    >
+                      {isSupabaseConnected ? 'Connected to Cloud DB' : 'Offline / Local Cache'}
+                    </span>
+                  </div>
+                  <p className="text-zinc-400 text-xs mt-0.5">
+                    Save the entire portfolio as one cloud snapshot. Run the SQL setup once and sign in with your Supabase Auth administrator account.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowSqlModal(true)}
+                  className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-zinc-200 text-xs font-medium flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
+                >
+                  <Command size={14} className="text-[#f37021]" />
+                  <span>View SQL Script</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">
+                    Supabase Project URL
+                  </label>
+                  <input
+                    type="text"
+                    value={supabaseUrlInput}
+                    onChange={(e) => setSupabaseUrlInput(e.target.value)}
+                    placeholder="https://your-project.supabase.co"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white font-mono text-xs sm:text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">
+                    Supabase Anon Key
+                  </label>
+                  <input
+                    type="password"
+                    value={supabaseKeyInput}
+                    onChange={(e) => setSupabaseKeyInput(e.target.value)}
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white font-mono text-xs sm:text-sm outline-none focus:border-[#f37021]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ok = updateSupabaseConfig(supabaseUrlInput, supabaseKeyInput);
+                    if (ok) {
+                      showNotice(
+                        supabaseUrlInput.trim()
+                          ? 'Supabase configuration saved!'
+                          : 'Cleared Supabase configuration.'
+                      );
+                    }
+                  }}
+                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md transition-all"
+                >
+                  Save &amp; Connect Supabase
+                </button>
+                <button
+                  type="button"
+                  disabled={syncingSupabase || !supabaseUrlInput.trim()}
+                  onClick={async () => {
+                    setSyncingSupabase(true);
+                    showNotice('Saving the complete portfolio to Supabase...');
+                    const result = await syncAllProjectsToSupabase();
+                    setSyncingSupabase(false);
+                    showNotice(result.message);
+                  }}
+                  className="px-4 py-2.5 bg-[#181923] hover:bg-[#202230] border border-white/15 text-white rounded-lg text-xs sm:text-sm font-medium cursor-pointer disabled:opacity-50 transition-all flex items-center gap-1.5"
+                >
+                  <RefreshCw size={14} className={syncingSupabase ? 'animate-spin' : ''} />
+                  <span>{syncingSupabase ? 'Syncing...' : 'Save Full Portfolio to Supabase'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* SQL SCHEMA MODAL */}
+            {showSqlModal && (
+              <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+                <div className="bg-[#12131a] border border-white/15 rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+                  <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Command size={16} className="text-[#f37021]" />
+                      <h3 className="font-bold text-white text-sm sm:text-base">Supabase PostgreSQL Schema</h3>
+                    </div>
+                    <button onClick={() => setShowSqlModal(false)} className="text-zinc-400 hover:text-white p-1">
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <div className="flex-1 p-4 overflow-y-auto">
+                    <pre className="p-3 bg-[#090a0d] border border-white/10 text-emerald-400 font-mono text-xs overflow-x-auto whitespace-pre-wrap rounded-lg">
+                      {SUPABASE_SQL_SCHEMA}
+                    </pre>
+                  </div>
+                  <div className="p-4 border-t border-white/10 flex justify-end gap-2.5">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(SUPABASE_SQL_SCHEMA);
+                        setCopiedSql(true);
+                        setTimeout(() => setCopiedSql(false), 2000);
+                      }}
+                      className="px-4 py-2 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-1.5"
+                    >
+                      {copiedSql ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedSql ? 'Copied to Clipboard' : 'Copy SQL Script'}</span>
+                    </button>
+                    <button
+                      onClick={() => setShowSqlModal(false)}
+                      className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs font-medium cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 4: EXPERIENCE TIMELINE
+        ========================================== */}
+        {activeTab === 'experience' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Work Experience Timeline</h2>
+                <p className="text-zinc-400 text-xs sm:text-sm mt-1">
+                  Manage roles, companies, descriptions, and skill tags displayed on your About &amp; Home pages.
+                </p>
+              </div>
+              {!isCreatingExp && (
+                <button
+                  onClick={() => {
+                    setIsCreatingExp(true);
+                    setEditingExp(null);
+                    setExpFormData({
+                      role: '',
+                      company: '',
+                      dates: '',
+                      duration: '',
+                      current: false,
+                      headline: '',
+                      description: '',
+                      tags: [],
+                      order: experience.length + 1,
+                      visible: true
+                    });
+                    setExpTagsInput('');
+                  }}
+                  className="px-4 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shrink-0 flex items-center gap-1.5 shadow-md transition-all"
+                >
+                  <Plus size={16} />
+                  <span>Add Experience</span>
+                </button>
+              )}
+            </div>
+
+            {/* CREATE / EDIT EXPERIENCE FORM */}
+            {(isCreatingExp || editingExp) && (
+              <div className="p-5 sm:p-6 bg-[#12131a] border border-[#f37021]/30 rounded-xl space-y-4 shadow-xl">
+                <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                  <h3 className="text-base font-bold text-white">
+                    {editingExp ? `Edit Experience: ${editingExp.role}` : 'Add New Experience Position'}
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setIsCreatingExp(false);
+                      setEditingExp(null);
+                    }}
+                    className="text-xs text-zinc-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Role / Title</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Lead Product Designer"
+                      value={expFormData.role || ''}
+                      onChange={(e) => setExpFormData({ ...expFormData, role: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Company &amp; Location</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Acme Studio · Remote"
+                      value={expFormData.company || ''}
+                      onChange={(e) => setExpFormData({ ...expFormData, company: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Dates / Period</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Jan 2024 – Present"
+                      value={expFormData.dates || ''}
+                      onChange={(e) => setExpFormData({ ...expFormData, dates: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-6">
+                    <input
+                      type="checkbox"
+                      id="currentRoleCheckbox"
+                      checked={expFormData.current || false}
+                      onChange={(e) => setExpFormData({ ...expFormData, current: e.target.checked })}
+                      className="accent-[#f37021] w-4 h-4 rounded"
+                    />
+                    <label htmlFor="currentRoleCheckbox" className="text-xs text-zinc-300 cursor-pointer font-medium">
+                      Current active position
+                    </label>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Description</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Summary of responsibilities, design deliverables, and team impact..."
+                      value={expFormData.description || ''}
+                      onChange={(e) => setExpFormData({ ...expFormData, description: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">
+                      Skills &amp; Tags (comma separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={expTagsInput}
+                      onChange={(e) => setExpTagsInput(e.target.value)}
+                      placeholder="Design Systems, Prototyping, Figma, User Research"
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    onClick={() => {
+                      if (!expFormData.role?.trim()) {
+                        showNotice('Please enter a role or title.');
+                        return;
+                      }
+                      const tags = expTagsInput.split(',').map((s) => s.trim()).filter(Boolean);
+                      if (editingExp) {
+                        updateExperience(editingExp.id, { ...expFormData, tags });
+                        showNotice(`Updated experience: ${expFormData.role}`);
+                        setEditingExp(null);
+                      } else {
+                        addExperience({ ...expFormData, tags } as any);
+                        showNotice(`Added experience: ${expFormData.role}`);
+                        setIsCreatingExp(false);
+                      }
+                    }}
+                    className="px-4 py-2 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold cursor-pointer shadow-md"
+                  >
+                    Save Experience
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsCreatingExp(false);
+                      setEditingExp(null);
+                    }}
+                    className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs sm:text-sm cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* EXPERIENCE ITEMS LIST */}
+            <div className="space-y-3">
+              {experience.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-5 bg-[#12131a] border border-white/10 hover:border-white/20 rounded-xl flex flex-col sm:flex-row justify-between items-start gap-4 transition-colors"
+                >
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-white text-base truncate">{item.role}</h3>
+                      {item.current && (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-[#f37021]/20 text-[#f37021] font-bold shrink-0 border border-[#f37021]/30">
+                          CURRENT
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-zinc-400 font-medium">
+                      {item.company} · {item.dates}
+                    </div>
+                    <p className="text-zinc-300 text-xs sm:text-sm line-clamp-3 max-w-3xl leading-relaxed">
+                      {item.description}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {item.tags.map((t, i) => (
+                        <span
+                          key={i}
+                          className="text-[11px] px-2 py-0.5 rounded bg-white/5 border border-white/5 text-zinc-400"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-start">
+                    <button
+                      onClick={() => {
+                        setEditingExp(item);
+                        setExpFormData(item);
+                        setExpTagsInput(item.tags.join(', '));
+                        setIsCreatingExp(false);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-[#181923] hover:bg-[#202230] border border-white/10 text-white text-xs font-medium cursor-pointer"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        setConfirmDialog({
+                          title: 'Delete Experience',
+                          message: `Are you sure you want to delete experience record "${item.role}"?`,
+                          confirmLabel: 'Delete',
+                          onConfirm: () => {
+                            deleteExperience(item.id);
+                            showNotice(`Deleted ${item.role}`);
+                            setConfirmDialog(null);
+                          }
+                        });
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 5: EDUCATION & CREDENTIALS
+        ========================================== */}
+        {activeTab === 'education' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Education &amp; Qualifications</h2>
+                <p className="text-zinc-400 text-xs sm:text-sm mt-1">
+                  Manage academic degrees, certifications, institutions, and communication skills.
+                </p>
+              </div>
+              {!isCreatingEdu && (
+                <button
+                  onClick={() => {
+                    setEditingEdu(null);
+                    setEduFormData({
+                      title: '',
+                      institution: '',
+                      location: '',
+                      dates: '',
+                      status: 'Graduated',
+                      description: '',
+                      tags: [],
+                      order: education.length + 1,
+                      visible: true
+                    });
+                    setEduTagsInput('');
+                    setIsCreatingEdu(true);
+                  }}
+                  className="px-4 py-2.5 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
+                >
+                  <Plus size={16} />
+                  <span>Add Education</span>
+                </button>
+              )}
+            </div>
 
             {/* CREATE / EDIT EDUCATION FORM */}
             {(isCreatingEdu || editingEdu) && (
@@ -1184,5 +2370,4 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
-
 

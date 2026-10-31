@@ -3,9 +3,10 @@ import { DecisionListBlock } from '../../../types';
 
 interface DecisionBlockProps {
   block: DecisionListBlock;
+  copy: Record<string, string>;
 }
 
-export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
+export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => {
   return (
     <div className="w-full flex flex-col gap-6 my-2">
       {block.image && (
@@ -33,7 +34,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
               {/* Constraint / Problem */}
               <div className="flex flex-col gap-1">
                 <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4">
-                  {decision.constraintLabel || 'Constraint:'}
+                  {decision.constraintLabel || copy.decisionConstraint}
                 </span>
                 <p className="text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words">
                   {decision.constraint}
@@ -43,7 +44,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
               {/* What I did */}
               <div className="flex flex-col gap-1">
                 <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4">
-                  {decision.whatIDidLabel || 'What I did:'}
+                  {decision.whatIDidLabel || copy.decisionAction}
                 </span>
                 <p className="text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words">
                   {decision.whatIDid}
@@ -53,7 +54,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block }) => {
               {/* Why */}
               <div className="flex flex-col gap-1">
                 <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4">
-                  {decision.whyLabel || 'Why'}
+                  {decision.whyLabel || copy.decisionWhy}
                 </span>
                 <p className="text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words">
                   {decision.why}

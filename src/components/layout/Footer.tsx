@@ -1,9 +1,11 @@
 import React from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { getPrewrittenMailtoUrl } from '../../utils/emailUtils';
+import { initialSiteSettings } from '../../data/initialData';
 
 export const Footer: React.FC = () => {
   const { settings } = usePortfolio();
+  const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
   const emailUrl = getPrewrittenMailtoUrl(settings.email || 'yogendrachaudhary2061@gmail.com');
 
   return (
@@ -18,7 +20,7 @@ export const Footer: React.FC = () => {
             aria-label="Email Yogendra Chaudhary"
             href={emailUrl}
           >
-            Email
+            {copy.footerEmail}
           </a>
           <a
             aria-label="Yogendra on Behance"
@@ -26,7 +28,7 @@ export const Footer: React.FC = () => {
             rel="noopener noreferrer"
             target="_blank"
           >
-            Behance
+            {copy.behance}
           </a>
           <a
             aria-label="Open Yogendra’s resume"
@@ -34,7 +36,7 @@ export const Footer: React.FC = () => {
             rel="noopener noreferrer"
             target="_blank"
           >
-            Resume
+            {copy.footerResume}
           </a>
           <a
             aria-label="Yogendra on LinkedIn"
@@ -42,7 +44,7 @@ export const Footer: React.FC = () => {
             rel="noopener noreferrer"
             target="_blank"
           >
-            LinkedIn
+            {copy.linkedIn}
           </a>
         </nav>
       </div>

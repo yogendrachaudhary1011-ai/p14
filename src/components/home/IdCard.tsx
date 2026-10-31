@@ -1,6 +1,10 @@
 import React, { useEffect, useRef } from 'react';
+import { usePortfolio } from '../../context/PortfolioContext';
+import { initialSiteSettings } from '../../data/initialData';
 
 export const IdCard: React.FC = () => {
+  const { settings } = usePortfolio();
+  const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
   const stageRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLElement>(null);
@@ -354,27 +358,27 @@ export const IdCard: React.FC = () => {
             <div className="id-card-surface">
               <div className="id-card-strap"></div>
               <div className="id-card-top">
-                <span>Design practice / 2026</span>
+                <span>{copy.idCardTopline}</span>
                 <i className="id-card-chip"></i>
               </div>
               <div className="id-card-photo">
                 <img
-                  alt="Profile portrait"
+                  alt={`${copy.idCardName} profile portrait`}
                   decoding="async"
                   draggable={false}
                   height="1371"
                   loading="eager"
-                  src="/assets/media/hero-id-portrait.jpeg"
+                  src={settings.profileImage || initialSiteSettings.profileImage}
                   width="720"
                 />
               </div>
               <div className="id-card-body">
                 <h2 className="id-card-name">
-                  Yogendra<br />Chaudhary
+                  {copy.idCardName.split(/\s+/).map((word, index) => <React.Fragment key={index}>{index > 0 && <br />}{word}</React.Fragment>)}
                 </h2>
-                <p className="id-card-role">Product Designer</p>
+                <p className="id-card-role">{copy.idCardRole}</p>
                 <p className="id-card-micro">
-                  Flows → Interfaces → Products<br />Designing clear, usable product experiences.
+                  {copy.idCardMicroline}<br />{copy.idCardDescription}
                 </p>
               </div>
             </div>
@@ -401,15 +405,15 @@ export const IdCard: React.FC = () => {
             <path d="M0 9.5C0 14.7467 4.25329 19 9.5 19H19V0H9.5C4.25329 0 0 4.25329 0 9.5Z" fill="#F24E1E" />
             <path d="M0 28.5C0 33.7467 4.25329 38 9.5 38H19V19H9.5C4.25329 19 0 23.2533 0 28.5Z" fill="#A259FF" />
           </svg>
-          <small>Figma</small>
+          <small>{copy.orbitFigma}</small>
         </div>
         <div className="app-tile ps">
-          <b>Ps</b>
-          <small>Photoshop</small>
+          <b>{copy.orbitPhotoshopMark}</b>
+          <small>{copy.orbitPhotoshop}</small>
         </div>
         <div className="app-tile ai">
-          <b>Ai</b>
-          <small>Illustrator</small>
+          <b>{copy.orbitIllustratorMark}</b>
+          <small>{copy.orbitIllustrator}</small>
         </div>
         <div className="app-tile ae">
           <svg
@@ -427,15 +431,15 @@ export const IdCard: React.FC = () => {
             <path d="M0 9.5C0 14.7467 4.25329 19 9.5 19H19V0H9.5C4.25329 0 0 4.25329 0 9.5Z" fill="#F24E1E" />
             <path d="M0 28.5C0 33.7467 4.25329 38 9.5 38H19V19H9.5C4.25329 19 0 23.2533 0 28.5Z" fill="#A259FF" />
           </svg>
-          <small>Figma</small>
+          <small>{copy.orbitFigma}</small>
         </div>
         <div className="app-tile pr">
-          <b>Pr</b>
-          <small>Premiere</small>
+          <b>{copy.orbitPremiereMark}</b>
+          <small>{copy.orbitPremiere}</small>
         </div>
         <div className="app-tile fr">
-          <b>Fr</b>
-          <small>Framer</small>
+          <b>{copy.orbitFramerMark}</b>
+          <small>{copy.orbitFramer}</small>
         </div>
       </div>
     </>

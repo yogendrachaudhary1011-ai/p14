@@ -7,6 +7,12 @@ export interface SiteSettings {
   location: string;
   aboutIntro?: string;
   aboutDetails?: string;
+  siteCopy?: Record<string, string>;
+  homeSections?: { hero: boolean; work: boolean; about: boolean; connect: boolean };
+  homeSectionOrder?: Array<'hero' | 'work' | 'about' | 'connect'>;
+  aboutSections?: { profile: boolean; experience: boolean; education: boolean };
+  aboutSectionOrder?: Array<'profile' | 'experience' | 'education'>;
+  profileImage?: string;
   behanceUrl?: string;
   linkedinUrl?: string;
   availabilityText: string;

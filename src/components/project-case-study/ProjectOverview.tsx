@@ -11,6 +11,7 @@ interface ProjectOverviewProps {
   figmaUrl?: string;
   figmaButtonText?: string;
   externalProjectUrl?: string;
+  copy: Record<string, string>;
 }
 
 export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
@@ -22,7 +23,8 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   deliverables,
   figmaUrl,
   figmaButtonText,
-  externalProjectUrl
+  externalProjectUrl,
+  copy
 }) => {
   return (
     <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col justify-center items-center gap-8 sm:gap-12 md:gap-16 relative z-10 box-border">
@@ -55,7 +57,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             {role && (
               <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
-                  My Role:
+                  {copy.roleLabel}
                 </div>
                 <div className="w-full sm:w-80 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5">
                   {role}
@@ -67,7 +69,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             {duration && (
               <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
-                  Duration:
+                  {copy.durationLabel}
                 </div>
                 <div className="w-full sm:w-80 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5">
                   {duration}
@@ -79,7 +81,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             {deliverables && deliverables.length > 0 && (
               <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
-                  Deliverables
+                  {copy.deliverablesLabel}
                 </div>
                 <div className="w-full sm:w-80 flex flex-col gap-2.5">
                   {deliverables.map((item, idx) => (
@@ -104,7 +106,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center px-6 py-4 rounded-sm border-[1.60px] border-white text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group"
               >
-                <span>{figmaButtonText || 'View Figma File'}</span>
+                <span>{figmaButtonText || copy.figmaButton}</span>
                 <span className="material-symbols-rounded text-sm ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">open_in_new</span>
               </a>
             )}
@@ -116,7 +118,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center px-6 py-4 rounded-sm bg-white text-black text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group shadow-md hover:shadow-white/10"
               >
-                <span>Live Project URL</span>
+                <span>{copy.liveProjectButton}</span>
                 <span className="material-symbols-rounded text-sm ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">arrow_outward</span>
               </a>
             )}

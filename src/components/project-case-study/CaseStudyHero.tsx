@@ -5,13 +5,15 @@ interface CaseStudyHeroProps {
   subtitle?: string;
   year?: string;
   onNavigate?: (path: string) => void;
+  copy: Record<string, string>;
 }
 
 export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
   title,
   subtitle,
   year,
-  onNavigate
+  onNavigate,
+  copy
 }) => {
   return (
     <div className="w-full flex flex-col items-center relative z-10 pt-2 sm:pt-4">
@@ -22,10 +24,10 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
           className="inline-flex items-center gap-1.5 sm:gap-2 text-zinc-400 hover:text-white transition-all duration-200 text-xs sm:text-sm font-medium py-1.5 px-2.5 sm:px-3 rounded hover:bg-white/5 hover:-translate-x-1 cursor-pointer"
         >
           <span className="material-symbols-rounded text-base sm:text-lg">arrow_back</span>
-          <span>Back to All Projects</span>
+          <span>{copy.backToProjects}</span>
         </button>
         <div className="text-[11px] sm:text-xs font-mono tracking-wider text-zinc-500 uppercase shrink-0">
-          Case Study {year ? `· ${year}` : ''}
+          {copy.caseStudyLabel} {year ? `· ${year}` : ''}
         </div>
       </div>
 

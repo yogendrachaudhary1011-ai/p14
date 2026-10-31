@@ -8,6 +8,9 @@ interface AboutPageProps {
 
 export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
   const { settings, experience, education } = usePortfolio();
+  const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
+  const aboutSections = { ...initialSiteSettings.aboutSections, ...(settings.aboutSections || {}) };
+  const aboutOrder = settings.aboutSectionOrder || initialSiteSettings.aboutSectionOrder;
   const [activeAboutTab, setActiveAboutTab] = useState<'about-profile' | 'about-experience' | 'about-education'>('about-profile');
 
   const handleScrollTo = (id: 'about-profile' | 'about-experience' | 'about-education') => {
@@ -39,11 +42,11 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                   <source src="/assets/media/about-profile-video.mp4" type="video/mp4" />
                 </video>
                 <div className="about-visual-footer">
-                  <div className="about-visual-caption">Yogendra / flows → interfaces → products</div>
+                  <div className="about-visual-caption">{copy.aboutCaption}</div>
                   <nav aria-label="About section shortcuts" className="about-visual-status">
-                    <button className={activeAboutTab === 'about-profile' ? 'is-active' : ''} onClick={() => handleScrollTo('about-profile')} type="button">01 / About</button>
-                    <button className={activeAboutTab === 'about-experience' ? 'is-active' : ''} onClick={() => handleScrollTo('about-experience')} type="button">02 / Experience</button>
-                    <button className={activeAboutTab === 'about-education' ? 'is-active' : ''} onClick={() => handleScrollTo('about-education')} type="button">03 / Education</button>
+                    <button className={activeAboutTab === 'about-profile' ? 'is-active' : ''} onClick={() => handleScrollTo('about-profile')} type="button">{copy.aboutNavAbout}</button>
+                    <button className={activeAboutTab === 'about-experience' ? 'is-active' : ''} onClick={() => handleScrollTo('about-experience')} type="button">{copy.aboutNavExperience}</button>
+                    <button className={activeAboutTab === 'about-education' ? 'is-active' : ''} onClick={() => handleScrollTo('about-education')} type="button">{copy.aboutNavEducation}</button>
                   </nav>
                 </div>
               </aside>
@@ -56,7 +59,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <span>Download CV</span>
+                  <span>{copy.downloadCv}</span>
                   <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
                     download
                   </span>
@@ -70,7 +73,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <span>Behance</span>
+                    <span>{copy.behance}</span>
                     <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon" style={{ fontSize: '14px' }}>
                       arrow_outward
                     </span>
@@ -83,7 +86,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <span>LinkedIn</span>
+                    <span>{copy.linkedIn}</span>
                     <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon" style={{ fontSize: '14px' }}>
                       arrow_outward
                     </span>
@@ -92,9 +95,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            <div className="about-scroll-content">
-              <section className="about-panel about-profile-panel" id="about-profile">
-                <h1 className="display display-lg">ABOUT ME</h1>
+              <div className="about-scroll-content" style={{ display: 'flex', flexDirection: 'column' }}>
+              <section className="about-panel about-profile-panel" id="about-profile" style={{ display: aboutSections.profile ? undefined : 'none', order: aboutOrder.indexOf('profile') }}>
+                <h1 className="display display-lg">{copy.aboutHeading}</h1>
                 <p className="lead">
                   {settings.aboutIntro ?? initialSiteSettings.aboutIntro}
                 </p>
@@ -103,16 +106,16 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                 </p>
               </section>
 
-              <section className="about-panel about-experience-panel" id="about-experience" style={{ marginTop: '48px' }}>
+              <section className="about-panel about-experience-panel" id="about-experience" style={{ display: aboutSections.experience ? undefined : 'none', order: aboutOrder.indexOf('experience'), marginTop: '48px' }}>
                 <div className="about-panel-head">
-                  <h2 className="display display-md">Experience</h2>
+                  <h2 className="display display-md">{copy.experienceHeading}</h2>
                 </div>
                 <div className="timeline about-timeline" style={{ marginTop: '24px' }}>
                   {experience.filter(e => e.visible).map((item) => (
                     <article key={item.id} className={`timeline-item ${item.current ? 'current' : ''}`}>
                       {item.current && (
                         <>
-                          <span className="timeline-present-label">CURRENT</span>
+                            <span className="timeline-present-label">{copy.currentLabel}</span>
                           <span aria-hidden="true" className="timeline-present-pulse"></span>
                         </>
                       )}
@@ -144,9 +147,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                 </div>
               </section>
 
-              <section className="about-panel about-education-panel" id="about-education" style={{ marginTop: '48px' }}>
+              <section className="about-panel about-education-panel" id="about-education" style={{ display: aboutSections.education ? undefined : 'none', order: aboutOrder.indexOf('education'), marginTop: '48px' }}>
                 <div className="about-panel-head">
-                  <h2 className="display display-md">EDUCATION</h2>
+                  <h2 className="display display-md">{copy.educationHeading}</h2>
                 </div>
                 <div className="education-list" style={{ marginTop: '24px' }}>
                   {education.filter(e => e.visible).map((edu) => (

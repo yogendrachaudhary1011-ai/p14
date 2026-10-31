@@ -3,9 +3,10 @@ import { TwoColumnComparisonBlock as TwoColumnComparisonBlockType } from '../../
 
 interface TwoColumnComparisonBlockProps {
   block: TwoColumnComparisonBlockType;
+  copy: Record<string, string>;
 }
 
-export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> = ({ block }) => {
+export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> = ({ block, copy }) => {
   return (
     <div className="w-full flex flex-col gap-2.5 my-2">
       {/* 4 Cards matching Figma: First Attempt, Problem, Fix, Learning */}
@@ -13,7 +14,7 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
         {/* First Attempt */}
         <div className="w-full h-full min-w-0 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 flex flex-col justify-start items-start gap-2.5 cs-interactive-card">
           <div className="text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">
-            First Attempt:
+            {copy.comparisonFirstAttempt}
           </div>
           <div className="text-zinc-500 text-xs sm:text-sm font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4 sm:leading-5 break-words">
             {block.firstAttempt}
@@ -23,7 +24,7 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
         {/* Problem */}
         <div className="w-full h-full min-w-0 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 flex flex-col justify-start items-start gap-2.5 cs-interactive-card">
           <div className="text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">
-            Problem
+            {copy.comparisonProblem}
           </div>
           <div className="text-zinc-500 text-xs sm:text-sm font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4 sm:leading-5 break-words">
             {block.problem}
@@ -35,7 +36,7 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
         {/* Fix */}
         <div className="w-full h-full min-w-0 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 flex flex-col justify-start items-start gap-2.5 cs-interactive-card">
           <div className="text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">
-            Fix:
+            {copy.comparisonFix}
           </div>
           <div className="text-zinc-500 text-xs sm:text-sm font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4 sm:leading-5 break-words">
             {block.fix}
@@ -45,7 +46,7 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
         {/* Learning */}
         <div className="w-full h-full min-w-0 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 flex flex-col justify-start items-start gap-2.5 cs-interactive-card">
           <div className="text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">
-            Learning:
+            {copy.comparisonLearning}
           </div>
           <div className="text-zinc-500 text-xs sm:text-sm font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4 sm:leading-5 break-words">
             {block.learning}

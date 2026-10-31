@@ -9,12 +9,14 @@ interface SectionNavigationProps {
   sections: NavSectionItem[];
   activeSection: string;
   onSelectSection: (id: string) => void;
+  copy: Record<string, string>;
 }
 
 export const SectionNavigation: React.FC<SectionNavigationProps> = ({
   sections,
   activeSection,
-  onSelectSection
+  onSelectSection,
+  copy
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -26,16 +28,16 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
       <div className="lg:hidden w-full sticky top-[72px] z-30 bg-black/95 backdrop-blur-md border-b border-white/10 px-4 py-3 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 overflow-hidden">
-            <span className="text-zinc-500 text-xs font-mono uppercase tracking-wider">Jump to:</span>
+            <span className="text-zinc-500 text-xs font-mono uppercase tracking-wider">{copy.jumpTo}</span>
             <span className="text-white text-sm font-medium truncate">
-              {sections.find((s) => s.id === activeSection)?.label || 'Sections'}
+              {sections.find((s) => s.id === activeSection)?.label || copy.sectionsFallback}
             </span>
           </div>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="px-3 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 cursor-pointer hover:bg-zinc-800"
           >
-            <span>{mobileMenuOpen ? 'Close' : 'Menu'}</span>
+            <span>{mobileMenuOpen ? copy.navMenuClose : copy.navMenuOpen}</span>
             <span className="material-symbols-rounded text-sm">
               {mobileMenuOpen ? 'close' : 'menu'}
             </span>

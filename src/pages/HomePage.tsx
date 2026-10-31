@@ -10,6 +10,10 @@ interface HomePageProps {
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const { settings, projects, experience, education, isAdmin } = usePortfolio();
+  const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
+  const sections = { ...initialSiteSettings.homeSections, ...(settings.homeSections || {}) };
+  const aboutSections = { ...initialSiteSettings.aboutSections, ...(settings.aboutSections || {}) };
+  const aboutOrder = settings.aboutSectionOrder || initialSiteSettings.aboutSectionOrder;
   const [filter, setFilter] = useState<'all' | 'product' | 'archive'>('all');
   const [activeAboutTab, setActiveAboutTab] = useState<'about-profile' | 'about-experience' | 'about-education'>('about-profile');
 
@@ -18,12 +22,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     .filter(p => filter === 'all' || p.category === filter)
     .sort((a, b) => a.order - b.order);
 
-  const phraseGroups = [
-    'A UI/UX and Product Designer',
-    'focused on intuitive software interfaces and reusable components',
-    '—turning complex product requirements into clear workflows',
-    'and usable experiences people can navigate with confidence.'
-  ];
+  const phraseGroups = [copy.heroDescription];
 
   // Calculate cumulative words and delays
   let currentDelay = 0.34;
@@ -179,20 +178,20 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
   return (
     <div className="page-view route-entered" data-page="home" id="homeView">
-      <div id="homePage">
+      <div id="homePage" style={{ display: 'flex', flexDirection: 'column' }}>
         {/* HERO SECTION */}
-        <section className="hero" id="home">
+        <section className="hero" id="home" style={{ display: sections.hero ? undefined : 'none', order: (settings.homeSectionOrder || initialSiteSettings.homeSectionOrder).indexOf('hero') }}>
           <div className="hero-inner">
-            <h1 aria-label="Yogendra Chaudhary — UI/UX & Product Designer" className="hero-title hero-title-static">
+            <h1 aria-label={`${copy.heroFirstName} ${copy.heroLastName} — ${copy.heroRole}`} className="hero-title hero-title-static">
               <span className="static-title">
                 <span className="hero-title-line hero-title-line--one hero-title-line--name portfolio-v3-title-line">
-                  <span className="hero-name-word">YOGENDRA</span>
+                  <span className="hero-name-word">{copy.heroFirstName}</span>
                 </span>
                 <span className="hero-title-line hero-title-line--two portfolio-v3-title-line">
-                  CHAUDHARY <span className="portfolio-v3-dash" aria-hidden="true"></span>
+                  {copy.heroLastName} <span className="portfolio-v3-dash" aria-hidden="true"></span>
                 </span>
                 <span className="hero-title-line hero-title-line--three portfolio-v3-title-line portfolio-v3-title-line--role">
-                  <span>PRODUCT</span> <span>DESIGNER</span>
+                  {copy.heroRole.split(/\s+/).map((word, index) => <span key={index}>{word}</span>)}
                 </span>
               </span>
             </h1>
@@ -227,7 +226,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   handleScrollTo('about');
                 }}
               >
-                Get to Know Me{' '}
+                {copy.heroAboutButton}{' '}
                 <span aria-hidden="true" className="arrow material-symbols-rounded material-arrow-icon">
                   south_east
                 </span>
@@ -240,7 +239,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   onNavigate('/projects');
                 }}
               >
-                Work Overview{' '}
+                {copy.heroWorkButton}{' '}
                 <span aria-hidden="true" className="arrow material-symbols-rounded material-arrow-icon">
                   south_east
                 </span>
@@ -252,15 +251,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         </section>
 
         {/* WORK SECTION */}
-        <section className="section" id="work" data-reveal>
+        <section className="section" id="work" data-reveal style={{ display: sections.work ? undefined : 'none', order: (settings.homeSectionOrder || initialSiteSettings.homeSectionOrder).indexOf('work') }}>
           <div className="shell">
             <div className="work-top">
               <div>
-                <h2 className="display work-title">SELECTED WORK</h2>
+                <h2 className="display work-title">{copy.workHeading}</h2>
               </div>
               <div className="work-top-side">
                 <p className="work-intro">
-                  Product design work across business software, web experiences, and service platforms.
+                  {copy.workDescription}
                 </p>
                 {projects.length > 0 && (
                   <div aria-label="Filter selected work" className="filter-row" role="group">
@@ -270,7 +269,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       onClick={() => setFilter('all')}
                       type="button"
                     >
-                      All
+                      {copy.filterAll}
                     </button>
                     <button
                       aria-pressed={filter === 'product'}
@@ -278,7 +277,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       onClick={() => setFilter('product')}
                       type="button"
                     >
-                      Product Design
+                      {copy.filterProduct}
                     </button>
                     <button
                       aria-pressed={filter === 'archive'}
@@ -286,7 +285,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       onClick={() => setFilter('archive')}
                       type="button"
                     >
-                      Design Practice
+                      {copy.filterArchive}
                     </button>
                   </div>
                 )}
@@ -305,9 +304,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 }}
               >
                 <div style={{ fontSize: '36px', marginBottom: '12px', opacity: 0.4 }}>📁</div>
-                <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#f0f0f4' }}>No projects currently published</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#f0f0f4' }}>{copy.emptyProjectsHeading}</h3>
                 <p style={{ color: '#8e8ea0', fontSize: '14px', maxWidth: '440px', margin: '8px auto 20px', lineHeight: 1.6 }}>
-                  All previous projects have been permanently removed. New case studies can be created anytime via the Admin CMS.
+                  {copy.emptyProjectsDescription}
                 </p>
                 {isAdmin && (
                   <button
@@ -323,7 +322,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       fontSize: '13px'
                     }}
                   >
-                    + Open CMS to Add Project
+                    {copy.emptyProjectsButton}
                   </button>
                 )}
               </div>
@@ -372,7 +371,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         </section>
 
         {/* ABOUT SECTION */}
-        <section className="section about" id="about" data-reveal>
+        <section className="section about" id="about" data-reveal style={{ display: sections.about ? undefined : 'none', order: (settings.homeSectionOrder || initialSiteSettings.homeSectionOrder).indexOf('about') }}>
           <div className="shell">
             <div className="about-journey">
               <div className="about-media-stack">
@@ -394,7 +393,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                     <source src="/assets/media/about-profile-video.mp4" type="video/mp4" />
                   </video>
                   <div className="about-visual-footer">
-                    <div className="about-visual-caption">Yogendra / flows → interfaces → products</div>
+                    <div className="about-visual-caption">{copy.aboutCaption}</div>
                     <nav aria-label="About section shortcuts" className="about-visual-status">
                       <button
                         className={activeAboutTab === 'about-profile' ? 'is-active' : ''}
@@ -404,7 +403,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                         }}
                         type="button"
                       >
-                        01 / About
+                        {copy.aboutNavAbout}
                       </button>
                       <button
                         className={activeAboutTab === 'about-experience' ? 'is-active' : ''}
@@ -414,7 +413,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                         }}
                         type="button"
                       >
-                        02 / Experience
+                        {copy.aboutNavExperience}
                       </button>
                       <button
                         className={activeAboutTab === 'about-education' ? 'is-active' : ''}
@@ -424,7 +423,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                         }}
                         type="button"
                       >
-                        03 / Education
+                        {copy.aboutNavEducation}
                       </button>
                     </nav>
                   </div>
@@ -438,7 +437,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <span>Download CV</span>
+                    <span>{copy.downloadCv}</span>
                     <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
                       download
                     </span>
@@ -452,7 +451,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <span>Behance</span>
+                      <span>{copy.behance}</span>
                       <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon" style={{ fontSize: '14px' }}>
                         arrow_outward
                       </span>
@@ -465,7 +464,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <span>LinkedIn</span>
+                      <span>{copy.linkedIn}</span>
                       <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon" style={{ fontSize: '14px' }}>
                         arrow_outward
                       </span>
@@ -474,9 +473,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              <div className="about-scroll-content">
-                <section className="about-panel about-profile-panel" id="about-profile">
-                  <h2 className="display display-lg">ABOUT ME</h2>
+              <div className="about-scroll-content" style={{ display: 'flex', flexDirection: 'column' }}>
+                <section className="about-panel about-profile-panel" id="about-profile" style={{ display: aboutSections.profile ? undefined : 'none', order: aboutOrder.indexOf('profile') }}>
+                  <h2 className="display display-lg">{copy.aboutHeading}</h2>
                   <p className="lead">
                     {settings.aboutIntro ?? initialSiteSettings.aboutIntro}
                   </p>
@@ -485,16 +484,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   </p>
                 </section>
 
-                <section className="about-panel about-experience-panel" id="about-experience">
+                <section className="about-panel about-experience-panel" id="about-experience" style={{ display: aboutSections.experience ? undefined : 'none', order: aboutOrder.indexOf('experience') }}>
                   <div className="about-panel-head">
-                    <h3 className="display display-md">Experience</h3>
+                    <h3 className="display display-md">{copy.experienceHeading}</h3>
                   </div>
                   <div className="timeline about-timeline">
                     {experience.filter(e => e.visible).map((item) => (
                       <article key={item.id} className={`timeline-item ${item.current ? 'current' : ''}`}>
                         {item.current && (
                           <>
-                            <span className="timeline-present-label">CURRENT</span>
+                            <span className="timeline-present-label">{copy.currentLabel}</span>
                             <span aria-hidden="true" className="timeline-present-pulse"></span>
                           </>
                         )}
@@ -526,16 +525,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   </div>
                 </section>
 
-                <section className="about-panel about-education-panel" id="about-education">
+                <section className="about-panel about-education-panel" id="about-education" style={{ display: aboutSections.education ? undefined : 'none', order: aboutOrder.indexOf('education') }}>
                   <div className="about-panel-head">
-                    <h3 className="display display-md">EDUCATION</h3>
+                    <h3 className="display display-md">{copy.educationHeading}</h3>
                   </div>
                   <div className="education-list">
                     {education.filter(e => e.visible).map((edu) => (
                       <article key={edu.id} className="education-item">
                         <div className="education-main">
                           <h3>{edu.title}</h3>
-                          <div className="education-institution">{edu.institution}</div>
+                          <div className="education-institution">{edu.institution}{edu.location ? ` · ${edu.location}` : ''}</div>
                           <p className="education-desc">{edu.description}</p>
                           <div className="tag-row">
                             {edu.tags.map((tag, index) => (
@@ -557,14 +556,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         </section>
 
         {/* BOTTOM CONNECT CTA SECTION */}
-        <section className="connect-fill">
+        <section className="connect-fill" style={{ display: sections.connect ? undefined : 'none', order: (settings.homeSectionOrder || initialSiteSettings.homeSectionOrder).indexOf('connect') }}>
           <a
             aria-label="Let's connect"
             className="connect-fill-link"
             href={getPrewrittenMailtoUrl(settings.email || 'yogendrachaudhary2061@gmail.com')}
           >
             <div className="connect-fill-inner">
-              <span className="connect-fill-label">LET'S CONNECT</span>
+              <span className="connect-fill-label">{copy.connectHeading}</span>
               <span aria-hidden="true" className="connect-fill-arrow">
                 arrow_outward
               </span>
