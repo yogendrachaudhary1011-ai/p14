@@ -18,14 +18,44 @@ export const App: React.FC = () => {
 
   useLayoutEffect(() => {
     if (!scrollTarget) return;
-    const frame = requestAnimationFrame(() => {
+    let cancelled = false;
+    let frame = 0;
+    let correctionTimer = 0;
+    let attempts = 0;
+
+    const scrollToTarget = (behavior: ScrollBehavior) => {
       const target = document.getElementById(scrollTarget);
-      if (!target) return;
+      if (!target || target.getClientRects().length === 0) {
+        if (attempts++ < 30) frame = requestAnimationFrame(() => scrollToTarget(behavior));
+        return;
+      }
       const headerOffset = document.getElementById('siteHeader')?.getBoundingClientRect().height || 0;
       const top = target.getBoundingClientRect().top + window.scrollY - headerOffset - 16;
-      window.scrollTo({ top, behavior: 'smooth' });
+      window.scrollTo({ top, behavior });
+    };
+
+    // Let the routed page paint before looking for its anchor. A few retries
+    // cover slower page mounts and direct visits to /#work or /#about.
+    frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => scrollToTarget('smooth'));
     });
-    return () => cancelAnimationFrame(frame);
+
+    // The hero portrait and web fonts can change the height above the target
+    // after the first scroll. Correct once those assets have had time to settle.
+    correctionTimer = window.setTimeout(() => {
+      if (cancelled) return;
+      const target = document.getElementById(scrollTarget);
+      if (!target || target.getClientRects().length === 0) return;
+      const headerOffset = document.getElementById('siteHeader')?.getBoundingClientRect().height || 0;
+      const targetTop = target.getBoundingClientRect().top;
+      if (Math.abs(targetTop - headerOffset - 16) > 48) scrollToTarget('smooth');
+    }, 700);
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      window.clearTimeout(correctionTimer);
+    };
   }, [currentPath, navigationVersion, scrollTarget]);
 
   useEffect(() => {
