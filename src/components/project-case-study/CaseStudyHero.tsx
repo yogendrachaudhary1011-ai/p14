@@ -26,7 +26,7 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
           <span className="material-symbols-rounded text-base sm:text-lg">arrow_back</span>
           <span>{copy.backToProjects}</span>
         </button>
-        <div className="text-[11px] sm:text-xs font-mono tracking-wider text-zinc-500 uppercase shrink-0">
+        <div className="text-[11px] sm:text-xs font-mono tracking-wider text-[#8be28b] uppercase shrink-0">
           {copy.caseStudyLabel} {year ? `· ${year}` : ''}
         </div>
       </div>
@@ -57,3 +57,4 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
     </div>
   );
 };
+
