@@ -92,7 +92,6 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     supabaseConfig,
     updateSupabaseConfig,
     syncAllProjectsToSupabase,
-    saveProjectsNow,
     login,
     logout,
     changeAdminPassword,
@@ -102,6 +101,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     deleteProject,
     duplicateProject,
     reorderProjects,
+    toggleProjectStatus,
     deleteAllProjects,
     addExperience,
     updateExperience,
@@ -830,24 +830,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   const asset = addMedia(file.name.replace(/\.[^.]+$/, ''), result.url, file.type || inferMediaMimeType(file.name), file.size);
                   return asset;
                 }}
-                onSave={async (data) => {
-                  let nextProjects: Project[];
-                  let createdProject: Project | null = null;
+                onSave={(data) => {
                   if (editingProject) {
-                    nextProjects = projects.map((project) => project.id === editingProject.id
-                      ? { ...project, ...data, route: data.slug ? `/${data.slug}` : project.route, updatedAt: new Date().toISOString() }
-                      : project);
+                    updateProject(editingProject.id, data);
+                    showNotice(`Updated case study "${data.title || editingProject.title}"`);
                   } else {
-                    createdProject = addProject(data as any);
-                    nextProjects = [...projects, createdProject];
+                    addProject(data as any);
+                    showNotice(`Created new case study "${data.title}"`);
                   }
-                  const result = await saveProjectsNow(nextProjects);
-                  if (!result.success) {
-                    if (createdProject) deleteProject(createdProject.id);
-                    throw new Error(result.error || 'Could not publish the case study to Supabase.');
-                  }
-                  const saveVerb = data.status === 'published' ? 'Published' : 'Saved draft';
-                  showNotice(`${saveVerb} "${data.title || editingProject?.title || ''}" in Supabase.`);
                   setIsCreatingProject(false);
                   setEditingProject(null);
                 }}
@@ -1086,15 +1076,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
                               <td className="py-3.5 px-4">
                                 <button
-                                  onClick={async () => {
-                                    const nextStatus: Project['status'] = proj.status === 'published' ? 'draft' : 'published';
-                                    const nextProjects = projects.map((project) => project.id === proj.id
-                                      ? { ...project, status: nextStatus, updatedAt: new Date().toISOString() }
-                                      : project);
-                                    const result = await saveProjectsNow(nextProjects);
-                                    showNotice(result.success
-                                      ? `"${proj.title}" is now ${nextStatus} in Supabase.`
-                                      : `Could not change publish status: ${result.error || 'Supabase save failed.'}`);
+                                  onClick={() => {
+                                    toggleProjectStatus(proj.id);
+                                    showNotice(
+                                      `"${proj.title}" is now ${
+                                        proj.status === 'published' ? 'Draft' : 'Published'
+                                      }`
+                                    );
                                   }}
                                   className={`px-2.5 py-0.5 rounded text-[11px] font-semibold uppercase cursor-pointer transition-colors ${
                                     proj.status === 'published'

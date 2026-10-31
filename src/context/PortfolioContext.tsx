@@ -12,8 +12,7 @@ import {
 import {
   fetchPortfolioSnapshot,
   savePortfolioSnapshot,
-  subscribeToPortfolioSnapshot,
-  PortfolioSnapshot
+  subscribeToPortfolioSnapshot
 } from '../utils/supabaseService';
 
 interface PortfolioContextType {
@@ -30,7 +29,6 @@ interface PortfolioContextType {
   supabaseConfig: { url: string; key: string };
   updateSupabaseConfig: (url: string, key: string) => boolean;
   syncAllProjectsToSupabase: () => Promise<{ success: boolean; count: number; message: string }>;
-  saveProjectsNow: (nextProjects: Project[]) => Promise<{ success: boolean; error?: string }>;
   login: (u: string, p: string) => Promise<boolean>;
   logout: () => Promise<void>;
   changeAdminPassword: (newPass: string) => Promise<boolean>;
@@ -305,8 +303,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setCloudSaveError(null);
     const timer = window.setTimeout(() => {
       const performSave = async () => {
-        // A queued snapshot may become stale while it waits behind an immediate save.
-        if (latestCloudSnapshot.current !== serialized) return;
         try {
           const result = await savePortfolioSnapshot(snapshot);
           setIsSupabaseConnected(result.success);
@@ -383,60 +379,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       };
     }
   }, [settings, projects, experience, education, media]);
-
-  // Publish project edits only after the complete snapshot is confirmed by Supabase.
-  const saveProjectsNow = async (nextProjects: Project[]): Promise<{ success: boolean; error?: string }> => {
-    const supabase = getSupabase();
-    if (!supabase || !isAdmin) return { success: false, error: 'Sign in to the Supabase admin account before publishing.' };
-
-    let current: PortfolioSnapshot;
-    try {
-      current = latestCloudSnapshot.current
-        ? JSON.parse(latestCloudSnapshot.current) as PortfolioSnapshot
-        : { settings, projects, experience, education, media };
-    } catch {
-      current = { settings, projects, experience, education, media };
-    }
-    const snapshot = { ...current, projects: nextProjects };
-    const serialized = JSON.stringify(snapshot);
-    setCloudSaveStatus('saving');
-    setCloudSaveError(null);
-    latestCloudSnapshot.current = serialized;
-
-    return await new Promise((resolve) => {
-      const persist = async () => {
-        try {
-          const result = await savePortfolioSnapshot(snapshot);
-          if (!result.success) {
-            const message = result.error || 'Supabase rejected the project changes.';
-            if (latestCloudSnapshot.current === serialized) {
-              latestCloudSnapshot.current = lastCloudSnapshot.current;
-            }
-            setCloudSaveStatus('error');
-            setCloudSaveError(message);
-            resolve({ success: false, error: message });
-            return;
-          }
-          lastCloudSnapshot.current = serialized;
-          latestCloudSnapshot.current = serialized;
-          setProjects(nextProjects);
-          setIsSupabaseConnected(true);
-          setCloudSaveStatus('saved');
-          setCloudSaveError(null);
-          resolve({ success: true });
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Could not save projects to Supabase.';
-          if (latestCloudSnapshot.current === serialized) {
-            latestCloudSnapshot.current = lastCloudSnapshot.current;
-          }
-          setCloudSaveStatus('error');
-          setCloudSaveError(message);
-          resolve({ success: false, error: message });
-        }
-      };
-      saveQueue.current = saveQueue.current.then(persist, persist);
-    });
-  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     const supabase = getSupabase();
@@ -763,7 +705,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         supabaseConfig,
         updateSupabaseConfig,
         syncAllProjectsToSupabase,
-        saveProjectsNow,
         login,
         logout,
         changeAdminPassword,

@@ -12,7 +12,7 @@ export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block }) => {
 
   // Decide responsive grid class based on column setting and card count
   let gridColsClass = 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3';
-  if (cardCount === 1) {
+  if (targetCols === 1 || cardCount === 1) {
     gridColsClass = 'grid-cols-1';
   } else if (targetCols === 2 || cardCount === 2) {
     gridColsClass = 'grid-cols-1 md:grid-cols-2';
