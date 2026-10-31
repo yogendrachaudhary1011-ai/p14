@@ -11,6 +11,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
   const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
   const aboutSections = { ...initialSiteSettings.aboutSections, ...(settings.aboutSections || {}) };
   const aboutOrder = settings.aboutSectionOrder || initialSiteSettings.aboutSectionOrder;
+  const aboutVideo = settings.aboutVideo || '/assets/media/about-profile-video.mp4';
   const [activeAboutTab, setActiveAboutTab] = useState<'about-profile' | 'about-experience' | 'about-education'>('about-profile');
 
   const handleScrollTo = (id: 'about-profile' | 'about-experience' | 'about-education') => {
@@ -37,9 +38,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                   muted
                   playsInline
                   poster="/assets/media/about-profile-poster.png"
-                  src="/assets/media/about-profile-video.mp4"
+                  src={aboutVideo}
                 >
-                  <source src="/assets/media/about-profile-video.mp4" type="video/mp4" />
+                  <source src={aboutVideo} type="video/mp4" />
                 </video>
                 <div className="about-visual-footer">
                   <div className="about-visual-caption">{copy.aboutCaption}</div>
