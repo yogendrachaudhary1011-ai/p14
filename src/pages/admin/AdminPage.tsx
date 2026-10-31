@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
-import { Project, ExperienceItem, EducationItem } from '../../types';
+import { Project, ExperienceItem, EducationItem, AboutCertificate } from '../../types';
 import { initialSiteSettings } from '../../data/initialData';
 import { ProjectEditor } from '../../components/admin/ProjectEditor';
 import { SiteCopyEditor } from '../../components/admin/SiteCopyEditor';
@@ -190,6 +190,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const aboutVideoInputRef = useRef<HTMLInputElement>(null);
   const [uploadingResume, setUploadingResume] = useState(false);
   const resumeFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingCertificates, setUploadingCertificates] = useState(false);
+  const certificatesInputRef = useRef<HTMLInputElement>(null);
 
   // Notification message
   const [notice, setNotice] = useState<string | null>(null);
@@ -1939,6 +1941,90 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   </div>
                 </div>
               ))}
+            </div>
+            <div className="rounded-xl border border-white/10 bg-[#12131a] p-5 sm:p-6 space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-white">Certificates &amp; PDFs</h3>
+                  <p className="mt-1 text-xs text-zinc-400">Upload image or PDF certificates. They appear as view buttons below Experience in the About section.</p>
+                </div>
+                <input
+                  ref={certificatesInputRef}
+                  type="file"
+                  accept="application/pdf,image/jpeg,image/png,image/webp,image/gif,image/avif,.pdf,.jpg,.jpeg,.png,.webp,.gif,.avif"
+                  multiple
+                  className="hidden"
+                  onChange={async (event) => {
+                    const input = event.currentTarget;
+                    const files = Array.from(input.files || []);
+                    if (!files.length) return;
+                    if (!isAdmin) {
+                      showNotice('Sign in to Supabase Auth before uploading certificates.');
+                      input.value = '';
+                      return;
+                    }
+                    setUploadingCertificates(true);
+                    const added: AboutCertificate[] = [];
+                    const failures: string[] = [];
+                    try {
+                      for (const file of files) {
+                        if (!(file.type === 'application/pdf' || file.type.startsWith('image/'))) {
+                          failures.push(`${file.name}: choose an image or PDF`);
+                          continue;
+                        }
+                        const result = await uploadMediaToSupabase(file);
+                        if (!result.url) {
+                          failures.push(`${file.name}: ${result.error || 'upload failed'}`);
+                          continue;
+                        }
+                        const title = file.name.replace(/\.[^.]+$/, '') || file.name;
+                        const asset = addMedia(title, result.url, file.type, file.size);
+                        added.push({ id: asset.id, title, url: asset.url, mimeType: asset.mimeType, size: asset.size, uploadedAt: asset.uploadedAt });
+                      }
+                      if (added.length) {
+                        updateSettings({ certificates: [...(settings.certificates || []), ...added] });
+                        showNotice(`${added.length} certificate${added.length === 1 ? '' : 's'} uploaded to Supabase.${failures.length ? ` ${failures.length} failed.` : ''}`);
+                      } else {
+                        showNotice(failures.join(' · ') || 'No certificates were uploaded.');
+                      }
+                    } finally {
+                      setUploadingCertificates(false);
+                      input.value = '';
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  disabled={uploadingCertificates || !isAdmin}
+                  onClick={() => certificatesInputRef.current?.click()}
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-[#f37021] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#ff7e33] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {uploadingCertificates ? <Upload size={14} className="animate-pulse" /> : <FileText size={14} />}
+                  {uploadingCertificates ? 'Uploading…' : 'Upload certificates or PDFs'}
+                </button>
+              </div>
+              {!!settings.certificates?.length && (
+                <div className="space-y-2">
+                  {settings.certificates.map((certificate) => (
+                    <div key={certificate.id} className="flex flex-col gap-2 rounded-lg border border-white/10 bg-[#0d0e14] p-3 sm:flex-row sm:items-center">
+                      <input
+                        aria-label="Certificate title"
+                        value={certificate.title}
+                        onChange={(event) => updateSettings({ certificates: settings.certificates?.map((item) => item.id === certificate.id ? { ...item, title: event.target.value } : item) })}
+                        className="min-w-0 flex-1 rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-[#f37021]"
+                      />
+                      <a href={certificate.url} target="_blank" rel="noopener noreferrer" className="rounded-md border border-white/10 px-3 py-2 text-center text-xs text-zinc-200 hover:bg-white/5">View file ↗</a>
+                      <button
+                        type="button"
+                        onClick={() => updateSettings({ certificates: settings.certificates?.filter((item) => item.id !== certificate.id) })}
+                        className="rounded-md border border-red-400/20 px-3 py-2 text-xs text-red-300 hover:bg-red-500/10"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
