@@ -47,6 +47,7 @@ interface PortfolioContextType {
   updateEducation: (id: string, updates: Partial<EducationItem>) => void;
   deleteEducation: (id: string) => void;
   addMedia: (name: string, url: string, mimeType: string, size: number) => MediaAsset;
+  saveResumeUpload: (url: string, name: string, size: number) => Promise<{ success: boolean; error?: string }>;
   deleteMedia: (id: string) => void;
   resetToDefaults: () => void;
 }
@@ -614,6 +615,52 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return newAsset;
   };
 
+  const saveResumeUpload = async (url: string, name: string, size: number): Promise<{ success: boolean; error?: string }> => {
+    if (!isAdmin) return { success: false, error: 'Sign in to Supabase Auth before replacing the resume.' };
+
+    const asset: MediaAsset = {
+      id: `media-${Date.now()}`,
+      name,
+      url,
+      mimeType: 'application/pdf',
+      size,
+      uploadedAt: new Date().toISOString()
+    };
+    let current: PortfolioSnapshot;
+    try {
+      current = latestCloudSnapshot.current
+        ? JSON.parse(latestCloudSnapshot.current) as PortfolioSnapshot
+        : { settings, projects, experience, education, media };
+    } catch {
+      current = { settings, projects, experience, education, media };
+    }
+    const snapshot: PortfolioSnapshot = {
+      ...current,
+      settings: { ...current.settings, resumeUrl: url },
+      media: [asset, ...(Array.isArray(current.media) ? current.media : [])]
+    };
+    const serialized = JSON.stringify(snapshot);
+
+    setCloudSaveStatus('saving');
+    setCloudSaveError(null);
+    const result = await savePortfolioSnapshot(snapshot);
+    if (!result.success) {
+      setIsSupabaseConnected(false);
+      setCloudSaveStatus('error');
+      setCloudSaveError(result.error || 'Resume uploaded, but the portfolio record could not be saved.');
+      return { success: false, error: result.error || 'Could not save the new resume link to Supabase.' };
+    }
+
+    lastCloudSnapshot.current = serialized;
+    latestCloudSnapshot.current = serialized;
+    setSettings(snapshot.settings);
+    setMedia(snapshot.media);
+    setIsSupabaseConnected(true);
+    setCloudSaveStatus('saved');
+    setCloudSaveError(null);
+    return { success: true };
+  };
+
   const deleteMedia = (id: string) => {
     setMedia((prev) => prev.filter((m) => m.id !== id));
   };
@@ -661,6 +708,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         updateEducation,
         deleteEducation,
         addMedia,
+        saveResumeUpload,
         deleteMedia,
         resetToDefaults
       }}

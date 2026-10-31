@@ -110,6 +110,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     updateEducation,
     deleteEducation,
     addMedia,
+    saveResumeUpload,
     deleteMedia,
     resetToDefaults
   } = usePortfolio();
@@ -1444,9 +1445,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       try {
                         const result = await uploadMediaToSupabase(file);
                         if (!result.url) throw new Error(result.error || 'Resume upload failed.');
-                        addMedia(file.name.replace(/\.[^.]+$/, '') || file.name, result.url, 'application/pdf', file.size);
-                        updateSettings({ resumeUrl: result.url });
-                        showNotice('Resume uploaded to Supabase. Saving the new resume…');
+                        const saved = await saveResumeUpload(result.url, file.name, file.size);
+                        if (!saved.success) throw new Error(saved.error || 'The uploaded PDF could not be saved as the current resume.');
+                        showNotice('Resume uploaded and saved to Supabase. The header and About page now use it.');
                       } catch (error) {
                         showNotice(error instanceof Error ? error.message : 'Resume upload failed.');
                       } finally {
