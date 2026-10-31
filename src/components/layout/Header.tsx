@@ -16,6 +16,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
   const [progressWidth, setProgressWidth] = useState(0);
 
   const emailUrl = getGmailComposeUrl(settings.email || 'yogendrachaudhary2061@gmail.com');
+  const resumeUrl = settings.resumeUrl || '/assets/Yogendra_Chaudhary_CV.pdf';
 
   const isCaseStudy = currentPath !== '/' && currentPath !== '/projects' && currentPath !== '/about' && currentPath !== '/admin';
 
@@ -93,6 +94,20 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
           </div>
 
           <a
+            aria-label="View Yogendra Chaudhary resume"
+            className="nav-talk"
+            href={resumeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ background: 'transparent', color: 'var(--text)', borderColor: 'var(--line-soft)' }}
+          >
+            {copy.navResume}
+            <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
+              open_in_new
+            </span>
+          </a>
+
+          <a
             aria-label="Open Gmail to email Yogendra"
             className="nav-talk"
             href={emailUrl}
@@ -126,6 +141,15 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
           </a>
           <a href="/#about" onClick={(e) => handleNavClick(e, '/#about')}>
             {copy.navAbout}
+          </a>
+          <a
+            href={resumeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mobile-resume"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            {copy.navResume} ↗
           </a>
           <span className="mobile-availability">
             <i aria-hidden="true"></i>
