@@ -1,12 +1,12 @@
 import React from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
-import { getPrewrittenMailtoUrl } from '../../utils/emailUtils';
+import { getGmailComposeUrl } from '../../utils/emailUtils';
 import { initialSiteSettings } from '../../data/initialData';
 
 export const Footer: React.FC = () => {
   const { settings } = usePortfolio();
   const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
-  const emailUrl = getPrewrittenMailtoUrl(settings.email || 'yogendrachaudhary2061@gmail.com');
+  const emailUrl = getGmailComposeUrl(settings.email || 'yogendrachaudhary2061@gmail.com');
 
   return (
     <footer className="case-footer">
@@ -19,6 +19,8 @@ export const Footer: React.FC = () => {
           <a
             aria-label="Email Yogendra Chaudhary"
             href={emailUrl}
+            rel="noopener noreferrer"
+            target="_blank"
           >
             {copy.footerEmail}
           </a>
