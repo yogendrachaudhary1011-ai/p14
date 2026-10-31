@@ -20,7 +20,7 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
       {/* Top back navigation bar */}
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-2 sm:pt-4 pb-4 sm:pb-6 flex justify-between items-center gap-2 box-border animate-cs-fade-in">
         <button
-          onClick={() => (onNavigate ? onNavigate('/projects') : window.history.back())}
+          onClick={() => (onNavigate ? onNavigate('/#work') : window.location.assign('/#work'))}
           className="inline-flex items-center gap-1.5 sm:gap-2 text-zinc-400 hover:text-white transition-all duration-200 text-xs sm:text-sm font-medium py-1.5 px-2.5 sm:px-3 rounded hover:bg-white/5 hover:-translate-x-1 cursor-pointer"
         >
           <span className="material-symbols-rounded text-base sm:text-lg">arrow_back</span>
