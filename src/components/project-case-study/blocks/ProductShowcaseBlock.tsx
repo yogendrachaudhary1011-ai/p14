@@ -66,7 +66,7 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
               {/* Device Frame Top Bar */}
               <div className="px-4 py-2.5 bg-zinc-900/90 border-b border-white/10 flex items-center justify-between text-xs text-zinc-400 font-mono select-none">
                 <span className="truncate pr-2 font-medium text-white">{screen.label || `Screen #${idx + 1}`}</span>
-                <span className="shrink-0 text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-[#ff853a]">
+                <span className="shrink-0 text-[10px] px-2 py-0.5 rounded bg-[#8be28b]/10 text-[#8be28b] border border-[#8be28b]/20">
                   {isMobile ? '428 px' : '1440 px'}
                 </span>
               </div>
@@ -88,3 +88,4 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
     </div>
   );
 };
+
