@@ -323,14 +323,18 @@
 .admin-live-status {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  flex: 0 0 178px;
   gap: 7px;
   color: var(--admin-emerald);
   font-size: 11px;
   font-family: 'DM Mono', monospace;
+  white-space: nowrap;
   background: rgba(16, 185, 129, 0.1);
   padding: 4px 10px;
   border-radius: 9999px;
   border: 1px solid rgba(16, 185, 129, 0.25);
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
 }
 
 .admin-live-status i {
@@ -349,7 +353,13 @@
 
 .admin-live-status--saving i {
   background: #fbbf24;
-  box-shadow: 0 0 8px #fbbf24;
+  box-shadow: none;
+}
+
+.admin-live-status--saved {
+  color: var(--admin-emerald);
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.25);
 }
 
 .admin-live-status--error {
@@ -825,5 +835,21 @@
   .admin-login-panel {
     min-height: 100vh;
     padding: 32px 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-topbar {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .admin-topbar-actions {
+    gap: 8px;
+  }
+  .admin-live-status {
+    flex-basis: auto;
+    min-width: 0;
+    padding: 4px 7px;
+    font-size: 10px;
   }
 }
