@@ -78,6 +78,20 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
           >
             {copy.navAbout}
           </a>
+          <a
+            aria-label="View Yogendra Chaudhary resume"
+            className="nav-talk"
+            href={resumeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ background: 'transparent', color: 'var(--text)', borderColor: 'var(--line-soft)' }}
+          >
+            {copy.navResume}
+            <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
+              open_in_new
+            </span>
+          </a>
+
         </div>
 
         <div className="nav-actions">
@@ -93,19 +107,6 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             </span>
           </div>
 
-          <a
-            aria-label="View Yogendra Chaudhary resume"
-            className="nav-talk"
-            href={resumeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ background: 'transparent', color: 'var(--text)', borderColor: 'var(--line-soft)' }}
-          >
-            {copy.navResume}
-            <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
-              open_in_new
-            </span>
-          </a>
 
           <a
             aria-label="Open Gmail to email Yogendra"
