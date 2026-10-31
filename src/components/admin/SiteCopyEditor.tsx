@@ -25,7 +25,7 @@ const keyGroups: Record<string, string> = {
   orbitFigma: 'hero', orbitPhotoshop: 'hero', orbitIllustrator: 'hero', orbitPremiere: 'hero', orbitFramer: 'hero', orbitPhotoshopMark: 'hero', orbitIllustratorMark: 'hero', orbitPremiereMark: 'hero', orbitFramerMark: 'hero',
   workHeading: 'work', workDescription: 'work', filterAll: 'work', filterProduct: 'work', filterArchive: 'work', emptyProjectsHeading: 'work', emptyProjectsDescription: 'work', emptyProjectsButton: 'work',
   aboutHeading: 'about', aboutCaption: 'about', aboutNavAbout: 'about', aboutNavExperience: 'about', aboutNavEducation: 'about', downloadCv: 'about', behance: 'about', linkedIn: 'about', experienceHeading: 'about', educationHeading: 'about', currentLabel: 'about', connectHeading: 'about', footerEmail: 'about', footerResume: 'about',
-  backToOverview: 'caseStudy', backToProjects: 'caseStudy', backToTop: 'caseStudy', caseStudyLabel: 'caseStudy', roleLabel: 'caseStudy', durationLabel: 'caseStudy', deliverablesLabel: 'caseStudy', figmaButton: 'caseStudy', liveProjectButton: 'caseStudy', jumpTo: 'caseStudy', sectionsFallback: 'caseStudy',
+  backToOverview: 'caseStudy', backToProjects: 'caseStudy', backToTop: 'caseStudy', viewNextProject: 'caseStudy', caseStudyLabel: 'caseStudy', roleLabel: 'caseStudy', durationLabel: 'caseStudy', deliverablesLabel: 'caseStudy', figmaButton: 'caseStudy', liveProjectButton: 'caseStudy', jumpTo: 'caseStudy', sectionsFallback: 'caseStudy',
   comparisonFirstAttempt: 'caseStudyBlocks', comparisonProblem: 'caseStudyBlocks', comparisonFix: 'caseStudyBlocks', comparisonLearning: 'caseStudyBlocks', decisionConstraint: 'caseStudyBlocks', decisionAction: 'caseStudyBlocks', decisionWhy: 'caseStudyBlocks'
 };
 
