@@ -1,7 +1,8 @@
 /**
- * Helper to construct a pre-composed mailto URL with professional subject and message body
+ * Open a pre-composed message in Gmail's browser composer, avoiding a device-level
+ * mail-app prompt when visitors do not have a default mail application configured.
  */
-export function getPrewrittenMailtoUrl(
+export function getGmailComposeUrl(
   recipient = 'yogendrachaudhary2061@gmail.com',
   customSubject?: string
 ): string {
@@ -24,9 +25,12 @@ Best regards,
 [Company / Organization]`;
 
   const queryParams = new URLSearchParams({
-    subject,
+    view: 'cm',
+    fs: '1',
+    to: email,
+    su: subject,
     body
   });
 
-  return `mailto:${email}?${queryParams.toString()}`;
+  return `https://mail.google.com/mail/?${queryParams.toString()}`;
 }
