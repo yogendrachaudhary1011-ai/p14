@@ -326,13 +326,14 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
       {/* Navigation Tabs */}
       <div className="flex items-center gap-1 border-b border-white/10 overflow-x-auto pb-1 scrollbar-none whitespace-nowrap">
         {[
-          { id: 'basic', label: 'Project details', icon: 'info' },
-          { id: 'media', label: 'Images & video', icon: 'image' },
-          { id: 'hero', label: 'Summary & links', icon: 'overview' },
-          { id: 'caseStudy', label: 'Project detail page', icon: 'view_quilt' },
-          { id: 'seo', label: 'Search preview', icon: 'search' }
+          { id: 'basic', label: 'Project details', icon: 'info', hint: 'Name, category, and publishing status' },
+          { id: 'hero', label: 'Overview & links', icon: 'overview', hint: 'Introduction, role, and project links' },
+          { id: 'media', label: 'Images & video', icon: 'image', hint: 'Upload and choose project images and videos' },
+          { id: 'caseStudy', label: 'Case study content', icon: 'view_quilt', hint: 'Build the sections shown on the project page' },
+          { id: 'seo', label: 'Search appearance', icon: 'search', hint: 'Search title, description, and preview image' }
         ].map((tab) => {
           const isActive = activeTab === tab.id;
+          const stepNumber = ['basic', 'hero', 'media', 'caseStudy', 'seo'].indexOf(tab.id) + 1;
           return (
             <button
               key={tab.id}
@@ -344,7 +345,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
               }`}
             >
-              <span className="material-symbols-rounded text-sm">{tab.icon}</span>
+              <span className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-bold ${isActive ? 'bg-[#ff853a] text-white' : 'bg-white/5 text-zinc-400'}`}>{stepNumber}</span>
               <span>{tab.label}</span>
               {tab.id === 'caseStudy' && (
                 <span className="px-1.5 py-0.5 rounded-full bg-[#ff853a]/20 text-[#ff853a] text-[10px]">
@@ -354,6 +355,11 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             </button>
           );
         })}
+      </div>
+      <div className="-mt-4 flex items-center gap-2 text-xs text-zinc-400" aria-live="polite">
+        <span className="font-semibold text-[#ff9a5b]">Step {['basic', 'hero', 'media', 'caseStudy', 'seo'].indexOf(activeTab) + 1} of 5</span>
+        <span aria-hidden="true">·</span>
+        <span>{{ basic: 'Set the project name, category, and publishing status.', hero: 'Add the overview visitors read before opening the case study.', media: 'Upload the project cover, hero, and related media.', caseStudy: 'Add and arrange the content blocks for the project detail page.', seo: 'Control how this project appears in search and social previews.' }[activeTab]}</span>
       </div>
 
       {/* TAB 1: BASIC INFO */}

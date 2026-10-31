@@ -452,9 +452,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           {navTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
-              <button
-                key={tab.id}
-                onClick={() => {
+              <React.Fragment key={tab.id}>
+                {tab.id === 'projects' && <div className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">Portfolio content</div>}
+                {tab.id === 'settings' && <div className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">Site settings</div>}
+                <button
+                  onClick={() => {
                   setActiveTab(tab.id as any);
                   setIsCreatingProject(false);
                   setEditingProject(null);
@@ -463,24 +465,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   setIsCreatingEdu(false);
                   setEditingEdu(null);
                   setMobileSidebarOpen(false);
-                }}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-left w-full cursor-pointer ${
+                  }}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-left w-full cursor-pointer ${
                   isActive
                     ? 'text-white bg-[#f37021]/15 border border-[#f37021]/30 font-semibold shadow-xs'
                     : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <tab.icon
-                  size={18}
-                  strokeWidth={1.8}
-                  className={isActive ? 'text-[#f37021]' : 'text-zinc-400'}
-                />
-                <span className="admin-nav-copy">
-                  <span className={isActive ? 'text-white' : 'text-zinc-300'}>{tab.label}</span>
-                  <small className="text-zinc-500">{tab.detail}</small>
-                </span>
-                {isActive && <ChevronRight className="admin-nav-chevron text-[#f37021]" size={15} />}
-              </button>
+                  }`}
+                >
+                  <tab.icon size={18} strokeWidth={1.8} className={isActive ? 'text-[#f37021]' : 'text-zinc-400'} />
+                  <span className="admin-nav-copy">
+                    <span className={isActive ? 'text-white' : 'text-zinc-300'}>{tab.label}</span>
+                    <small className="text-zinc-500">{tab.detail}</small>
+                  </span>
+                  {isActive && <ChevronRight className="admin-nav-chevron text-[#f37021]" size={15} />}
+                </button>
+              </React.Fragment>
             );
           })}
         </nav>
@@ -1210,11 +1209,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 />
               </div>
 
-              <div className="border-t border-white/10 pt-5 space-y-4">
-                <div>
-                  <h4 className="text-sm font-semibold text-white">About Section Content</h4>
-                  <p className="text-zinc-400 text-xs mt-1">These shared fields update the About section on both the landing page and the About page.</p>
-                </div>
+              <details className="border-t border-white/10 pt-5 group">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg py-2 text-sm font-semibold text-white hover:text-[#ff9a5b]">
+                  <span>About page text <small className="ml-2 font-normal text-zinc-500">Shared by the home page and About page</small></span>
+                  <ChevronRight size={16} className="shrink-0 text-zinc-500 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="pt-4 space-y-4">
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">About Introduction</label>
                   <textarea
@@ -1235,12 +1235,17 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021] resize-y"
                   />
                 </div>
-              </div>
+                </div>
+              </details>
 
-              <div className="border-t border-white/10 pt-5 space-y-4">
+              <details className="border-t border-white/10 pt-5 group">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg py-2 text-sm font-semibold text-white hover:text-[#ff9a5b]">
+                  <span>Page sections &amp; order <small className="ml-2 font-normal text-zinc-500">Show, hide, and arrange page sections</small></span>
+                  <ChevronRight size={16} className="shrink-0 text-zinc-500 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="pt-4 space-y-4">
                 <div>
-                  <h4 className="text-sm font-semibold text-white">Landing Page Sections</h4>
-                  <p className="text-zinc-400 text-xs mt-1">Show or hide the main sections. Their project cards, experience entries, education entries, and case study sections are edited in their own tabs.</p>
+                  <p className="text-zinc-400 text-xs mt-1">Choose which sections appear, then use the arrows to set their order.</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {(['hero', 'work', 'about', 'connect'] as const).map((section) => (
@@ -1283,23 +1288,29 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     onChange={(aboutSectionOrder) => updateSettings({ aboutSectionOrder })}
                   />
                 </div>
-              </div>
+                </div>
+              </details>
 
-              <div className="border-t border-white/10 pt-5">
+              <details open className="border-t border-white/10 pt-5 group">
+                <summary className="mb-4 flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg py-2 text-sm font-semibold text-white hover:text-[#ff9a5b]">
+                  <span>Website text &amp; labels <small className="ml-2 font-normal text-zinc-500">Headings, button text, chips, and descriptions</small></span>
+                  <ChevronRight size={16} className="shrink-0 text-zinc-500 transition-transform group-open:rotate-90" />
+                </summary>
                 <SiteCopyEditor
                   defaults={initialSiteSettings.siteCopy || {}}
                   values={settings.siteCopy}
                   onChange={(key, value) => updateSettings({ siteCopy: { ...(settings.siteCopy || initialSiteSettings.siteCopy), [key]: value } })}
                 />
-              </div>
+              </details>
             </div>
 
             {/* CONTACT & SOCIAL CARD */}
-            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
-              <div className="border-b border-white/10 pb-3">
-                <h3 className="text-base font-bold text-white">Contact &amp; Social Links</h3>
-                <p className="text-zinc-400 text-xs mt-0.5">Where clients and recruiters can reach you.</p>
-              </div>
+            <details className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                <span><strong className="text-base text-white">Contact &amp; social links</strong><small className="mt-1 block text-xs text-zinc-400">Email, resume, and public profiles</small></span>
+                <ChevronRight size={16} className="shrink-0 text-zinc-500 transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="pt-5 space-y-5">
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
@@ -1362,17 +1373,17 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   Save Profile Settings
                 </button>
               </div>
-            </div>
+              </div>
+            </details>
 
             {/* ADMIN SECURITY & PASSWORD CARD */}
-            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
-              <div className="border-b border-white/10 pb-3 flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-bold text-white">Admin Security &amp; Access</h3>
-                  <p className="text-zinc-400 text-xs mt-0.5">Change administrator login credentials for this CMS.</p>
-                </div>
-                <ShieldCheck size={20} className="text-[#f37021]" />
-              </div>
+            <details className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                <span><strong className="text-base text-white">Admin security</strong><small className="mt-1 block text-xs text-zinc-400">Change the administrator password</small></span>
+                <ShieldCheck size={19} className="ml-auto text-[#f37021]" />
+                <ChevronRight size={16} className="shrink-0 text-zinc-500 transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="pt-5 space-y-5">
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -1432,14 +1443,15 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   Update Admin Password
                 </button>
               </div>
-            </div>
+              </div>
+            </details>
 
             {/* SUPABASE POSTGRESQL CARD */}
-            <div className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl space-y-5">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-white/10 pb-3">
+            <details className="p-5 sm:p-6 bg-[#12131a] border border-white/10 rounded-xl group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                 <div>
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <h3 className="text-base font-bold text-white">Supabase PostgreSQL Integration</h3>
+                    <h3 className="text-base font-bold text-white">Cloud database</h3>
                     <span
                       className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
                         isSupabaseConnected
@@ -1450,11 +1462,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       {isSupabaseConnected ? 'Connected to Cloud DB' : 'Offline / Local Cache'}
                     </span>
                   </div>
-                  <p className="text-zinc-400 text-xs mt-0.5">
-                    Save the entire portfolio as one cloud snapshot. Run the SQL setup once and sign in with your Supabase Auth administrator account.
-                  </p>
+                  <p className="text-zinc-400 text-xs mt-0.5">Supabase connection and portfolio sync</p>
                 </div>
-
+                <ChevronRight size={16} className="shrink-0 text-zinc-500 transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="pt-5 space-y-5">
+              <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={() => setShowSqlModal(true)}
@@ -1525,7 +1538,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   <span>{syncingSupabase ? 'Syncing...' : 'Save Full Portfolio to Supabase'}</span>
                 </button>
               </div>
-            </div>
+              </div>
+            </details>
 
             {/* SQL SCHEMA MODAL */}
             {showSqlModal && (
