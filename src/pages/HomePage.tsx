@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { initialSiteSettings } from '../data/initialData';
 import { IdCard } from '../components/home/IdCard';
-import { getPrewrittenMailtoUrl } from '../utils/emailUtils';
+import { getGmailComposeUrl } from '../utils/emailUtils';
 
 interface HomePageProps {
   onNavigate: (path: string) => void;
@@ -561,7 +561,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <a
             aria-label={`Let's connect by email at ${contactEmail}`}
             className="connect-fill-link"
-            href={getPrewrittenMailtoUrl(contactEmail)}
+            href={getGmailComposeUrl(contactEmail)}
+            target="_blank"
+            rel="noopener noreferrer"
           >
             <div className="connect-fill-inner">
               <span className="connect-fill-copy">
