@@ -32,6 +32,7 @@ import {
   Plus,
   RefreshCw,
   Upload,
+  Video,
   Search,
   Settings2,
   ShieldCheck,
@@ -185,6 +186,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [mediaSearchQuery, setMediaSearchQuery] = useState('');
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const mediaFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAboutVideo, setUploadingAboutVideo] = useState(false);
+  const aboutVideoInputRef = useRef<HTMLInputElement>(null);
 
   // Notification message
   const [notice, setNotice] = useState<string | null>(null);
@@ -1207,6 +1210,78 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     return addMedia(file.name.replace(/\.[^.]+$/, '') || file.name, result.url, file.type, file.size);
                   }}
                 />
+              </div>
+
+              <div className="border-t border-white/10 pt-5">
+                <label className="mb-2 block text-xs font-semibold uppercase text-zinc-400">About section video</label>
+                <p className="mb-3 text-xs text-zinc-500">Upload an MP4 or WebM. It replaces the video shown on both the landing page and About page, and saves to Supabase automatically.</p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                  <div className="w-full max-w-sm overflow-hidden rounded-lg border border-white/10 bg-black">
+                    <video
+                      key={settings.aboutVideo || '/assets/media/about-profile-video.mp4'}
+                      src={settings.aboutVideo || '/assets/media/about-profile-video.mp4'}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="aspect-video w-full object-cover"
+                      aria-label="Current About section video"
+                    />
+                  </div>
+                  <div className="flex flex-col items-start gap-2">
+                    <input
+                      ref={aboutVideoInputRef}
+                      type="file"
+                      accept="video/mp4,video/webm,.mp4,.webm"
+                      className="hidden"
+                      onChange={async (event) => {
+                        const input = event.currentTarget;
+                        const file = input.files?.[0];
+                        if (!file) return;
+                        if (!isAdmin) {
+                          showNotice('Sign in to Supabase Auth before uploading media.');
+                          input.value = '';
+                          return;
+                        }
+                        setUploadingAboutVideo(true);
+                        try {
+                          const result = await uploadMediaToSupabase(file);
+                          if (!result.url) throw new Error(result.error || 'Video upload failed.');
+                          addMedia(file.name.replace(/\.[^.]+$/, '') || file.name, result.url, file.type, file.size);
+                          updateSettings({ aboutVideo: result.url });
+                          showNotice('About video uploaded. Saving the new video to Supabase…');
+                        } catch (error) {
+                          showNotice(error instanceof Error ? error.message : 'Video upload failed.');
+                        } finally {
+                          setUploadingAboutVideo(false);
+                          input.value = '';
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      disabled={uploadingAboutVideo || !isAdmin}
+                      onClick={() => aboutVideoInputRef.current?.click()}
+                      className="inline-flex items-center gap-2 rounded-lg border border-[#ff853a]/35 bg-[#ff853a]/10 px-3 py-2.5 text-xs font-semibold text-[#ffb17d] hover:bg-[#ff853a]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {uploadingAboutVideo ? <Upload size={14} className="animate-pulse" /> : <Video size={14} />}
+                      {uploadingAboutVideo ? 'Uploading video…' : 'Replace About video'}
+                    </button>
+                    {settings.aboutVideo && (
+                      <button
+                        type="button"
+                        disabled={!isAdmin || uploadingAboutVideo}
+                        onClick={() => {
+                          updateSettings({ aboutVideo: '' });
+                          showNotice('Restored the default About video. Saving to Supabase…');
+                        }}
+                        className="rounded-lg px-3 py-2 text-xs text-zinc-400 hover:bg-white/5 hover:text-white disabled:opacity-50"
+                      >
+                        Restore default video
+                      </button>
+                    )}
+                    {!isAdmin && <p className="text-[11px] text-amber-300">Sign in to upload or change the video.</p>}
+                  </div>
+                </div>
               </div>
 
               <details className="border-t border-white/10 pt-5 group">
