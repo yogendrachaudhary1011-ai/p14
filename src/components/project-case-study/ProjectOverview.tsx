@@ -51,7 +51,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
         )}
 
         {/* Metadata Table matching Figma specs (w-[700px] / max-w-full) */}
-        <div className="w-full max-w-[700px] flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
+        <div className="w-full max-w-[900px] flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
           <div className="w-full flex flex-col justify-center items-start gap-6">
             {/* My Role */}
             {role && (
@@ -79,18 +79,23 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
 
             {/* Deliverables */}
             {deliverables && deliverables.length > 0 && (
-              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
-                <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
+              <div className="w-full flex flex-col items-start gap-4 group border-b border-white/15 pb-6">
+                <div className="text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.deliverablesLabel}
                 </div>
-                <div className="w-full sm:w-80 flex flex-col gap-2.5">
-                  {deliverables.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5"
-                    >
-                      {item}
-                    </div>
+                <div className="grid w-full grid-cols-1 gap-x-10 gap-y-2.5 sm:grid-cols-2">
+                  {[deliverables.slice(0, Math.ceil(deliverables.length / 2)), deliverables.slice(Math.ceil(deliverables.length / 2))].map((column, columnIndex) => (
+                    <ul key={columnIndex} className="flex flex-col gap-3">
+                      {column.map((item, itemIndex) => (
+                        <li
+                          key={`${columnIndex}-${itemIndex}`}
+                          className="flex items-start gap-3 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6"
+                        >
+                          <span aria-hidden="true" className="mt-[0.65rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[#8be28b]" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
                   ))}
                 </div>
               </div>
