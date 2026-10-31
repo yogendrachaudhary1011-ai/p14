@@ -6,7 +6,7 @@ VALUES (
   'portfolio-media',
   TRUE,
   52428800,
-  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'video/mp4', 'video/webm']::text[]
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'video/mp4', 'video/webm', 'application/pdf']::text[]
 )
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
