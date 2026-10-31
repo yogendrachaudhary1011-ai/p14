@@ -3,6 +3,7 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { Project, ExperienceItem, EducationItem } from '../../types';
 import { initialSiteSettings } from '../../data/initialData';
 import { ProjectEditor } from '../../components/admin/ProjectEditor';
+import { SiteCopyEditor } from '../../components/admin/SiteCopyEditor';
 import { MediaUploadField } from '../../components/admin/MediaUploadField';
 import { MediaPreview } from '../../components/MediaPreview';
 import { SUPABASE_SQL_SCHEMA } from '../../supabase';
@@ -43,6 +44,37 @@ import './admin.css';
 interface AdminPageProps {
   onNavigate: (path: string) => void;
 }
+
+interface SectionOrderEditorProps<T extends string> {
+  title: string;
+  order: T[];
+  labels: Record<T, string>;
+  onChange: (order: T[]) => void;
+}
+
+const SectionOrderEditor = <T extends string>({ title, order, labels, onChange }: SectionOrderEditorProps<T>) => (
+  <div className="space-y-2">
+    <h5 className="text-xs font-semibold uppercase tracking-wide text-zinc-400">{title} · use arrows to reorder</h5>
+    <ol className="space-y-2">
+      {order.map((section, index) => (
+        <li key={section} className="flex items-center gap-3 rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2.5">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/5 text-xs font-semibold text-zinc-300">{index + 1}</span>
+          <span className="flex-1 text-sm text-zinc-200">{labels[section]}</span>
+          <button type="button" disabled={index === 0} aria-label={`Move ${labels[section]} up`} onClick={() => {
+            const next = [...order];
+            [next[index - 1], next[index]] = [next[index], next[index - 1]];
+            onChange(next);
+          }} className="grid h-8 w-8 place-items-center rounded-md border border-white/10 text-zinc-300 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30">↑</button>
+          <button type="button" disabled={index === order.length - 1} aria-label={`Move ${labels[section]} down`} onClick={() => {
+            const next = [...order];
+            [next[index], next[index + 1]] = [next[index + 1], next[index]];
+            onChange(next);
+          }} className="grid h-8 w-8 place-items-center rounded-md border border-white/10 text-zinc-300 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30">↓</button>
+        </li>
+      ))}
+    </ol>
+  </div>
+);
 
 export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const {
@@ -1223,30 +1255,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     </label>
                   ))}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {(['hero', 'work', 'about', 'connect'] as const).map((section) => {
-                    const order = settings.homeSectionOrder || initialSiteSettings.homeSectionOrder;
-                    return (
-                      <label key={`order-${section}`} className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2 text-xs text-zinc-300">
-                        <span className="capitalize">{section === 'connect' ? 'Contact section' : `${section} section`} order</span>
-                        <select
-                          value={Math.max(0, order.indexOf(section))}
-                          onChange={(event) => {
-                            const next = [...order];
-                            const from = next.indexOf(section);
-                            const to = Number(event.target.value);
-                            next.splice(from, 1);
-                            next.splice(to, 0, section);
-                            updateSettings({ homeSectionOrder: next });
-                          }}
-                          className="rounded bg-[#171822] border border-white/10 px-2 py-1 text-white"
-                        >
-                          {order.map((_, index) => <option key={index} value={index}>{index + 1}</option>)}
-                        </select>
-                      </label>
-                    );
-                  })}
-                </div>
+                <SectionOrderEditor
+                  title="Landing page order"
+                  order={settings.homeSectionOrder || initialSiteSettings.homeSectionOrder}
+                  labels={{ hero: 'Hero', work: 'Selected work', about: 'About', connect: 'Contact' }}
+                  onChange={(homeSectionOrder) => updateSettings({ homeSectionOrder })}
+                />
                 <div className="border-t border-white/10 pt-4 space-y-3">
                   <h5 className="text-xs font-semibold uppercase tracking-wide text-zinc-300">About page sections</h5>
                   <div className="flex flex-wrap gap-3">
@@ -1262,51 +1276,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       </label>
                     ))}
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {(['profile', 'experience', 'education'] as const).map((section) => {
-                      const order = settings.aboutSectionOrder || initialSiteSettings.aboutSectionOrder;
-                      return (
-                        <label key={`about-order-${section}`} className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2 text-xs text-zinc-300 capitalize">
-                          <span>{section} order</span>
-                          <select value={Math.max(0, order.indexOf(section))} onChange={(event) => {
-                            const next = [...order];
-                            const from = next.indexOf(section);
-                            const to = Number(event.target.value);
-                            next.splice(from, 1);
-                            next.splice(to, 0, section);
-                            updateSettings({ aboutSectionOrder: next });
-                          }} className="rounded bg-[#171822] border border-white/10 px-2 py-1 text-white">
-                            {order.map((_, index) => <option key={index} value={index}>{index + 1}</option>)}
-                          </select>
-                        </label>
-                      );
-                    })}
-                  </div>
+                  <SectionOrderEditor
+                    title="About page order"
+                    order={settings.aboutSectionOrder || initialSiteSettings.aboutSectionOrder}
+                    labels={{ profile: 'Profile', experience: 'Experience', education: 'Education' }}
+                    onChange={(aboutSectionOrder) => updateSettings({ aboutSectionOrder })}
+                  />
                 </div>
               </div>
 
-              <div className="border-t border-white/10 pt-5 space-y-4">
-                <div>
-                  <h4 className="text-sm font-semibold text-white">Text, Labels &amp; Chips</h4>
-                  <p className="text-zinc-400 text-xs mt-1">Edit the public-facing copy used across the header, landing page, work page, About section, and project details. Updates save to the shared Supabase portfolio data.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(initialSiteSettings.siteCopy || {}).map(([key, defaultValue]) => {
-                    const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (letter) => letter.toUpperCase());
-                    const value = settings.siteCopy?.[key] ?? defaultValue;
-                    const longText = defaultValue.length > 72 || key.toLowerCase().includes('description');
-                    return (
-                      <div key={key} className={longText ? 'md:col-span-2' : ''}>
-                        <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">{label}</label>
-                        {longText ? (
-                          <textarea rows={3} value={value} onChange={(event) => updateSettings({ siteCopy: { ...(settings.siteCopy || initialSiteSettings.siteCopy), [key]: event.target.value } })} className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021] resize-y" />
-                        ) : (
-                          <input type="text" value={value} onChange={(event) => updateSettings({ siteCopy: { ...(settings.siteCopy || initialSiteSettings.siteCopy), [key]: event.target.value } })} className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]" />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+              <div className="border-t border-white/10 pt-5">
+                <SiteCopyEditor
+                  defaults={initialSiteSettings.siteCopy || {}}
+                  values={settings.siteCopy}
+                  onChange={(key, value) => updateSettings({ siteCopy: { ...(settings.siteCopy || initialSiteSettings.siteCopy), [key]: value } })}
+                />
               </div>
             </div>
 
