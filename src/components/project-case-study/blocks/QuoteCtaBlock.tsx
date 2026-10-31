@@ -3,7 +3,7 @@ import { QuoteBlockItem, CtaBlockItem, DividerBlockItem, SpacerBlockItem } from 
 
 export const QuoteBlock: React.FC<{ block: QuoteBlockItem }> = ({ block }) => {
   return (
-    <div className="w-full my-4 p-4 sm:p-6 md:p-8 rounded-[5px] bg-zinc-950 border-l-4 border-[#ff853a] flex flex-col gap-3">
+    <div className="w-full my-4 p-4 sm:p-6 md:p-8 rounded-[5px] bg-zinc-950 border-l-4 border-[#8be28b] flex flex-col gap-3">
       <blockquote className="text-white text-lg sm:text-xl md:text-2xl font-normal font-sans italic leading-relaxed break-words">
         “{block.quote}”
       </blockquote>
@@ -47,3 +47,4 @@ export const SpacerBlock: React.FC<{ block: SpacerBlockItem }> = ({ block }) => 
   const heightClass = block.height === 'sm' ? 'h-6' : block.height === 'lg' ? 'h-20' : 'h-12';
   return <div className={`w-full ${heightClass}`} />;
 };
+
