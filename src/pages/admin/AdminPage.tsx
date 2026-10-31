@@ -188,6 +188,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const mediaFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingAboutVideo, setUploadingAboutVideo] = useState(false);
   const aboutVideoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const resumeFileInputRef = useRef<HTMLInputElement>(null);
 
   // Notification message
   const [notice, setNotice] = useState<string | null>(null);
@@ -1407,13 +1409,66 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Resume / CV Document URL</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase text-zinc-400">Resume / CV</label>
                   <input
-                    type="text"
-                    value={settings.resumeUrl}
-                    onChange={(e) => updateSettings({ resumeUrl: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    ref={resumeFileInputRef}
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    className="hidden"
+                    onChange={async (event) => {
+                      const input = event.currentTarget;
+                      const file = input.files?.[0];
+                      if (!file) return;
+                      if (!isAdmin) {
+                        showNotice('Sign in to Supabase Auth before uploading your resume.');
+                        input.value = '';
+                        return;
+                      }
+                      setUploadingResume(true);
+                      try {
+                        const result = await uploadMediaToSupabase(file);
+                        if (!result.url) throw new Error(result.error || 'Resume upload failed.');
+                        addMedia(file.name.replace(/\.[^.]+$/, '') || file.name, result.url, 'application/pdf', file.size);
+                        updateSettings({ resumeUrl: result.url });
+                        showNotice('Resume uploaded to Supabase. Saving the new resume…');
+                      } catch (error) {
+                        showNotice(error instanceof Error ? error.message : 'Resume upload failed.');
+                      } finally {
+                        setUploadingResume(false);
+                        input.value = '';
+                      }
+                    }}
                   />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={uploadingResume || !isAdmin}
+                      onClick={() => resumeFileInputRef.current?.click()}
+                      className="inline-flex items-center gap-2 rounded-lg border border-[#ff853a]/35 bg-[#ff853a]/10 px-3 py-2.5 text-xs font-semibold text-[#ffb17d] hover:bg-[#ff853a]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {uploadingResume ? <Upload size={14} className="animate-pulse" /> : <FileText size={14} />}
+                      {uploadingResume ? 'Uploading resume…' : 'Upload PDF resume'}
+                    </button>
+                    {settings.resumeUrl && (
+                      <a href={settings.resumeUrl} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-white/10 px-3 py-2.5 text-xs font-semibold text-zinc-200 hover:bg-white/5">
+                        View current resume ↗
+                      </a>
+                    )}
+                    {settings.resumeUrl && settings.resumeUrl !== initialSiteSettings.resumeUrl && (
+                      <button
+                        type="button"
+                        disabled={!isAdmin || uploadingResume}
+                        onClick={() => {
+                          updateSettings({ resumeUrl: initialSiteSettings.resumeUrl });
+                          showNotice('Restored the default resume. Saving to Supabase…');
+                        }}
+                        className="rounded-lg px-3 py-2 text-xs text-zinc-400 hover:bg-white/5 hover:text-white disabled:opacity-50"
+                      >
+                        Restore default
+                      </button>
+                    )}
+                  </div>
+                  <p className="mt-2 text-[11px] text-zinc-500">PDF only, up to 50 MB. The uploaded resume is stored in Supabase and used by the header and About page buttons.</p>
                 </div>
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">LinkedIn Profile URL</label>
