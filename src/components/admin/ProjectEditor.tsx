@@ -11,7 +11,7 @@ interface ProjectEditorProps {
   initialProject?: Project | null;
   existingProjects: Project[];
   mediaLibrary: MediaAsset[];
-  onSave: (projectData: Partial<Project>) => void;
+  onSave: (projectData: Partial<Project>) => Promise<void>;
   onUploadMedia: (file: File) => Promise<MediaAsset>;
   onCancel: () => void;
 }
@@ -31,6 +31,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [savingProject, setSavingProject] = useState(false);
   const [projectMedia, setProjectMedia] = useState(mediaLibrary);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   // Form State
   const [title, setTitle] = useState(initialProject?.title || '');
   const [slug, setSlug] = useState(initialProject?.slug || '');
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEditing);
   const [category, setCategory] = useState<'product' | 'archive'>(initialProject?.category || 'product');
   const [categoryLabel, setCategoryLabel] = useState(initialProject?.categoryLabel || 'Case Study');
   const [year, setYear] = useState(initialProject?.year || '2026');
@@ -127,7 +129,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
   const handleTitleChange = (val: string) => {
     setTitle(val);
-    if (!isEditing && (!slug || slug === '')) {
+    if (!isEditing && !slugManuallyEdited) {
       const autoSlug = val
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
@@ -220,7 +222,8 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
     };
   };
 
-  const handleSaveAttempt = (forcedStatus?: 'published' | 'draft') => {
+  const handleSaveAttempt = async (forcedStatus?: 'published' | 'draft') => {
+    if (savingProject) return;
     setValidationError(null);
 
     const targetStatus = forcedStatus || status;
@@ -245,7 +248,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
     // Slug uniqueness check
     const duplicateSlug = existingProjects.find(
-      (p) => p.slug === cleanSlug && (!initialProject || p.id !== initialProject.id)
+      (p) => p.slug?.trim().toLowerCase() === cleanSlug && (!initialProject || p.id !== initialProject.id)
     );
     if (duplicateSlug) {
       setValidationError(`The slug "${cleanSlug}" is already used by "${duplicateSlug.title}". Choose a unique slug.`);
@@ -253,9 +256,23 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
       return;
     }
 
+    const reservedSlugs = new Set(['admin', 'about', 'projects', 'work']);
+    if (reservedSlugs.has(cleanSlug) || cleanSlug.startsWith('admin')) {
+      setValidationError(`The slug "${cleanSlug}" is reserved for a website page. Choose a different slug.`);
+      setActiveTab('basic');
+      return;
+    }
+
     const payload = getCleanFormData();
     payload.status = targetStatus;
-    onSave(payload);
+    setSavingProject(true);
+    try {
+      await onSave(payload);
+    } catch (error) {
+      setValidationError(error instanceof Error ? error.message : 'Could not save the case study to Supabase.');
+    } finally {
+      setSavingProject(false);
+    }
   };
 
   // Preview project mock
@@ -295,7 +312,8 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
           <button
             type="button"
-            onClick={() => handleSaveAttempt('draft')}
+            onClick={() => void handleSaveAttempt('draft')}
+            disabled={savingProject}
             className="px-3.5 py-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium flex items-center gap-1.5 cursor-pointer border border-white/10"
           >
             <span className="material-symbols-rounded text-sm">save</span>
@@ -304,16 +322,18 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
           <button
             type="button"
-            onClick={() => handleSaveAttempt('published')}
+            onClick={() => void handleSaveAttempt('published')}
+            disabled={savingProject}
             className="px-4 py-2 rounded bg-[#ff853a] hover:bg-[#ff721a] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-[#ff853a]/20"
           >
             <span className="material-symbols-rounded text-sm">publish</span>
-            <span>Publish project</span>
+            <span>{savingProject ? 'Saving to Supabase…' : 'Publish project'}</span>
           </button>
 
           <button
             type="button"
             onClick={onCancel}
+            disabled={savingProject}
             className="px-3.5 py-2 rounded bg-transparent hover:bg-white/5 text-zinc-400 hover:text-white text-xs cursor-pointer"
           >
             Cancel
@@ -400,7 +420,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                 <input
                   type="text"
                   value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
+                  onChange={(e) => { setSlug(e.target.value); setSlugManuallyEdited(true); }}
                   className="w-full px-3 py-2.5 rounded-r bg-zinc-950 border border-white/10 text-white text-sm font-mono"
                   placeholder="e.g. somtu"
                   required
@@ -572,7 +592,9 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                   <input aria-label={`Overview list ${index + 1} heading`} type="text" value={group.label} onChange={(event) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, label: event.target.value } : item))} className="min-w-0 flex-1 rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="e.g. Web Experience" />
                   <button type="button" disabled={deliverableGroups.length <= 1} onClick={() => setDeliverableGroups((groups) => groups.filter((item) => item.id !== group.id))} className="rounded px-3 py-2 text-xs text-zinc-400 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-40" aria-label={`Remove ${group.label || `list ${index + 1}`}`}>Remove</button>
                 </div>
-                <textarea rows={Math.min(8, Math.max(3, group.items.length))} value={group.items.join('\n')} onChange={(event) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, items: event.target.value.split('\n') } : item))} className="w-full rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="Add one line per item" />
+                <textarea rows={Math.min(8, Math.max(3, group.items.length))} value={group.items.join('
+')} onChange={(event) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, items: event.target.value.split('
+') } : item))} className="w-full rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="Add one line per item" />
                 <p className="text-[11px] text-zinc-500">Each list is displayed in two columns on the project page.</p>
               </section>
             ))}

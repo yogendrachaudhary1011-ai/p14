@@ -92,6 +92,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     supabaseConfig,
     updateSupabaseConfig,
     syncAllProjectsToSupabase,
+    saveProjectsNow,
     login,
     logout,
     changeAdminPassword,
@@ -820,6 +821,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           <div>
             {isCreatingProject || editingProject ? (
               <ProjectEditor
+                key={editingProject?.id || (isCreatingProject ? 'new-project' : 'project-editor')}
                 initialProject={editingProject}
                 existingProjects={projects}
                 mediaLibrary={media}
@@ -830,14 +832,23 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   const asset = addMedia(file.name.replace(/\.[^.]+$/, ''), result.url, file.type || inferMediaMimeType(file.name), file.size);
                   return asset;
                 }}
-                onSave={(data) => {
+                onSave={async (data) => {
+                  let nextProjects: Project[];
+                  let createdProject: Project | null = null;
                   if (editingProject) {
-                    updateProject(editingProject.id, data);
-                    showNotice(`Updated case study "${data.title || editingProject.title}"`);
+                    nextProjects = projects.map((project) => project.id === editingProject.id
+                      ? { ...project, ...data, route: data.slug ? `/${data.slug}` : project.route, updatedAt: new Date().toISOString() }
+                      : project);
                   } else {
-                    addProject(data as any);
-                    showNotice(`Created new case study "${data.title}"`);
+                    createdProject = addProject(data);
+                    nextProjects = [...projects, createdProject];
                   }
+                  const result = await saveProjectsNow(nextProjects);
+                  if (!result.success) {
+                    if (createdProject) deleteProject(createdProject.id);
+                    throw new Error(result.error || 'Could not save the case study to Supabase.');
+                  }
+                  showNotice(`${data.status === 'published' ? 'Published' : 'Saved draft'} "${data.title || editingProject?.title || ''}" in Supabase.`);
                   setIsCreatingProject(false);
                   setEditingProject(null);
                 }}

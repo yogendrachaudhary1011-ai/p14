@@ -29,6 +29,7 @@ interface PortfolioContextType {
   supabaseConfig: { url: string; key: string };
   updateSupabaseConfig: (url: string, key: string) => boolean;
   syncAllProjectsToSupabase: () => Promise<{ success: boolean; count: number; message: string }>;
+  saveProjectsNow: (nextProjects: Project[]) => Promise<{ success: boolean; error?: string }>;
   login: (u: string, p: string) => Promise<boolean>;
   logout: () => Promise<void>;
   changeAdminPassword: (newPass: string) => Promise<boolean>;
@@ -380,6 +381,48 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [settings, projects, experience, education, media]);
 
+  const saveProjectsNow = async (nextProjects: Project[]): Promise<{ success: boolean; error?: string }> => {
+    const supabase = getSupabase();
+    if (!supabase || !isAdmin) return { success: false, error: 'Sign in to the Supabase admin account before saving projects.' };
+
+    const fallbackSnapshot = { settings, projects, experience, education, media };
+    let currentSnapshot = fallbackSnapshot;
+    try {
+      if (latestCloudSnapshot.current) currentSnapshot = JSON.parse(latestCloudSnapshot.current) as typeof fallbackSnapshot;
+    } catch {
+      currentSnapshot = fallbackSnapshot;
+    }
+
+    const snapshot = { ...currentSnapshot, projects: nextProjects };
+    const serialized = JSON.stringify(snapshot);
+    setCloudSaveStatus('saving');
+    setCloudSaveError(null);
+    latestCloudSnapshot.current = serialized;
+
+    return await new Promise((resolve) => {
+      const persist = async () => {
+        try {
+          const result = await savePortfolioSnapshot(snapshot);
+          if (!result.success) throw new Error(result.error || 'Supabase rejected the project changes.');
+          lastCloudSnapshot.current = serialized;
+          latestCloudSnapshot.current = serialized;
+          setProjects(nextProjects);
+          setIsSupabaseConnected(true);
+          setCloudSaveStatus('saved');
+          setCloudSaveError(null);
+          resolve({ success: true });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Could not save projects to Supabase.';
+          if (latestCloudSnapshot.current === serialized) latestCloudSnapshot.current = lastCloudSnapshot.current;
+          setCloudSaveStatus('error');
+          setCloudSaveError(message);
+          resolve({ success: false, error: message });
+        }
+      };
+      saveQueue.current = saveQueue.current.then(persist, persist);
+    });
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
     const supabase = getSupabase();
     if (!supabase || !email.trim() || !password) return false;
@@ -710,6 +753,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         supabaseConfig,
         updateSupabaseConfig,
         syncAllProjectsToSupabase,
+        saveProjectsNow,
         login,
         logout,
         changeAdminPassword,
