@@ -305,17 +305,19 @@ export async function saveSettingsToSupabase(settings: SiteSettings): Promise<bo
   }
 }
 
-/** Uploads an image or video to the public portfolio-media bucket. */
+/** Uploads portfolio media and documents to the public portfolio-media bucket. */
 export async function uploadMediaToSupabase(file: File): Promise<{ url: string | null; error?: string }> {
   const supabase = getSupabase();
   if (!supabase) return { url: null, error: 'Supabase is not configured.' };
 
+  const extension = file.name.split('.').pop()?.toLowerCase() || '';
+  const contentType = file.type || (extension === 'pdf' ? 'application/pdf' : '');
   const allowedTypes = new Set([
     'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif',
-    'video/mp4', 'video/webm'
+    'video/mp4', 'video/webm', 'application/pdf'
   ]);
-  if (!allowedTypes.has(file.type)) {
-    return { url: null, error: 'Choose a JPG, PNG, WebP, GIF, AVIF, MP4, or WebM file.' };
+  if (!allowedTypes.has(contentType)) {
+    return { url: null, error: 'Choose a JPG, PNG, WebP, GIF, AVIF, MP4, WebM, or PDF file.' };
   }
   if (file.size > 50 * 1024 * 1024) {
     return { url: null, error: 'Files must be 50 MB or smaller.' };
@@ -330,7 +332,7 @@ export async function uploadMediaToSupabase(file: File): Promise<{ url: string |
       .from('portfolio-media')
       .upload(filePath, file, {
         cacheControl: '3600',
-        contentType: file.type,
+        contentType,
         upsert: false
       });
 
