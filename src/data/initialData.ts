@@ -29,7 +29,7 @@ export const initialSiteSettings: SiteSettings = {
     viewResume: 'View Resume', behance: 'Behance', linkedIn: 'LinkedIn',
     experienceHeading: 'Experience', certificatesHeading: 'Certificates & Credentials', certificateView: 'View certificate / PDF', educationHeading: 'EDUCATION', currentLabel: 'CURRENT', connectHeading: "LET'S CONNECT",
     footerEmail: 'Email', footerResume: 'Resume',
-    backToOverview: 'Back to Overview', backToProjects: 'Back to All Projects', backToTop: 'Back to top', caseStudyLabel: 'Case Study',
+    backToOverview: 'Back to Overview', backToProjects: 'Back to All Projects', backToTop: 'Back to top', viewNextProject: 'View next project', caseStudyLabel: 'Case Study',
     roleLabel: 'My Role:', durationLabel: 'Duration:', deliverablesLabel: 'Deliverables', figmaButton: 'View Figma File', liveProjectButton: 'Live Project URL',
     jumpTo: 'Jump to:', sectionsFallback: 'Sections', navMenuOpen: 'Menu', navMenuClose: 'Close',
     comparisonFirstAttempt: 'First Attempt:', comparisonProblem: 'Problem', comparisonFix: 'Fix:', comparisonLearning: 'Learning:',
