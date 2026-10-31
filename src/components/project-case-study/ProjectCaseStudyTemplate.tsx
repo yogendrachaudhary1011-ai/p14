@@ -16,12 +16,23 @@ interface ProjectCaseStudyTemplateProps {
 
 export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> = ({
   project,
+  onNavigate,
   isAdminPreview = false
 }) => {
-  const { settings } = usePortfolio();
+  const { settings, projects } = usePortfolio();
   const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
   // Normalize project sections
   const sections = useMemo(() => normalizeProjectSections(project), [project]);
+  const orderedPublishedProjects = useMemo(
+    () => [...projects]
+      .filter((item) => item.status === 'published' || (isAdminPreview && item.id === project.id))
+      .sort((a, b) => a.order - b.order),
+    [projects, isAdminPreview, project.id]
+  );
+  const currentProjectIndex = orderedPublishedProjects.findIndex((item) => item.id === project.id);
+  const nextProject = orderedPublishedProjects.length > 1 && currentProjectIndex >= 0
+    ? orderedPublishedProjects[(currentProjectIndex + 1) % orderedPublishedProjects.length]
+    : undefined;
 
   // Dynamic navigation items computed from visible sections matching Figma 10 outline items
   const navSections = useMemo(
@@ -190,13 +201,33 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
                 <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-x-1">arrow_back</span>
                 <span>{copy.backToProjects}</span>
               </button>
-              <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-all duration-200 hover:-translate-y-1 text-sm cursor-pointer group"
-              >
-                <span>{copy.backToTop}</span>
-                <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-y-1">arrow_upward</span>
-              </button>
+              <div className="flex flex-col-reverse sm:flex-row items-center gap-5">
+                <button
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-all duration-200 hover:-translate-y-1 text-sm cursor-pointer group"
+                >
+                  <span>{copy.backToTop}</span>
+                  <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-y-1">arrow_upward</span>
+                </button>
+                {nextProject && (
+                  <a
+                    href={nextProject.route}
+                    aria-label={`${copy.viewNextProject}: ${nextProject.title}`}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      if (onNavigate) onNavigate(nextProject.route);
+                      else window.location.assign(nextProject.route);
+                    }}
+                    className="group inline-flex flex-col items-end gap-1 rounded-lg border border-[#8be28b]/35 bg-[#8be28b]/[0.06] px-5 py-3 text-right transition-colors hover:bg-[#8be28b]/[0.12]"
+                  >
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#8be28b]">
+                      {copy.viewNextProject}
+                      <span className="material-symbols-rounded transition-transform duration-200 group-hover:translate-x-1">arrow_forward</span>
+                    </span>
+                    <span className="max-w-64 truncate text-xs text-zinc-400">{nextProject.title}</span>
+                  </a>
+                )}
+              </div>
             </div>
           </main>
         </div>
