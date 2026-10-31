@@ -15,7 +15,7 @@ export const initialSiteSettings: SiteSettings = {
   aboutSections: { profile: true, experience: true, education: true },
   aboutSectionOrder: ['profile', 'experience', 'education'],
   siteCopy: {
-    navHome: 'Home', navWork: 'Work', navAbout: 'About', navContact: "Let's Talk",
+    navHome: 'Home', navWork: 'Work', navAbout: 'About', navResume: 'Resume', navContact: "Let's Talk",
     heroFirstName: 'YOGENDRA', heroLastName: 'CHAUDHARY', heroRole: 'PRODUCT DESIGNER',
     heroDescription: 'A UI/UX and Product Designer focused on intuitive software interfaces and reusable components — turning complex product requirements into clear workflows and usable experiences people can navigate with confidence.',
     heroAboutButton: 'Get to Know Me', heroWorkButton: 'Work Overview',
@@ -26,7 +26,7 @@ export const initialSiteSettings: SiteSettings = {
     filterAll: 'All', filterProduct: 'Product Design', filterArchive: 'Design Practice',
     emptyProjectsHeading: 'No projects currently published', emptyProjectsDescription: 'New case studies can be created anytime from the admin panel.', emptyProjectsButton: '+ Add Project',
     aboutHeading: 'ABOUT ME', aboutCaption: 'Yogendra / flows → interfaces → products', aboutNavAbout: '01 / About', aboutNavExperience: '02 / Experience', aboutNavEducation: '03 / Education',
-    downloadCv: 'Download CV', behance: 'Behance', linkedIn: 'LinkedIn',
+    viewResume: 'View Resume', behance: 'Behance', linkedIn: 'LinkedIn',
     experienceHeading: 'Experience', educationHeading: 'EDUCATION', currentLabel: 'CURRENT', connectHeading: "LET'S CONNECT",
     footerEmail: 'Email', footerResume: 'Resume',
     backToOverview: 'Back to Overview', backToProjects: 'Back to All Projects', backToTop: 'Back to top', caseStudyLabel: 'Case Study',
