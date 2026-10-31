@@ -13,6 +13,7 @@ export interface SiteSettings {
   aboutSections?: { profile: boolean; experience: boolean; education: boolean };
   aboutSectionOrder?: Array<'profile' | 'experience' | 'education'>;
   profileImage?: string;
+  aboutVideo?: string;
   behanceUrl?: string;
   linkedinUrl?: string;
   availabilityText: string;
