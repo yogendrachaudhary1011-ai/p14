@@ -643,22 +643,37 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     setCloudSaveStatus('saving');
     setCloudSaveError(null);
-    const result = await savePortfolioSnapshot(snapshot);
-    if (!result.success) {
-      setIsSupabaseConnected(false);
-      setCloudSaveStatus('error');
-      setCloudSaveError(result.error || 'Resume uploaded, but the portfolio record could not be saved.');
-      return { success: false, error: result.error || 'Could not save the new resume link to Supabase.' };
-    }
-
-    lastCloudSnapshot.current = serialized;
     latestCloudSnapshot.current = serialized;
-    setSettings(snapshot.settings);
-    setMedia(snapshot.media);
-    setIsSupabaseConnected(true);
-    setCloudSaveStatus('saved');
-    setCloudSaveError(null);
-    return { success: true };
+    return await new Promise<{ success: boolean; error?: string }>((resolve) => {
+      const persistResume = async () => {
+        try {
+          const result = await savePortfolioSnapshot(snapshot);
+          if (!result.success) {
+            setIsSupabaseConnected(false);
+            setCloudSaveStatus('error');
+            setCloudSaveError(result.error || 'Resume uploaded, but the portfolio record could not be saved.');
+            resolve({ success: false, error: result.error || 'Could not save the new resume link to Supabase.' });
+            return;
+          }
+
+          lastCloudSnapshot.current = serialized;
+          latestCloudSnapshot.current = serialized;
+          setSettings(snapshot.settings);
+          setMedia(snapshot.media);
+          setIsSupabaseConnected(true);
+          setCloudSaveStatus('saved');
+          setCloudSaveError(null);
+          resolve({ success: true });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Could not save the new resume link to Supabase.';
+          setIsSupabaseConnected(false);
+          setCloudSaveStatus('error');
+          setCloudSaveError(message);
+          resolve({ success: false, error: message });
+        }
+      };
+      saveQueue.current = saveQueue.current.then(persistResume, persistResume);
+    });
   };
 
   const deleteMedia = (id: string) => {
