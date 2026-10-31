@@ -11,6 +11,7 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const { settings, projects, experience, education, isAdmin } = usePortfolio();
   const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
+  const contactEmail = settings.email || 'yogendrachaudhary2061@gmail.com';
   const sections = { ...initialSiteSettings.homeSections, ...(settings.homeSections || {}) };
   const aboutSections = { ...initialSiteSettings.aboutSections, ...(settings.aboutSections || {}) };
   const aboutOrder = settings.aboutSectionOrder || initialSiteSettings.aboutSectionOrder;
@@ -558,12 +559,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         {/* BOTTOM CONNECT CTA SECTION */}
         <section className="connect-fill" style={{ display: sections.connect ? undefined : 'none', order: (settings.homeSectionOrder || initialSiteSettings.homeSectionOrder).indexOf('connect') }}>
           <a
-            aria-label="Let's connect"
+            aria-label={`Let's connect by email at ${contactEmail}`}
             className="connect-fill-link"
-            href={getPrewrittenMailtoUrl(settings.email || 'yogendrachaudhary2061@gmail.com')}
+            href={getPrewrittenMailtoUrl(contactEmail)}
           >
             <div className="connect-fill-inner">
-              <span className="connect-fill-label">{copy.connectHeading}</span>
+              <span className="connect-fill-copy">
+                <span className="connect-fill-label">{copy.connectHeading}</span>
+                <span className="connect-fill-email">Email me at {contactEmail}</span>
+              </span>
               <span aria-hidden="true" className="connect-fill-arrow">
                 arrow_outward
               </span>
