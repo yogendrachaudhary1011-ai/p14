@@ -11,7 +11,7 @@ interface ProjectEditorProps {
   initialProject?: Project | null;
   existingProjects: Project[];
   mediaLibrary: MediaAsset[];
-  onSave: (projectData: Partial<Project>) => void;
+  onSave: (projectData: Partial<Project>) => void | Promise<void>;
   onUploadMedia: (file: File) => Promise<MediaAsset>;
   onCancel: () => void;
 }
@@ -31,6 +31,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [savingProject, setSavingProject] = useState(false);
   const [projectMedia, setProjectMedia] = useState(mediaLibrary);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
@@ -214,7 +215,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
     };
   };
 
-  const handleSaveAttempt = (forcedStatus?: 'published' | 'draft') => {
+  const handleSaveAttempt = async (forcedStatus?: 'published' | 'draft') => {
     setValidationError(null);
 
     const targetStatus = forcedStatus || status;
@@ -249,7 +250,14 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
     const payload = getCleanFormData();
     payload.status = targetStatus;
-    onSave(payload);
+    setSavingProject(true);
+    try {
+      await onSave(payload);
+    } catch (error) {
+      setValidationError(error instanceof Error ? error.message : 'Could not save the case study to Supabase.');
+    } finally {
+      setSavingProject(false);
+    }
   };
 
   // Preview project mock
@@ -289,7 +297,8 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
           <button
             type="button"
-            onClick={() => handleSaveAttempt('draft')}
+            onClick={() => void handleSaveAttempt('draft')}
+            disabled={savingProject}
             className="px-3.5 py-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium flex items-center gap-1.5 cursor-pointer border border-white/10"
           >
             <span className="material-symbols-rounded text-sm">save</span>
@@ -298,11 +307,12 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
           <button
             type="button"
-            onClick={() => handleSaveAttempt('published')}
+            onClick={() => void handleSaveAttempt('published')}
+            disabled={savingProject}
             className="px-4 py-2 rounded bg-[#ff853a] hover:bg-[#ff721a] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-[#ff853a]/20"
           >
             <span className="material-symbols-rounded text-sm">publish</span>
-            <span>Publish project</span>
+            <span>{savingProject ? 'Saving to Supabase…' : 'Publish project'}</span>
           </button>
 
           <button
@@ -552,7 +562,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
           <div>
             <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
-              Deliverables List (One per line)
+              Deliverables (one per line; displayed in two columns)
             </label>
             <textarea
               rows={4}
@@ -561,6 +571,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm font-mono text-xs"
               placeholder="87 screens and states in Figma&#10;81 component variants&#10;Desktop (1440 px) and mobile (428 px)&#10;A design reference document for developers"
             />
+            <p className="mt-1.5 text-xs text-zinc-500">Edit, add, or remove items here. The project page balances the list across two columns automatically.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-white/5">
@@ -730,7 +741,8 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
               <button
                 type="button"
-                onClick={() => handleSaveAttempt('published')}
+                onClick={() => void handleSaveAttempt('published')}
+                disabled={savingProject}
                 className="px-3.5 sm:px-4 py-1.5 rounded bg-[#ff853a] text-white text-xs font-semibold hover:bg-[#ff721a] cursor-pointer"
               >
                 Publish Directly
