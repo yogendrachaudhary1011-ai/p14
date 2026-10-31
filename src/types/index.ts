@@ -14,6 +14,7 @@ export interface SiteSettings {
   aboutSectionOrder?: Array<'profile' | 'experience' | 'education'>;
   profileImage?: string;
   aboutVideo?: string;
+  certificates?: AboutCertificate[];
   behanceUrl?: string;
   linkedinUrl?: string;
   availabilityText: string;
@@ -28,6 +29,15 @@ export interface SiteSettings {
     ogImage: string;
     robots: string;
   };
+}
+
+export interface AboutCertificate {
+  id: string;
+  title: string;
+  url: string;
+  mimeType: string;
+  size: number;
+  uploadedAt: string;
 }
 
 export type CaseStudyBlockType =
