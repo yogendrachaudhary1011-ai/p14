@@ -190,8 +190,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const aboutVideoInputRef = useRef<HTMLInputElement>(null);
   const [uploadingResume, setUploadingResume] = useState(false);
   const resumeFileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadingCertificates, setUploadingCertificates] = useState(false);
-  const certificatesInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingCertificatesFor, setUploadingCertificatesFor] = useState<string | null>(null);
 
   // Notification message
   const [notice, setNotice] = useState<string | null>(null);
@@ -207,6 +206,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const showNotice = (msg: string) => {
     setNotice(msg);
     setTimeout(() => setNotice(null), 3500);
+  };
+
+  const getCertificatesForExperience = (item: ExperienceItem) =>
+    item.certificates ?? (item.id === (experience.find((entry) => entry.visible) ?? experience[0])?.id ? settings.certificates ?? [] : []);
+
+  const saveExperienceCertificates = (itemId: string, certificates: AboutCertificate[]) => {
+    const legacyCertificates = settings.certificates ?? [];
+    const legacyOwner = experience.find((entry) => entry.visible) ?? experience[0];
+    if (legacyCertificates.length && legacyOwner) {
+      if (legacyOwner.id !== itemId) {
+        updateExperience(legacyOwner.id, { certificates: legacyOwner.certificates ?? legacyCertificates });
+      }
+      updateSettings({ certificates: undefined });
+    }
+    updateExperience(itemId, { certificates });
   };
 
   const cloudStatusLabel = cloudSaveStatus === 'saving'
@@ -1907,6 +1921,92 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         </span>
                       ))}
                     </div>
+                    <div className="mt-4 border-t border-white/10 pt-3">
+                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <h4 className="text-xs font-semibold text-zinc-200">Certificates</h4>
+                          <p className="mt-0.5 text-[11px] text-zinc-500">Upload one or more files for this experience. They appear beneath this role on the About pages.</p>
+                        </div>
+                        <label className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-[#181923] px-3 py-2 text-xs font-medium text-zinc-100 hover:bg-[#202230] ${!isAdmin || uploadingCertificatesFor === item.id ? 'pointer-events-none opacity-50' : ''}`}>
+                          <input
+                            type="file"
+                            accept="application/pdf,image/jpeg,image/png,image/webp,image/gif,image/avif,.pdf,.jpg,.jpeg,.png,.webp,.gif,.avif"
+                            multiple
+                            className="sr-only"
+                            disabled={!isAdmin || uploadingCertificatesFor === item.id}
+                            onChange={async (event) => {
+                              const input = event.currentTarget;
+                              const files = Array.from(input.files || []);
+                              if (!files.length) return;
+                              if (!isAdmin) {
+                                showNotice('Sign in to Supabase Auth before uploading certificates.');
+                                input.value = '';
+                                return;
+                              }
+                              setUploadingCertificatesFor(item.id);
+                              const existing = getCertificatesForExperience(item);
+                              const added: AboutCertificate[] = [];
+                              const failures: string[] = [];
+                              try {
+                                for (const file of files) {
+                                  if (!(file.type === 'application/pdf' || file.type.startsWith('image/'))) {
+                                    failures.push(`${file.name}: choose an image or PDF`);
+                                    continue;
+                                  }
+                                  const result = await uploadMediaToSupabase(file);
+                                  if (!result.url) {
+                                    failures.push(`${file.name}: ${result.error || 'upload failed'}`);
+                                    continue;
+                                  }
+                                  const title = file.name.replace(/\.[^.]+$/, '') || file.name;
+                                  const asset = addMedia(title, result.url, file.type, file.size);
+                                  added.push({ id: asset.id, title, url: asset.url, mimeType: asset.mimeType, size: asset.size, uploadedAt: asset.uploadedAt });
+                                }
+                                if (added.length) {
+                                  saveExperienceCertificates(item.id, [...existing, ...added]);
+                                  showNotice(`${added.length} certificate${added.length === 1 ? '' : 's'} uploaded for ${item.role}.${failures.length ? ` ${failures.length} failed.` : ''}`);
+                                } else {
+                                  showNotice(failures.join(' · ') || 'No certificates were uploaded.');
+                                }
+                              } finally {
+                                setUploadingCertificatesFor(null);
+                                input.value = '';
+                              }
+                            }}
+                          />
+                          <Upload size={13} className={uploadingCertificatesFor === item.id ? 'animate-pulse' : ''} />
+                          {uploadingCertificatesFor === item.id ? 'Uploading…' : 'Upload certificate(s)'}
+                        </label>
+                      </div>
+                      {!!getCertificatesForExperience(item).length && (
+                        <div className="space-y-2">
+                          {getCertificatesForExperience(item).map((certificate) => (
+                            <div key={certificate.id} className="flex flex-col gap-2 rounded-lg border border-white/10 bg-[#0d0e14] p-3 sm:flex-row sm:items-center">
+                              <input
+                                aria-label={`Certificate title for ${item.role}`}
+                                value={certificate.title}
+                                onChange={(event) => {
+                                  const certificates = getCertificatesForExperience(item).map((current) => current.id === certificate.id ? { ...current, title: event.target.value } : current);
+                                  saveExperienceCertificates(item.id, certificates);
+                                }}
+                                className="min-w-0 flex-1 rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-[#f37021]"
+                              />
+                              <a href={certificate.url} target="_blank" rel="noopener noreferrer" className="rounded-md border border-white/10 px-3 py-2 text-center text-xs text-zinc-200 hover:bg-white/5">View certificate ↗</a>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const certificates = getCertificatesForExperience(item).filter((current) => current.id !== certificate.id);
+                                  saveExperienceCertificates(item.id, certificates);
+                                }}
+                                className="rounded-md border border-red-400/20 px-3 py-2 text-xs text-red-300 hover:bg-red-500/10"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-start">
@@ -1942,90 +2042,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 </div>
               ))}
             </div>
-            <div className="rounded-xl border border-white/10 bg-[#12131a] p-5 sm:p-6 space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="text-base font-bold text-white">Certificates &amp; PDFs</h3>
-                  <p className="mt-1 text-xs text-zinc-400">Upload image or PDF certificates. They appear as view buttons below Experience in the About section.</p>
-                </div>
-                <input
-                  ref={certificatesInputRef}
-                  type="file"
-                  accept="application/pdf,image/jpeg,image/png,image/webp,image/gif,image/avif,.pdf,.jpg,.jpeg,.png,.webp,.gif,.avif"
-                  multiple
-                  className="hidden"
-                  onChange={async (event) => {
-                    const input = event.currentTarget;
-                    const files = Array.from(input.files || []);
-                    if (!files.length) return;
-                    if (!isAdmin) {
-                      showNotice('Sign in to Supabase Auth before uploading certificates.');
-                      input.value = '';
-                      return;
-                    }
-                    setUploadingCertificates(true);
-                    const added: AboutCertificate[] = [];
-                    const failures: string[] = [];
-                    try {
-                      for (const file of files) {
-                        if (!(file.type === 'application/pdf' || file.type.startsWith('image/'))) {
-                          failures.push(`${file.name}: choose an image or PDF`);
-                          continue;
-                        }
-                        const result = await uploadMediaToSupabase(file);
-                        if (!result.url) {
-                          failures.push(`${file.name}: ${result.error || 'upload failed'}`);
-                          continue;
-                        }
-                        const title = file.name.replace(/\.[^.]+$/, '') || file.name;
-                        const asset = addMedia(title, result.url, file.type, file.size);
-                        added.push({ id: asset.id, title, url: asset.url, mimeType: asset.mimeType, size: asset.size, uploadedAt: asset.uploadedAt });
-                      }
-                      if (added.length) {
-                        updateSettings({ certificates: [...(settings.certificates || []), ...added] });
-                        showNotice(`${added.length} certificate${added.length === 1 ? '' : 's'} uploaded to Supabase.${failures.length ? ` ${failures.length} failed.` : ''}`);
-                      } else {
-                        showNotice(failures.join(' · ') || 'No certificates were uploaded.');
-                      }
-                    } finally {
-                      setUploadingCertificates(false);
-                      input.value = '';
-                    }
-                  }}
-                />
-                <button
-                  type="button"
-                  disabled={uploadingCertificates || !isAdmin}
-                  onClick={() => certificatesInputRef.current?.click()}
-                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-[#f37021] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#ff7e33] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {uploadingCertificates ? <Upload size={14} className="animate-pulse" /> : <FileText size={14} />}
-                  {uploadingCertificates ? 'Uploading…' : 'Upload certificates or PDFs'}
-                </button>
-              </div>
-              {!!settings.certificates?.length && (
-                <div className="space-y-2">
-                  {settings.certificates.map((certificate) => (
-                    <div key={certificate.id} className="flex flex-col gap-2 rounded-lg border border-white/10 bg-[#0d0e14] p-3 sm:flex-row sm:items-center">
-                      <input
-                        aria-label="Certificate title"
-                        value={certificate.title}
-                        onChange={(event) => updateSettings({ certificates: settings.certificates?.map((item) => item.id === certificate.id ? { ...item, title: event.target.value } : item) })}
-                        className="min-w-0 flex-1 rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-[#f37021]"
-                      />
-                      <a href={certificate.url} target="_blank" rel="noopener noreferrer" className="rounded-md border border-white/10 px-3 py-2 text-center text-xs text-zinc-200 hover:bg-white/5">View file ↗</a>
-                      <button
-                        type="button"
-                        onClick={() => updateSettings({ certificates: settings.certificates?.filter((item) => item.id !== certificate.id) })}
-                        className="rounded-md border border-red-400/20 px-3 py-2 text-xs text-red-300 hover:bg-red-500/10"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+
           </div>
         )}
 

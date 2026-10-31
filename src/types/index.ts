@@ -14,6 +14,7 @@ export interface SiteSettings {
   aboutSectionOrder?: Array<'profile' | 'experience' | 'education'>;
   profileImage?: string;
   aboutVideo?: string;
+  /** @deprecated Certificates now belong to individual ExperienceItem records. */
   certificates?: AboutCertificate[];
   behanceUrl?: string;
   linkedinUrl?: string;
@@ -380,6 +381,7 @@ export interface ExperienceItem {
   headline?: string;
   description: string;
   tags: string[];
+  certificates?: AboutCertificate[];
   order: number;
   visible: boolean;
 }

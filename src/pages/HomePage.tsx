@@ -522,29 +522,19 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                             </span>
                           ))}
                         </div>
+                        {!!(item.certificates?.length || (item.id === experience.find((entry) => entry.visible)?.id && settings.certificates?.length)) && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '14px' }}>
+                            {(item.certificates ?? (item.id === experience.find((entry) => entry.visible)?.id ? settings.certificates : []) ?? []).map((certificate) => (
+                              <a key={certificate.id} className="about-cv-button" href={certificate.url} target="_blank" rel="noopener noreferrer" style={{ minHeight: '40px', textDecoration: 'none' }}>
+                                <span>{certificate.title} · View certificate</span>
+                                <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">open_in_new</span>
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </article>
                     ))}
-                  </div>                  {!!settings.certificates?.length && (
-                    <div style={{ marginTop: '28px' }}>
-                      <h3 className="display display-sm" style={{ marginBottom: '14px' }}>{copy.certificatesHeading}</h3>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        {settings.certificates.map((certificate) => (
-                          <a
-                            key={certificate.id}
-                            className="about-cv-button"
-                            href={certificate.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ minHeight: '42px', textDecoration: 'none' }}
-                          >
-                            <span>{certificate.title}</span>
-                            <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">open_in_new</span>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
+                  </div>
                 </section>
 
                 <section className="about-panel about-education-panel" id="about-education" style={{ display: aboutSections.education ? undefined : 'none', order: aboutOrder.indexOf('education') }}>
