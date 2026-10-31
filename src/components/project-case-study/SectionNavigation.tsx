@@ -94,7 +94,15 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                     : 'text-zinc-400 hover:text-white hover:translate-x-0.5'
                 }`}
               >
-                <span className={`inline-block min-w-0 truncate pr-2 ${isActive ? 'border-b-2 border-[#8be28b] pb-1' : ''}`}>{item.label}</span>
+                <span className="relative inline-block min-w-0 truncate pr-2 pb-1">
+                  {item.label}
+                  <span
+                    aria-hidden="true"
+                    className={`absolute left-0 -bottom-px h-0.5 rounded-full bg-[#8be28b] transition-[width,opacity] duration-300 ease-out motion-reduce:transition-none ${
+                      isActive ? 'w-full opacity-100' : 'w-0 opacity-0'
+                    }`}
+                  />
+                </span>
                 {!isActive && (
                   <span className="w-2 h-0.5 bg-white/0 group-hover:bg-white/40 shrink-0 transition-all duration-200 rounded-full" />
                 )}
