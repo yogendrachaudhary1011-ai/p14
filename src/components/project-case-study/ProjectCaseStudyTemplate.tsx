@@ -97,7 +97,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
             This project case study is currently saved as a draft and is undergoing refinement.
           </p>
           <button
-            onClick={() => onNavigate && onNavigate('/projects')}
+            onClick={() => onNavigate && onNavigate('/#work')}
             className="px-6 py-2.5 rounded bg-white text-black font-medium text-sm hover:bg-zinc-200 cursor-pointer"
           >
             Back to All Projects
@@ -186,7 +186,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
             {/* Bottom Footer Navigation Bar inside Case Study */}
             <div className="pt-12 pb-16 border-t border-white/20 flex flex-col sm:flex-row justify-between items-center gap-6">
               <button
-                onClick={() => (onNavigate ? onNavigate('/projects') : window.history.back())}
+                onClick={() => (onNavigate ? onNavigate('/#work') : window.location.assign('/#work'))}
                 className="inline-flex items-center gap-2 text-white hover:text-[#8be28b] transition-all duration-200 hover:-translate-x-1.5 text-base font-medium cursor-pointer group"
               >
                 <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-x-1">arrow_back</span>
