@@ -311,6 +311,12 @@ export interface ProjectConstraintsSection {
   items: string[];
 }
 
+export interface DeliverableGroup {
+  id: string;
+  label: string;
+  items: string[];
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -339,6 +345,7 @@ export interface Project {
   role?: string;
   duration?: string;
   deliverables?: string[];
+  deliverableGroups?: DeliverableGroup[];
   figmaUrl?: string;
   figmaButtonText?: string;
   externalProjectUrl?: string;

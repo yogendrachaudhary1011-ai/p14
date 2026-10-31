@@ -170,6 +170,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
           role={project.role}
           duration={project.duration}
           deliverables={project.deliverables}
+          deliverableGroups={project.deliverableGroups}
           figmaUrl={project.figmaUrl}
           figmaButtonText={project.figmaButtonText}
           externalProjectUrl={project.externalProjectUrl}

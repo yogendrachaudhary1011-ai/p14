@@ -103,7 +103,10 @@ export function mapRowToProject(row: any): Project {
     route: row.route || `/${row.slug}`,
     role: row.role || 'UI/UX & Product Designer',
     duration: row.duration || '1 Month',
-    deliverables: Array.isArray(row.deliverables) ? row.deliverables : [],
+    deliverables: Array.isArray(row.deliverables) ? row.deliverables.flatMap((item: any) => typeof item === 'string' ? [item] : Array.isArray(item?.items) ? item.items : []) : [],
+    deliverableGroups: Array.isArray(row.deliverables) && row.deliverables.some((item: any) => item && typeof item === 'object' && Array.isArray(item.items))
+      ? row.deliverables.filter((item: any) => item && typeof item === 'object' && Array.isArray(item.items)).map((item: any, index: number) => ({ id: String(item.id || `overview-list-${index + 1}`), label: String(item.label || 'Deliverables'), items: item.items.filter((entry: unknown): entry is string => typeof entry === 'string') }))
+      : undefined,
     figmaUrl: row.figma_url || 'https://www.figma.com',
     figmaButtonText: row.figma_button_text || 'View Figma File',
     externalProjectUrl: row.external_project_url || '',
@@ -145,7 +148,7 @@ export function mapProjectToRow(project: Partial<Project>): any {
     route: project.route || `/${project.slug}`,
     role: project.role || 'UI/UX & Product Designer',
     duration: project.duration || '1 Month',
-    deliverables: project.deliverables || [],
+    deliverables: project.deliverableGroups || project.deliverables || [],
     figma_url: project.figmaUrl || '',
     figma_button_text: project.figmaButtonText || 'View Figma File',
     external_project_url: project.externalProjectUrl || '',

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Project, CaseStudySection, MediaAsset } from '../../types';
+import { Project, CaseStudySection, DeliverableGroup, MediaAsset } from '../../types';
 import { CaseStudyBuilder } from './CaseStudyBuilder';
 import { ProjectCaseStudyTemplate } from '../project-case-study/ProjectCaseStudyTemplate';
 import { normalizeProjectSections } from '../../utils/caseStudyUtils';
@@ -55,10 +55,13 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   );
   const [role, setRole] = useState(initialProject?.role || 'UI/UX & Product Designer');
   const [duration, setDuration] = useState(initialProject?.duration || '1 Month');
-  const [deliverablesInput, setDeliverablesInput] = useState(
-    initialProject?.deliverables?.join('\n') ||
-      '87 screens and states in Figma\n81 component variants\nDesktop (1440 px) and mobile (428 px)\nA design reference document for developers'
-  );
+  const [deliverableGroups, setDeliverableGroups] = useState<DeliverableGroup[]>(() => {
+    if (initialProject?.deliverableGroups?.length) return initialProject.deliverableGroups;
+    if (initialProject?.deliverables?.length) {
+      return [{ id: 'deliverables-default', label: 'Deliverables', items: initialProject.deliverables }];
+    }
+    return [{ id: 'deliverables-default', label: 'Deliverables', items: ['87 screens and states in Figma', '81 component variants', 'Desktop (1440 px) and mobile (428 px)', 'A design reference document for developers'] }];
+  });
   const [figmaUrl, setFigmaUrl] = useState(initialProject?.figmaUrl || 'https://www.figma.com');
   const [figmaButtonText, setFigmaButtonText] = useState(initialProject?.figmaButtonText || 'View Figma File');
   const [externalProjectUrl, setExternalProjectUrl] = useState(initialProject?.externalProjectUrl || '');
@@ -169,10 +172,12 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   };
 
   const getCleanFormData = (): Partial<Project> => {
-    const deliverables = deliverablesInput
-      .split('\n')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
+    const cleanDeliverableGroups = deliverableGroups.map((group) => ({
+      ...group,
+      label: group.label.trim() || 'Untitled section',
+      items: group.items.map((item) => item.trim()).filter(Boolean)
+    }));
+    const deliverables = cleanDeliverableGroups.flatMap((group) => group.items);
 
     const cleanSlug = slug
       .trim()
@@ -197,6 +202,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
       role: role.trim(),
       duration: duration.trim(),
       deliverables,
+      deliverableGroups: cleanDeliverableGroups,
       figmaUrl: figmaUrl.trim(),
       figmaButtonText: figmaButtonText.trim() || 'View Figma File',
       externalProjectUrl: externalProjectUrl.trim(),
@@ -550,17 +556,26 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
-              Deliverables List (One per line)
-            </label>
-            <textarea
-              rows={4}
-              value={deliverablesInput}
-              onChange={(e) => setDeliverablesInput(e.target.value)}
-              className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm font-mono text-xs"
-              placeholder="87 screens and states in Figma&#10;81 component variants&#10;Desktop (1440 px) and mobile (428 px)&#10;A design reference document for developers"
-            />
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <label className="block text-xs font-mono uppercase text-zinc-400">Overview lists</label>
+                <p className="mt-1 text-xs text-zinc-500">Add one or more lists and rename each heading, such as “Web Experience”.</p>
+              </div>
+              <button type="button" onClick={() => setDeliverableGroups((groups) => [...groups, { id: `overview-list-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, label: 'New section', items: [] }])} className="rounded border border-white/15 px-3 py-2 text-xs font-semibold text-white hover:border-[#ff853a] hover:text-[#ffb17d]">
+                + Add overview list
+              </button>
+            </div>
+            {deliverableGroups.map((group, index) => (
+              <section key={group.id} className="rounded-lg border border-white/10 bg-zinc-950/70 p-3 sm:p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <input aria-label={`Overview list ${index + 1} heading`} type="text" value={group.label} onChange={(event) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, label: event.target.value } : item))} className="min-w-0 flex-1 rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="e.g. Web Experience" />
+                  <button type="button" disabled={deliverableGroups.length <= 1} onClick={() => setDeliverableGroups((groups) => groups.filter((item) => item.id !== group.id))} className="rounded px-3 py-2 text-xs text-zinc-400 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-40" aria-label={`Remove ${group.label || `list ${index + 1}`}`}>Remove</button>
+                </div>
+                <textarea rows={Math.min(8, Math.max(3, group.items.length))} value={group.items.join('\n')} onChange={(event) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, items: event.target.value.split('\n') } : item))} className="w-full rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="Add one line per item" />
+                <p className="text-[11px] text-zinc-500">Each list is displayed in two columns on the project page.</p>
+              </section>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-white/5">

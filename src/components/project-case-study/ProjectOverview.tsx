@@ -1,5 +1,6 @@
 import React from 'react';
 import { MediaPreview } from '../MediaPreview';
+import { DeliverableGroup } from '../../types';
 
 interface ProjectOverviewProps {
   heroImage: string;
@@ -8,6 +9,7 @@ interface ProjectOverviewProps {
   role?: string;
   duration?: string;
   deliverables?: string[];
+  deliverableGroups?: DeliverableGroup[];
   figmaUrl?: string;
   figmaButtonText?: string;
   externalProjectUrl?: string;
@@ -21,6 +23,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   role,
   duration,
   deliverables,
+  deliverableGroups,
   figmaUrl,
   figmaButtonText,
   externalProjectUrl,
@@ -77,24 +80,27 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               </div>
             )}
 
-            {/* Deliverables */}
-            {deliverables && deliverables.length > 0 && (
-              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
-                <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
-                  {copy.deliverablesLabel}
+            {/* Editable overview lists */}
+            {(deliverableGroups?.length ? deliverableGroups : deliverables?.length ? [{ id: 'legacy-deliverables', label: copy.deliverablesLabel || 'Deliverables', items: deliverables }] : [])
+              .filter((group) => group.items.length > 0)
+              .map((group) => (
+                <div key={group.id} className="w-full flex flex-col items-start gap-4 border-b border-white/15 pb-6">
+                  <div className="text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">{group.label}</div>
+                  <div className="grid w-full grid-cols-1 gap-x-10 gap-y-2.5 sm:grid-cols-2">
+                    {[group.items.slice(0, Math.ceil(group.items.length / 2)), group.items.slice(Math.ceil(group.items.length / 2))].map((column, columnIndex) => (
+                      <ul key={columnIndex} className="flex flex-col gap-3">
+                        {column.map((item, itemIndex) => (
+                          <li key={`${columnIndex}-${itemIndex}`} className="flex items-start gap-3 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">
+                            <span aria-hidden="true" className="mt-[0.65rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[#8be28b]" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ))}
+                  </div>
                 </div>
-                <div className="w-full sm:w-80 flex flex-col gap-2.5">
-                  {deliverables.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5"
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+              ))}
+
           </div>
 
           {/* Action Buttons: Figma & External Project with micro-interaction hover */}
