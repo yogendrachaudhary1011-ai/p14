@@ -79,9 +79,9 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
           </h2>
         </div>
         {/* Subtle indicator from Figma */}
-        <div className="flex h-6 items-center justify-end opacity-40 hover:opacity-100 transition-opacity select-none font-mono text-xs text-white shrink-0">
-          <div className="w-16 h-px relative bg-white/40 flex items-center justify-center">
-            <span className="text-[10px] bg-black px-1 font-semibold">{formattedIndex}</span>
+        <div className="flex h-6 items-center justify-end opacity-65 hover:opacity-100 transition-opacity select-none font-mono text-xs text-white shrink-0">
+          <div className="w-16 h-px relative bg-[#8be28b]/45 flex items-center justify-center">
+            <span className="text-[10px] text-[#8be28b] bg-black px-1 font-semibold">{formattedIndex}</span>
           </div>
         </div>
       </div>
@@ -109,4 +109,5 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
     </section>
   );
 };
+
 
