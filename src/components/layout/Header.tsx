@@ -79,17 +79,11 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             {copy.navAbout}
           </a>
           <a
-            aria-label="View Yogendra Chaudhary resume"
-            className="nav-talk"
             href={resumeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ background: 'transparent', color: 'var(--text)', borderColor: 'var(--line-soft)' }}
           >
             {copy.navResume}
-            <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
-              open_in_new
-            </span>
           </a>
 
         </div>
@@ -150,7 +144,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             className="mobile-resume"
             onClick={() => setMobileMenuOpen(false)}
           >
-            {copy.navResume} ↗
+            {copy.navResume}
           </a>
           <span className="mobile-availability">
             <i aria-hidden="true"></i>
