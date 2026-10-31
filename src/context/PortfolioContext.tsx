@@ -184,6 +184,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [cloudReady, setCloudReady] = useState(false);
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
   const lastCloudSnapshot = useRef<string | null>(null);
+  const latestCloudSnapshot = useRef<string | null>(null);
 
   // Sync to local storage for fast boot
   useEffect(() => {
@@ -292,26 +293,41 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // Queue atomic saves so rapid edits cannot finish out of order and overwrite newer state.
   useEffect(() => {
-    if (!cloudReady) return;
     const snapshot = { settings, projects, experience, education, media };
     const serialized = JSON.stringify(snapshot);
+    latestCloudSnapshot.current = serialized;
+    if (!cloudReady) return;
     if (serialized === lastCloudSnapshot.current) return;
+    setCloudSaveStatus('saving');
+    setCloudSaveError(null);
     const timer = window.setTimeout(() => {
-      setCloudSaveStatus('saving');
-      setCloudSaveError(null);
-      saveQueue.current = saveQueue.current.then(async () => {
-        const result = await savePortfolioSnapshot(snapshot);
-        setIsSupabaseConnected(result.success);
-        if (result.success) {
-          lastCloudSnapshot.current = serialized;
-          setCloudSaveStatus('saved');
-          setCloudSaveError(null);
-        } else {
-          setCloudSaveStatus('error');
-          setCloudSaveError(result.error || 'Cloud save failed.');
-          console.error('Supabase portfolio save failed:', result.error);
+      const performSave = async () => {
+        try {
+          const result = await savePortfolioSnapshot(snapshot);
+          setIsSupabaseConnected(result.success);
+          if (result.success) {
+            lastCloudSnapshot.current = serialized;
+            if (latestCloudSnapshot.current === serialized) {
+              setCloudSaveStatus('saved');
+              setCloudSaveError(null);
+            }
+          } else {
+            console.error('Supabase portfolio save failed:', result.error);
+            if (latestCloudSnapshot.current === serialized) {
+              setCloudSaveStatus('error');
+              setCloudSaveError(result.error || 'Cloud save failed.');
+            }
+          }
+        } catch (error) {
+          console.error('Supabase portfolio save failed:', error);
+          if (latestCloudSnapshot.current === serialized) {
+            setIsSupabaseConnected(false);
+            setCloudSaveStatus('error');
+            setCloudSaveError(error instanceof Error ? error.message : 'Cloud save failed.');
+          }
         }
-      });
+      };
+      saveQueue.current = saveQueue.current.then(performSave, performSave);
     }, 300);
     return () => window.clearTimeout(timer);
   }, [cloudReady, settings, projects, experience, education, media]);
@@ -336,11 +352,14 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       setCloudSaveStatus('saving');
       setCloudSaveError(null);
-      const result = await savePortfolioSnapshot({ settings, projects, experience, education, media });
+      const snapshot = { settings, projects, experience, education, media };
+      const serialized = JSON.stringify(snapshot);
+      latestCloudSnapshot.current = serialized;
+      const result = await savePortfolioSnapshot(snapshot);
       if (!result.success) throw new Error(result.error || 'Cloud save failed.');
       setIsSupabaseConnected(true);
-      lastCloudSnapshot.current = JSON.stringify({ settings, projects, experience, education, media });
-      setCloudSaveStatus('saved');
+      lastCloudSnapshot.current = serialized;
+      if (latestCloudSnapshot.current === serialized) setCloudSaveStatus('saved');
       return {
         success: true,
         count: projects.length,
@@ -348,8 +367,10 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       };
     } catch (err: any) {
       const message = err.message || 'Unknown error';
-      setCloudSaveStatus('error');
-      setCloudSaveError(message);
+      if (latestCloudSnapshot.current === JSON.stringify({ settings, projects, experience, education, media })) {
+        setCloudSaveStatus('error');
+        setCloudSaveError(message);
+      }
       return {
         success: false,
         count: 0,
