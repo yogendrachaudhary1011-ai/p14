@@ -463,6 +463,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         'Desktop (1440 px) and mobile (428 px) responsive layouts',
         'Design reference documentation'
       ],
+      deliverableGroups: projectData.deliverableGroups,
       figmaUrl: projectData.figmaUrl || 'https://www.figma.com',
       figmaButtonText: projectData.figmaButtonText || 'View Figma File',
       externalProjectUrl: projectData.externalProjectUrl || '',
@@ -685,6 +686,10 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setProjects(initialProjects);
     setExperience(initialExperience);
     setEducation(initialEducation);
+    setMedia([
+      { id: 'media-01', name: 'Home portrait', url: '/assets/media/home-media-02-c6ea6ce61d01.webp', mimeType: 'image/webp', size: 142000, uploadedAt: new Date().toISOString() },
+      { id: 'media-02', name: 'SOMTU Case Cover', url: '/assets/media/home-media-04-f775f2921176.webp', mimeType: 'image/webp', size: 218000, uploadedAt: new Date().toISOString() }
+    ]);
     safeStorage.removeItem(STORAGE_KEYS.SETTINGS);
     safeStorage.removeItem(STORAGE_KEYS.PROJECTS);
   };

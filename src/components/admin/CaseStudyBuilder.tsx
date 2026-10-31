@@ -117,7 +117,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
   const handleUpdateBlock = (blockId: string, updates: Partial<CaseStudyBlock>) => {
     if (!selectedSection) return;
-    const updatedBlocks = selectedSection.blocks.map((b) =>
+    const updatedBlocks = (selectedSection.blocks || []).map((b) =>
       b.id === blockId ? ({ ...b, ...updates } as CaseStudyBlock) : b
     );
     handleUpdateSection(selectedSection.id, { blocks: updatedBlocks });
@@ -125,7 +125,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
   const handleDeleteBlock = (blockId: string) => {
     if (!selectedSection) return;
-    const updatedBlocks = selectedSection.blocks.filter((b) => b.id !== blockId);
+    const updatedBlocks = (selectedSection.blocks || []).filter((b) => b.id !== blockId);
     handleUpdateSection(selectedSection.id, { blocks: updatedBlocks });
   };
 
