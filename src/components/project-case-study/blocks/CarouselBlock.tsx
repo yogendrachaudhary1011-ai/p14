@@ -28,63 +28,61 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   const currentSlide = slides[currentIndex] || slides[0];
 
   return (
-    <div className="w-full my-2 flex flex-col gap-3">
-      {/* Container matching Figma styling: dark neutral backdrop, rounded, framed */}
-      <div className="relative isolate w-full rounded-[5px] overflow-hidden bg-neutral-900 border border-white/10 aspect-[16/10] max-h-[660px] flex items-center justify-center group">
+    <div className="w-full my-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d0b] shadow-[0_24px_70px_rgba(0,0,0,.24)]">
+      <div className="relative isolate flex aspect-[16/10] max-h-[660px] w-full items-center justify-center overflow-hidden bg-[#080a08] sm:aspect-[16/9]">
         <MediaPreview
           key={currentIndex}
           src={currentSlide.url}
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
-          className="w-full h-full object-contain md:object-cover transition-all duration-500 ease-out animate-cs-fade-in"
+          className="h-full w-full object-contain transition-all duration-500 ease-out animate-cs-fade-in"
           loading="lazy"
           fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
-
-        {/* Title overlay in top corner if available */}
-        {currentSlide.title && (
-          <div className="absolute top-4 left-4 px-3 py-1.5 rounded bg-black/70 backdrop-blur-md text-white text-xs font-mono border border-white/10 select-none transition-all">
-            {currentSlide.title} ({currentIndex + 1} / {slides.length})
-          </div>
-        )}
-
-        {/* Chevron buttons */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/45 to-transparent" />
         {slides.length > 1 && (
           <>
             <button
               type="button"
               onClick={prevSlide}
               aria-label="Previous slide"
-              className="absolute z-20 left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-black/95 text-white flex items-center justify-center backdrop-blur-md border border-white/30 transition-colors duration-200 cursor-pointer opacity-100 pointer-events-auto touch-manipulation"
+              className="group/arrow absolute left-4 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white shadow-lg backdrop-blur-md transition duration-200 hover:border-[#b9fc56] hover:bg-[#b9fc56] hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation sm:left-6 sm:h-12 sm:w-12"
             >
-              <span className="material-symbols-rounded text-xl">chevron_left</span>
+              <span className="material-symbols-rounded text-[22px] transition-transform group-hover/arrow:-translate-x-0.5">arrow_back</span>
             </button>
             <button
               type="button"
               onClick={nextSlide}
               aria-label="Next slide"
-              className="absolute z-20 right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-black/95 text-white flex items-center justify-center backdrop-blur-md border border-white/30 transition-colors duration-200 cursor-pointer opacity-100 pointer-events-auto touch-manipulation"
+              className="group/arrow absolute right-4 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white shadow-lg backdrop-blur-md transition duration-200 hover:border-[#b9fc56] hover:bg-[#b9fc56] hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation sm:right-6 sm:h-12 sm:w-12"
             >
-              <span className="material-symbols-rounded text-xl">chevron_right</span>
+              <span className="material-symbols-rounded text-[22px] transition-transform group-hover/arrow:translate-x-0.5">arrow_forward</span>
             </button>
-
-            {/* Pagination dots matching Figma pill shape */}
-            <div className="absolute z-20 bottom-4 left-1/2 -translate-x-1/2 h-7 px-3 bg-black/60 rounded-[50px] inline-flex justify-center items-center gap-1.5 backdrop-blur-md border border-white/20 pointer-events-auto">
-              {slides.map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setCurrentIndex(idx)}
-                  aria-label={`Go to slide ${idx + 1}`}
-                  className={`h-2.5 rounded-[5px] transition-all cursor-pointer ${
-                    currentIndex === idx ? 'w-5 bg-white' : 'w-2.5 bg-white/40 hover:bg-white/70'
-                  }`}
-                />
-              ))}
-            </div>
           </>
         )}
+      </div>
+      <div className="flex min-h-[72px] items-center justify-between gap-4 border-t border-white/[0.07] px-4 py-3 sm:px-6">
+        <div className="min-w-0">
+          <p className="truncate text-xs font-medium tracking-wide text-white sm:text-sm">{currentSlide.title || 'Design system'}</p>
+          <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">Component showcase</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          {slides.length > 1 && <div className="flex items-center gap-1.5" aria-label="Choose a slide">
+            {slides.map((slide, idx) => (
+              <button
+                key={`${slide.url}-${idx}`}
+                type="button"
+                onClick={() => setCurrentIndex(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                aria-current={currentIndex === idx ? 'true' : undefined}
+                className={`h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b0d0b] ${currentIndex === idx ? 'w-7 bg-[#b9fc56]' : 'w-1.5 bg-white/25 hover:bg-white/60'}`}
+              />
+            ))}
+          </div>}
+          <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 font-mono text-[10px] tabular-nums text-zinc-400">
+            <span className="text-[#b9fc56]">{String(currentIndex + 1).padStart(2, '0')}</span><span className="mx-1.5 text-zinc-600">/</span>{String(slides.length).padStart(2, '0')}
+          </span>
+        </div>
       </div>
     </div>
   );
 };
-
