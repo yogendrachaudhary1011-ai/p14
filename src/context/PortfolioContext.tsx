@@ -304,7 +304,15 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, [supabaseConfig]);
 
-
+  const updateSupabaseConfig = (url: string, key: string): boolean => {
+    const success = saveSupabaseCredentials(url, key);
+    if (success) {
+      setCloudReady(false);
+      setSupabaseConfigState({ url: url.trim(), key: key.trim() });
+      setIsSupabaseConnected(isSupabaseConfigured());
+    }
+    return success;
+  };
 
   const syncAllProjectsToSupabase = useCallback(async (): Promise<{ success: boolean; count: number; message: string }> => {
     if (!isSupabaseConfigured()) {
