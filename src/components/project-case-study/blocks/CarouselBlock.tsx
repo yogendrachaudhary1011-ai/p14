@@ -28,12 +28,14 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
     setIsTransitioning(false);
     setOutgoingIndex(currentIndex);
     setCurrentIndex(nextIndex);
-    window.requestAnimationFrame(() => setIsTransitioning(true));
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setIsTransitioning(true));
+    });
     transitionTimer.current = window.setTimeout(() => {
       setOutgoingIndex(null);
       setIsTransitioning(false);
       transitionTimer.current = null;
-    }, 520);
+    }, 560);
   };
 
   const nextSlide = () => changeSlide(currentIndex < slides.length - 1 ? currentIndex + 1 : 0, 'next');
@@ -56,7 +58,9 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
             alt=""
             className="absolute inset-0 h-full w-full object-contain"
             style={{
-              transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+              transition: "transform 480ms cubic-bezier(0.22, 0.72, 0.18, 1)",
+              willChange: "transform",
+              backfaceVisibility: "hidden",
               transform: isTransitioning ? `translateX(${slideDirection === "next" ? "-100%" : "100%"})` : "translateX(0)"
             }}
             loading="eager"
@@ -68,10 +72,12 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
           className="relative z-[1] block h-auto w-full object-contain"
           style={{
-            transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+            transition: "transform 480ms cubic-bezier(0.22, 0.72, 0.18, 1)",
+            willChange: "transform",
+            backfaceVisibility: "hidden",
             transform: outgoingSlide && !isTransitioning ? `translateX(${slideDirection === "next" ? "100%" : "-100%"})` : "translateX(0)"
           }}
-          loading="lazy"
+          loading={outgoingSlide ? "eager" : "lazy"}
           fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/45 to-transparent" />
