@@ -7,6 +7,7 @@ interface MediaPreviewProps {
   mimeType?: string;
   className?: string;
   style?: React.CSSProperties;
+  onLoad?: React.ReactEventHandler<HTMLImageElement>;
   loading?: 'eager' | 'lazy';
   fallbackSrc?: string;
   controls?: boolean;
@@ -18,6 +19,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   mimeType,
   className,
   style,
+  onLoad,
   loading = 'lazy',
   fallbackSrc,
   controls = true
@@ -32,6 +34,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
       alt={alt}
       className={className}
       style={style}
+      onLoad={onLoad}
       loading={loading}
       onError={(event) => {
         if (fallbackSrc && event.currentTarget.src !== new URL(fallbackSrc, window.location.href).href) {
