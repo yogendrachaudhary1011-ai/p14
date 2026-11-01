@@ -45,25 +45,24 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
               type="button"
               onClick={prevSlide}
               aria-label="Previous slide"
-              className="group/arrow absolute left-4 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white shadow-lg backdrop-blur-md transition duration-200 hover:border-[#b9fc56] hover:bg-[#b9fc56] hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation sm:left-6 sm:h-12 sm:w-12"
+              className="absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/55 p-0 text-white shadow-lg backdrop-blur-md transition duration-200 hover:border-[#b9fc56] hover:bg-[#b9fc56] hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation sm:left-6 sm:h-12 sm:w-12"
             >
-              <span className="material-symbols-rounded text-[22px] transition-transform group-hover/arrow:-translate-x-0.5">arrow_back</span>
+              <span aria-hidden="true" className="material-symbols-rounded block text-[22px] leading-none">arrow_back</span>
             </button>
             <button
               type="button"
               onClick={nextSlide}
               aria-label="Next slide"
-              className="group/arrow absolute right-4 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/55 text-white shadow-lg backdrop-blur-md transition duration-200 hover:border-[#b9fc56] hover:bg-[#b9fc56] hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation sm:right-6 sm:h-12 sm:w-12"
+              className="absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/55 p-0 text-white shadow-lg backdrop-blur-md transition duration-200 hover:border-[#b9fc56] hover:bg-[#b9fc56] hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation sm:right-6 sm:h-12 sm:w-12"
             >
-              <span className="material-symbols-rounded text-[22px] transition-transform group-hover/arrow:translate-x-0.5">arrow_forward</span>
+              <span aria-hidden="true" className="material-symbols-rounded block text-[22px] leading-none">arrow_forward</span>
             </button>
           </>
         )}
       </div>
       <div className="flex min-h-[72px] items-center justify-between gap-4 border-t border-white/[0.07] px-4 py-3 sm:px-6">
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium tracking-wide text-white sm:text-sm">{currentSlide.title || 'Design system'}</p>
-          <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">Component showcase</p>
+          <p className="truncate text-xs font-medium tracking-wide text-white sm:text-sm">{currentSlide.title || `Slide ${currentIndex + 1}`}</p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {slides.length > 1 && <div className="flex items-center gap-1.5" aria-label="Choose a slide">
