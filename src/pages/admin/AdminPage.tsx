@@ -573,7 +573,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <CheckCircle2 size={14} /> {syncingSupabase ? 'Saving…' : 'Save Changes'}
               </button>
             )}
-            <button onClick={() => onNavigate('/')>
+            <button onClick={() => onNavigate('/')}>
               <ArrowUpRight size={14} className="text-[#f37021]" /> View public site
             </button>
           </div>
