@@ -10,6 +10,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'next' | 'prev'>('next');
   const [outgoingIndex, setOutgoingIndex] = useState<number | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionTimer = useRef<number | null>(null);
   const slides = (block.slides || []).filter((slide) => slide.url?.trim());
   const slideKey = slides.map((slide) => slide.url).join('|');
@@ -24,10 +25,13 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
     if (outgoingIndex !== null || nextIndex === currentIndex || slides.length < 2) return;
     if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
     setSlideDirection(direction);
+    setIsTransitioning(false);
     setOutgoingIndex(currentIndex);
     setCurrentIndex(nextIndex);
+    window.requestAnimationFrame(() => setIsTransitioning(true));
     transitionTimer.current = window.setTimeout(() => {
       setOutgoingIndex(null);
+      setIsTransitioning(false);
       transitionTimer.current = null;
     }, 520);
   };
@@ -50,7 +54,11 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
             key={"outgoing-" + outgoingIndex}
             src={outgoingSlide.url}
             alt=""
-            className={"absolute inset-0 h-full w-full object-contain design-carousel-slide-exit design-carousel-slide-exit--" + slideDirection}
+            className="absolute inset-0 h-full w-full object-contain"
+            style={{
+              transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+              transform: isTransitioning ? `translateX(${slideDirection === "next" ? "-100%" : "100%"})` : "translateX(0)"
+            }}
             loading="eager"
           />
         )}
@@ -58,7 +66,11 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
           key={currentIndex}
           src={currentSlide.url}
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
-          className={"relative z-[1] block h-auto w-full object-contain " + (outgoingSlide ? "design-carousel-slide-enter design-carousel-slide-enter--" + slideDirection : "")}
+          className="relative z-[1] block h-auto w-full object-contain"
+          style={{
+            transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+            transform: outgoingSlide && !isTransitioning ? `translateX(${slideDirection === "next" ? "100%" : "-100%"})` : "translateX(0)"
+          }}
           loading="lazy"
           fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
