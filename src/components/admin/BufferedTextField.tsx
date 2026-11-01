@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 type BufferedInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> & {
   value: string;
@@ -11,27 +11,29 @@ type BufferedTextareaProps = Omit<React.TextareaHTMLAttributes<HTMLTextAreaEleme
 };
 
 const BufferedTextInputField: React.FC<BufferedInputProps> = ({ value, onCommit, ...props }) => {
-  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
   const focused = useRef(false);
   const onCommitRef = useRef(onCommit);
   onCommitRef.current = onCommit;
 
   useEffect(() => {
-    if (!focused.current) setDraft(value);
+    if (!focused.current && inputRef.current && inputRef.current.value !== value) {
+      inputRef.current.value = value;
+    }
   }, [value]);
 
   return (
     <input
       {...props}
-      value={draft}
+      ref={inputRef}
+      defaultValue={value}
       onFocus={(event) => {
         focused.current = true;
         props.onFocus?.(event);
       }}
-      onChange={(event) => setDraft(event.target.value)}
       onBlur={(event) => {
         focused.current = false;
-        if (draft !== value) onCommitRef.current(draft);
+        if (event.currentTarget.value !== value) onCommitRef.current(event.currentTarget.value);
         props.onBlur?.(event);
       }}
     />
@@ -39,27 +41,29 @@ const BufferedTextInputField: React.FC<BufferedInputProps> = ({ value, onCommit,
 };
 
 const BufferedTextareaField: React.FC<BufferedTextareaProps> = ({ value, onCommit, ...props }) => {
-  const [draft, setDraft] = useState(value);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const focused = useRef(false);
   const onCommitRef = useRef(onCommit);
   onCommitRef.current = onCommit;
 
   useEffect(() => {
-    if (!focused.current) setDraft(value);
+    if (!focused.current && textareaRef.current && textareaRef.current.value !== value) {
+      textareaRef.current.value = value;
+    }
   }, [value]);
 
   return (
     <textarea
       {...props}
-      value={draft}
+      ref={textareaRef}
+      defaultValue={value}
       onFocus={(event) => {
         focused.current = true;
         props.onFocus?.(event);
       }}
-      onChange={(event) => setDraft(event.target.value)}
       onBlur={(event) => {
         focused.current = false;
-        if (draft !== value) onCommitRef.current(draft);
+        if (event.currentTarget.value !== value) onCommitRef.current(event.currentTarget.value);
         props.onBlur?.(event);
       }}
     />
