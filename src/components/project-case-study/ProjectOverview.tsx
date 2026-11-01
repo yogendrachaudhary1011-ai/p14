@@ -54,11 +54,11 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
         )}
 
         {/* Metadata Table matching the reference two-column alignment */}
-        <div className="w-full max-w-[1100px] flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
+        <div className="w-full max-w-[700px] flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
           <div className="w-full flex flex-col justify-center items-start gap-12">
             {/* My Role */}
             {role && (
-              <div className="w-full grid grid-cols-1 sm:grid-cols-[25rem_minmax(0,1fr)] items-start gap-2 sm:gap-4 group">
+              <div className="w-full grid grid-cols-1 sm:grid-cols-[24rem_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.roleLabel}
                 </div>
@@ -70,7 +70,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
 
             {/* Duration */}
             {duration && (
-              <div className="w-full grid grid-cols-1 sm:grid-cols-[25rem_minmax(0,1fr)] items-start gap-2 sm:gap-4 group">
+              <div className="w-full grid grid-cols-1 sm:grid-cols-[24rem_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.durationLabel}
                 </div>
@@ -84,17 +84,17 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             {(deliverableGroups?.length ? deliverableGroups : deliverables?.length ? [{ id: 'legacy-deliverables', label: copy.deliverablesLabel || 'Deliverables', items: deliverables }] : [])
               .filter((group) => group.items.length > 0)
               .map((group) => (
-                <div key={group.id} className="w-full grid grid-cols-1 sm:grid-cols-[25rem_minmax(0,1fr)] items-start gap-2 sm:gap-4 group">
+                <div key={group.id} className="w-full grid grid-cols-1 sm:grid-cols-[24rem_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
                   <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">{group.label}</div>
-                  <ul className="w-full min-w-0 flex flex-col gap-4">
+                  <ul className="w-full min-w-0 flex flex-col gap-4 pl-4">
                     {group.items
                       .flatMap((item) => String(item ?? '').replace(/\\n/g, '\n').replace(/\/n/gi, '\n').split(/\r?\n/))
                       .map((item) => item.trim())
                       .filter(Boolean)
                       .map((item, index) => (
                         <li key={`${group.id}-${index}`} className="flex items-start gap-3 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">
-                          <span aria-hidden="true" className="mt-[0.65rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[#8be28b]" />
-                          <span className="min-w-0 flex-1 md:whitespace-nowrap">{item}</span>
+                          <span aria-hidden="true" className="mt-[0.65rem] h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-500" />
+                          <span className="min-w-0 flex-1">{item}</span>
                         </li>
                       ))}
                   </ul>
