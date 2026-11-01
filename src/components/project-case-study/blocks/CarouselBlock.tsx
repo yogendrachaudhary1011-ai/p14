@@ -34,7 +34,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
           key={currentIndex}
           src={currentSlide.url}
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
-          className="h-full w-full object-contain transition-all duration-500 ease-out animate-cs-fade-in"
+          className="absolute inset-0 h-full w-full object-cover transition-all duration-500 ease-out animate-cs-fade-in"
           loading="lazy"
           fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
@@ -60,25 +60,20 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
           </>
         )}
       </div>
-      <div className="flex min-h-[72px] items-center justify-between gap-4 border-t border-white/[0.07] px-4 py-3 sm:px-6">
-        <div className="min-w-0" aria-hidden="true" />
-        <div className="flex shrink-0 items-center gap-3">
-          {slides.length > 1 && <div className="flex items-center gap-1.5" aria-label="Choose a slide">
-            {slides.map((slide, idx) => (
-              <button
-                key={`${slide.url}-${idx}`}
-                type="button"
-                onClick={() => setCurrentIndex(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                aria-current={currentIndex === idx ? 'true' : undefined}
-                className={`h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b0d0b] ${currentIndex === idx ? 'w-7 bg-[#b9fc56]' : 'w-1.5 bg-white/25 hover:bg-white/60'}`}
-              />
-            ))}
-          </div>}
-          <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 font-mono text-[10px] tabular-nums text-zinc-400">
-            <span className="text-[#b9fc56]">{String(currentIndex + 1).padStart(2, '0')}</span><span className="mx-1.5 text-zinc-600">/</span>{String(slides.length).padStart(2, '0')}
-          </span>
+      {slides.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/15 bg-black/55 px-3 py-2 backdrop-blur-md" aria-label="Choose a slide">
+          {slides.map((slide, idx) => (
+            <button
+              key={slide.url + "-" + idx}
+              type="button"
+              onClick={() => setCurrentIndex(idx)}
+              aria-label={"Go to slide " + (idx + 1)}
+              aria-current={currentIndex === idx ? "true" : undefined}
+              className={"h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-black " + (currentIndex === idx ? "w-7 bg-[#b9fc56]" : "w-1.5 bg-white/45 hover:bg-white")}
+            />
+          ))}
         </div>
+      )}
       </div>
     </div>
   );
