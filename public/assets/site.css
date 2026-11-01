@@ -8056,3 +8056,10 @@ body.static-home-route #siteContent{min-height:100svh}
 /* explore-project-thumbnail-asset-rendering */
 .case-explore-thumb > .case-explore-project-image{position:absolute!important;z-index:0!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;max-width:none!important;object-fit:cover!important;object-position:center!important;transform:scale(1.015)!important;transition:transform .55s var(--ease),filter .55s var(--ease)!important;}
 .case-explore-card:hover .case-explore-project-image,.case-explore-card:focus-visible .case-explore-project-image{transform:scale(1.055)!important;}
+
+/* Preserve the role spacing entered in the admin panel. */
+#homeView .hero-title .portfolio-v3-title-line--role{justify-content:flex-start!important;}
+#homeView .hero-title .portfolio-v3-title-line--role > .hero-role-space{flex:0 0 auto!important;}
+@media (max-width:620px){
+  #homeView .hero-title .portfolio-v3-title-line--role > .hero-role-space{display:none!important;}
+}

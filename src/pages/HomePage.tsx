@@ -193,7 +193,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   {copy.heroLastName} <span className="portfolio-v3-dash" aria-hidden="true"></span>
                 </span>
                 <span className="hero-title-line hero-title-line--three portfolio-v3-title-line portfolio-v3-title-line--role">
-                  {copy.heroRole.split(/\s+/).map((word, index) => <span key={index}>{word}</span>)}
+                  {copy.heroRole.split(/(\s+)/).filter(Boolean).map((part, index) => (
+                    /^\s+$/.test(part)
+                      ? <span key={`space-${index}`} className="hero-role-space" aria-hidden="true" style={{ width: `${part.length * 0.25}em` }}>{part}</span>
+                      : <span key={`word-${index}`} className="hero-role-word">{part}</span>
+                  ))}
                 </span>
               </span>
             </h1>
