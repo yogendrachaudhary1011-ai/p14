@@ -675,7 +675,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     value={card.title}
                                     onCommit={(value) => {
                                       const newCards = [...block.cards];
-                                      newCards[cIdx] = { ...newCards[cIdx], title: e.target.value };
+                                      newCards[cIdx] = { ...newCards[cIdx], title: value };
                                       handleUpdateBlock(block.id, { cards: newCards });
                                     }}
                                     className="px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs font-semibold flex-1 mr-2"
@@ -697,7 +697,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                   value={card.desc || ''}
                                   onCommit={(value) => {
                                     const newCards = [...block.cards];
-                                    newCards[cIdx] = { ...newCards[cIdx], desc: e.target.value };
+                                    newCards[cIdx] = { ...newCards[cIdx], desc: value };
                                     handleUpdateBlock(block.id, { cards: newCards });
                                   }}
                                   className="px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
@@ -989,7 +989,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     value={scr.label || ''}
                                     onCommit={(value) => {
                                       const cloned = [...block.screens];
-                                      cloned[scIdx] = { ...cloned[scIdx], label: e.target.value };
+                                      cloned[scIdx] = { ...cloned[scIdx], label: value };
                                       handleUpdateBlock(block.id, { screens: cloned });
                                     }}
                                     className="flex-1 sm:w-36 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
@@ -1052,7 +1052,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                             value={block.items?.join('\n') || ''}
                             onCommit={(value) =>
                               handleUpdateBlock(block.id, {
-                                items: e.target.value.split('\n').filter((l) => l.trim().length > 0)
+                                items: value.split('\n').filter((l) => l.trim().length > 0)
                               })
                             }
                             className="w-full px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-xs"
