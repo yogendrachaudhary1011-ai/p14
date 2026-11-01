@@ -89,7 +89,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                   : []);
               const items = groups
                 .flatMap((group) => group.items)
-                .flatMap((item) => String(item ?? '').replace(/\\\\n/g, '\\n').replace(/\\/n/gi, '\\n').split(/\\r?\\n/))
+                .flatMap((item) => String(item ?? '').replaceAll(String.fromCharCode(92) + 'n', String.fromCharCode(10)).replaceAll('/n', String.fromCharCode(10)).split(String.fromCharCode(10)))
                 .map((item) => item.trim())
                 .filter(Boolean);
               const label = copy.deliverablesLabel && copy.deliverablesLabel.toLowerCase() !== 'deliverables'
