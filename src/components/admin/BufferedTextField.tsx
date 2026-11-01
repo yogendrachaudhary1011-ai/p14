@@ -12,12 +12,16 @@ type BufferedTextareaProps = Omit<React.TextareaHTMLAttributes<HTMLTextAreaEleme
 
 const BufferedTextInputField: React.FC<BufferedInputProps> = ({ value, onCommit, ...props }) => {
   const [draft, setDraft] = useState(value);
+  const draftRef = useRef(value);
   const focused = useRef(false);
   const onCommitRef = useRef(onCommit);
   onCommitRef.current = onCommit;
 
   useEffect(() => {
-    if (!focused.current) setDraft(value);
+    if (!focused.current) {
+      draftRef.current = value;
+      setDraft(value);
+    }
   }, [value]);
 
   return (
@@ -26,12 +30,17 @@ const BufferedTextInputField: React.FC<BufferedInputProps> = ({ value, onCommit,
       value={draft}
       onFocus={(event) => {
         focused.current = true;
+        draftRef.current = event.currentTarget.value;
         props.onFocus?.(event);
       }}
-      onChange={(event) => setDraft(event.target.value)}
+      onChange={(event) => {
+        draftRef.current = event.target.value;
+        setDraft(event.target.value);
+      }}
       onBlur={(event) => {
         focused.current = false;
-        if (draft !== value) onCommitRef.current(draft);
+        const nextValue = draftRef.current;
+        if (nextValue !== value) onCommitRef.current(nextValue);
         props.onBlur?.(event);
       }}
     />
@@ -40,12 +49,16 @@ const BufferedTextInputField: React.FC<BufferedInputProps> = ({ value, onCommit,
 
 const BufferedTextareaField: React.FC<BufferedTextareaProps> = ({ value, onCommit, ...props }) => {
   const [draft, setDraft] = useState(value);
+  const draftRef = useRef(value);
   const focused = useRef(false);
   const onCommitRef = useRef(onCommit);
   onCommitRef.current = onCommit;
 
   useEffect(() => {
-    if (!focused.current) setDraft(value);
+    if (!focused.current) {
+      draftRef.current = value;
+      setDraft(value);
+    }
   }, [value]);
 
   return (
@@ -54,26 +67,22 @@ const BufferedTextareaField: React.FC<BufferedTextareaProps> = ({ value, onCommi
       value={draft}
       onFocus={(event) => {
         focused.current = true;
+        draftRef.current = event.currentTarget.value;
         props.onFocus?.(event);
       }}
-      onChange={(event) => setDraft(event.target.value)}
+      onChange={(event) => {
+        draftRef.current = event.target.value;
+        setDraft(event.target.value);
+      }}
       onBlur={(event) => {
         focused.current = false;
-        if (draft !== value) onCommitRef.current(draft);
+        const nextValue = draftRef.current;
+        if (nextValue !== value) onCommitRef.current(nextValue);
         props.onBlur?.(event);
       }}
     />
   );
 };
 
-const equalInputProps = <T extends { onCommit: (value: string) => void }>(previous: T, next: T) => {
-  const previousProps = previous as Record<string, unknown>;
-  const nextProps = next as Record<string, unknown>;
-  const keys = new Set([...Object.keys(previousProps), ...Object.keys(nextProps)]);
-  keys.delete('onCommit');
-  return [...keys].every((key) => Object.is(previousProps[key], nextProps[key]));
-};
-
-export const BufferedTextInput = React.memo(BufferedTextInputField, equalInputProps);
-export const BufferedTextarea = React.memo(BufferedTextareaField, equalInputProps);
-
+export const BufferedTextInput = BufferedTextInputField;
+export const BufferedTextarea = BufferedTextareaField;
