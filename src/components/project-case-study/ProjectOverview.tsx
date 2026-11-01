@@ -80,26 +80,35 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               </div>
             )}
 
-            {/* Editable overview lists */}
-            {(deliverableGroups?.length ? deliverableGroups : deliverables?.length ? [{ id: 'legacy-deliverables', label: copy.deliverablesLabel || 'Deliverables', items: deliverables }] : [])
-              .filter((group) => group.items.length > 0)
-              .map((group) => (
-                <div key={group.id} className="w-full grid grid-cols-1 sm:grid-cols-[24rem_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
-                  <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">{group.label}</div>
+            {/* One aligned “What I Designed” row, with every group item in the right column */}
+            {(() => {
+              const groups = (deliverableGroups?.length
+                ? deliverableGroups
+                : deliverables?.length
+                  ? [{ id: 'legacy-deliverables', label: copy.deliverablesLabel || 'Deliverables', items: deliverables }]
+                  : []);
+              const items = groups
+                .flatMap((group) => group.items)
+                .flatMap((item) => String(item ?? '').replace(/\\\\n/g, '\\n').replace(/\\/n/gi, '\\n').split(/\\r?\\n/))
+                .map((item) => item.trim())
+                .filter(Boolean);
+              const label = copy.deliverablesLabel && copy.deliverablesLabel.toLowerCase() !== 'deliverables'
+                ? copy.deliverablesLabel
+                : 'What I Designed';
+              return items.length > 0 ? (
+                <div className="w-full grid grid-cols-1 sm:grid-cols-[24rem_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
+                  <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">{label}</div>
                   <ul className="w-full min-w-0 flex flex-col gap-4 pl-4">
-                    {group.items
-                      .flatMap((item) => String(item ?? '').replace(/\\n/g, '\n').replace(/\/n/gi, '\n').split(/\r?\n/))
-                      .map((item) => item.trim())
-                      .filter(Boolean)
-                      .map((item, index) => (
-                        <li key={`${group.id}-${index}`} className="flex items-start gap-3 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">
-                          <span aria-hidden="true" className="mt-[0.65rem] h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-500" />
-                          <span className="min-w-0 flex-1">{item}</span>
-                        </li>
-                      ))}
+                    {items.map((item, index) => (
+                      <li key={'deliverable-' + index} className="flex items-start gap-3 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">
+                        <span aria-hidden="true" className="mt-[0.65rem] h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-500" />
+                        <span className="min-w-0 flex-1">{item}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
-              ))}
+              ) : null;
+            })()}
 
           </div>
 
