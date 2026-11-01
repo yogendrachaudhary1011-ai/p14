@@ -27,6 +27,11 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
 
   if (!section.visible) return null;
   const normalizedSection = stackProductSectionImages([section])[0];
+  const visibleBlocks = section.type === 'challenge'
+    ? (normalizedSection.blocks || [])
+      .filter((block) => !['image', 'fullWidthImage', 'gallery', 'carousel', 'productShowcase'].includes(block.type))
+      .map((block) => block.type === 'decisionList' ? { ...block, image: undefined, imageAlt: undefined } : block)
+    : normalizedSection.blocks || [];
 
   const renderBlock = (block: CaseStudyBlock) => {
     switch (block.type) {
@@ -97,7 +102,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
 
       {/* Blocks sequence */}
       <div className={`w-full min-w-0 flex flex-col ${section.type === 'product' ? 'gap-0 [&>div]:my-0' : 'gap-6'}`}>
-        {normalizedSection.blocks && normalizedSection.blocks.map((block) => renderBlock(block))}
+        {visibleBlocks.map((block) => renderBlock(block))}
       </div>
 
       {/* Crisp white divider under section matching Figma */}
