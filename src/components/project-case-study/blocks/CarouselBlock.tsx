@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CarouselBlockItem } from '../../../types';
 import { MediaPreview } from '../../MediaPreview';
 
@@ -9,6 +9,8 @@ interface CarouselBlockProps {
 export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'next' | 'prev'>('next');
+  const [outgoingIndex, setOutgoingIndex] = useState<number | null>(null);
+  const transitionTimer = useRef<number | null>(null);
   const slides = (block.slides || []).filter((slide) => slide.url?.trim());
   const slideKey = slides.map((slide) => slide.url).join('|');
 
@@ -27,15 +29,26 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   };
 
   const currentSlide = slides[currentIndex] || slides[0];
+  const outgoingSlide = outgoingIndex === null ? null : slides[outgoingIndex];
 
   return (
     <div className="w-full my-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d0b] shadow-[0_24px_70px_rgba(0,0,0,.24)]">
       <div className="relative isolate w-full overflow-hidden bg-[#080a08]">
+        {outgoingSlide && (
+          <MediaPreview
+            key={"outgoing-" + outgoingIndex}
+            src={outgoingSlide.url}
+            alt=""
+            aria-hidden="true"
+            className={"absolute inset-0 h-full w-full object-contain design-carousel-slide-exit design-carousel-slide-exit--" + slideDirection}
+            loading="eager"
+          />
+        )}
         <MediaPreview
           key={currentIndex}
           src={currentSlide.url}
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
-          className={"block h-auto w-full object-contain design-carousel-slide-enter design-carousel-slide-enter--" + slideDirection}
+          className={"relative z-[1] block h-auto w-full object-contain " + (outgoingSlide ? "design-carousel-slide-enter design-carousel-slide-enter--" + slideDirection : "")}
           loading="lazy"
           fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
@@ -66,7 +79,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
             <button
               key={slide.url + "-" + idx}
               type="button"
-              onClick={() => { setSlideDirection(idx >= currentIndex ? "next" : "prev"); setCurrentIndex(idx); }}
+              onClick={() => changeSlide(idx, idx >= currentIndex ? "next" : "prev")}
               aria-label={"Go to slide " + (idx + 1)}
               aria-current={currentIndex === idx ? "true" : undefined}
               className={"h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-black " + (currentIndex === idx ? "w-7 bg-[#b9fc56]" : "w-1.5 bg-white/45 hover:bg-white")}
