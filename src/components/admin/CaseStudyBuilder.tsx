@@ -162,7 +162,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
       }
     }
     if (uploaded.length) {
-      const imageAssets = uploaded.filter((asset) => asset.mimeType.startsWith('image/'));
+      const imageAssets = uploaded.filter((asset) =>
+        asset.mimeType?.toLowerCase().startsWith('image/') ||
+        /\.(png|jpe?g|webp|gif|avif)(?:[?#]|$)/i.test(`${asset.url} ${asset.name}`)
+      );
       const blocks = [...(selectedSection.blocks || [])];
       if (selectedSection.type === 'designSystem') {
         let carousel = blocks.find((block) => block.type === 'carousel');
@@ -171,7 +174,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
           blocks.push(carousel);
         }
         if (carousel.type === 'carousel') {
-          const realSlides = carousel.slides.filter((slide) => !slide.url.includes('placehold.co'));
+          const realSlides = (carousel.slides || []).filter((slide) => slide.url?.trim() && !slide.url.includes('placehold.co'));
           const slides = [...realSlides, ...imageAssets.map((asset, index) => ({
             url: asset.url,
             title: asset.name || `Design system image ${realSlides.length + index + 1}`,
@@ -886,7 +889,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                           <div className="flex flex-col gap-2">
                             {block.slides?.map((sl, sIdx) => (
                               <div
-                                key={sIdx}
+                                key={sl.url || `${sl.title || 'slide'}-${sIdx}`}
                                 className="flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 rounded bg-zinc-900 border border-white/5"
                               >
                                 <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -900,7 +903,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     value={sl.title || ''}
                                     onCommit={(value) => {
                                       const cloned = [...block.slides];
-                                      cloned[sIdx] = { ...cloned[sIdx], title: e.target.value };
+                                      cloned[sIdx] = { ...cloned[sIdx], title: value };
                                       handleUpdateBlock(block.id, { slides: cloned });
                                     }}
                                     className="flex-1 sm:w-40 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
