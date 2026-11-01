@@ -596,7 +596,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const addMedia = (name: string, url: string, mimeType: string, size: number): MediaAsset => {
     markUnsavedChanges();
     const newAsset: MediaAsset = {
-      id: `media-${Date.now()}`,
+      id: `media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       name,
       url,
       mimeType,
@@ -611,7 +611,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (!isAdmin) return { success: false, error: 'Sign in to Supabase Auth before replacing the resume.' };
     markUnsavedChanges();
     const asset: MediaAsset = {
-      id: `media-${Date.now()}`,
+      id: `media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       name,
       url,
       mimeType: 'application/pdf',
@@ -626,7 +626,16 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const deleteMedia = (id: string) => {
     markUnsavedChanges();
-    setMedia((prev) => prev.filter((m) => m.id !== id));
+    setMedia((prev) => {
+      let removed = false;
+      return prev.filter((asset) => {
+        if (!removed && asset.id === id) {
+          removed = true;
+          return false;
+        }
+        return true;
+      });
+    });
   };
 
   const resetToDefaults = () => {

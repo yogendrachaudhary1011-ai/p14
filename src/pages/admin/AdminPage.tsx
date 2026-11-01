@@ -2317,7 +2317,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-white">Media Asset Library</h2>
               <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                  Upload images and videos to Supabase Storage, then choose them in projects and case studies.
+                  Upload images and videos to Supabase Storage, then choose them in projects and case studies. Removing an item is staged until you press Save Changes.
               </p>
             </div>
 
@@ -2478,7 +2478,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                             confirmLabel: 'Remove',
                             onConfirm: () => {
                               deleteMedia(item.id);
-                              showNotice('Deleted asset');
+                              showNotice(`Removed "${item.name}" from the library. Press Save Changes to keep it after reloading.`);
                               setConfirmDialog(null);
                             }
                           });
