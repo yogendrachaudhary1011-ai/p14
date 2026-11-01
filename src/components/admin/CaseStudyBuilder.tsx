@@ -974,13 +974,6 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
                       {block.type === 'productShowcase' && (
                         <div className="flex flex-col gap-3">
-                          <BufferedTextInput
-                            type="text"
-                            value={block.subtitle || ''}
-                            onCommit={(value) => handleUpdateBlock(block.id, { subtitle: value })}
-                            className="w-full rounded bg-zinc-900 border border-white/10 px-3 py-2 text-xs text-white"
-                            placeholder="Optional product section label..."
-                          />
                           <div className="flex justify-between items-center">
                             <span className="text-xs text-zinc-400">
                               Product Screens ({block.screens?.length || 0})
