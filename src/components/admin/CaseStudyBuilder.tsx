@@ -622,6 +622,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                             <div key={`${block.id}-image-${index}`} className="rounded-lg border border-white/10 bg-zinc-900/60 p-3 flex flex-col gap-3">
                               <div className="flex items-center justify-between"><span className="text-xs font-medium text-white">Image {index + 1}</span><button type="button" onClick={() => handleUpdateBlock(block.id, { images: block.images.filter((_, itemIndex) => itemIndex !== index) })} className="text-xs text-red-300 hover:text-red-200">Remove</button></div>
                               <MediaUploadField value={image.url} onChange={(url) => { const images = url ? block.images.map((item, itemIndex) => itemIndex === index ? { ...item, url } : item) : block.images.filter((_, itemIndex) => itemIndex !== index); handleUpdateBlock(block.id, { images }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`gallery image ${index + 1}`} />
+                              <BufferedTextInput type="text" value={image.alt || ''} onCommit={(value) => { const images = [...block.images]; images[index] = { ...images[index], alt: value }; handleUpdateBlock(block.id, { images }); }} className="w-full rounded bg-zinc-950 border border-white/10 px-3 py-2 text-xs text-white" placeholder="Image description for accessibility..." />
                               <BufferedTextInput type="text" value={image.caption || ''} onCommit={(value) => { const images = [...block.images]; images[index] = { ...images[index], caption: value }; handleUpdateBlock(block.id, { images }); }} className="w-full rounded bg-zinc-950 border border-white/10 px-3 py-2 text-xs text-white" placeholder="Optional image caption" />
                             </div>
                           ))}
@@ -815,6 +816,13 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                               mediaLibrary={mediaLibrary}
                               label="Key Decisions image"
                             />
+                            <BufferedTextInput
+                              type="text"
+                              value={block.imageAlt || ''}
+                              onCommit={(value) => handleUpdateBlock(block.id, { imageAlt: value })}
+                              className="mt-3 w-full rounded bg-zinc-900 border border-white/10 px-3 py-2 text-xs text-white"
+                              placeholder="Image description for accessibility..."
+                            />
                           </div>
 
                           <div className="flex flex-col gap-2">
@@ -935,14 +943,14 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                   />
                                   <BufferedTextInput
                                     type="text"
-                                    value={sl.title || ''}
+                                    value={sl.alt || sl.title || ''}
                                     onCommit={(value) => {
                                       const cloned = [...block.slides];
-                                      cloned[sIdx] = { ...cloned[sIdx], title: value };
+                                      cloned[sIdx] = { ...cloned[sIdx], alt: value, title: value };
                                       handleUpdateBlock(block.id, { slides: cloned });
                                     }}
                                     className="flex-1 sm:w-40 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
-                                    placeholder="Title label..."
+                                    placeholder="Image description (optional)..."
                                   />
                                   <button
                                     type="button"
