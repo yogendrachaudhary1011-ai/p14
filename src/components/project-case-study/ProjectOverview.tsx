@@ -53,8 +53,8 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
           </div>
         )}
 
-        {/* Metadata Table matching Figma specs (w-[700px] / max-w-full) */}
-        <div className="w-full max-w-[700px] flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
+        {/* Metadata Table with room for overview text */}
+        <div className="w-full max-w-[1100px] flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
           <div className="w-full flex flex-col justify-center items-start gap-6">
             {/* My Role */}
             {role && (
@@ -86,7 +86,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               .map((group) => (
                 <div key={group.id} className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
                   <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">{group.label}</div>
-                  <div className="w-full sm:w-80 flex flex-col gap-2.5">
+                  <div className="w-full max-w-[900px] flex flex-col gap-2.5">
                     {group.items.map((item, index) => (
                       <div key={index} className="text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5">{item}</div>
                     ))}
