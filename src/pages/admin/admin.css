@@ -865,3 +865,92 @@
 #loginView *:not(.material-symbols-rounded) {
   font-family: 'Plus Jakarta Sans', 'DM Sans', system-ui, -apple-system, sans-serif !important;
 }
+
+
+/* Responsive guardrails for every admin editor and card layout. */
+#adminApp main {
+  min-width: 0;
+  overflow-x: clip;
+}
+
+#adminApp main *,
+#adminApp main *::before,
+#adminApp main *::after {
+  box-sizing: border-box;
+}
+
+#adminApp main .grid > *,
+#adminApp main .flex > *,
+#adminApp main .admin-card,
+#adminApp main [class*="bg-zinc-900"],
+#adminApp main [class*="bg-[#131418]"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+#adminApp main input:not([type="checkbox"]):not([type="radio"]),
+#adminApp main textarea,
+#adminApp main select,
+#adminApp main input[type="file"] {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+#adminApp main textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+#adminApp main label,
+#adminApp main p,
+#adminApp main h1,
+#adminApp main h2,
+#adminApp main h3,
+#adminApp main h4 {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  #adminApp main {
+    padding-right: 14px !important;
+    padding-left: 14px !important;
+  }
+
+  #adminApp main [class*="grid-cols-"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #adminApp main [class*="flex-row"] {
+    flex-wrap: wrap;
+  }
+
+  #adminApp main .admin-card,
+  #adminApp main [class*="bg-zinc-900"],
+  #adminApp main [class*="bg-[#131418]"] {
+    width: 100%;
+  }
+
+  #adminApp main button {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  #adminApp main input:not([type="checkbox"]):not([type="radio"]),
+  #adminApp main textarea,
+  #adminApp main select {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  #adminApp main {
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+  }
+
+  #adminApp main [class*="p-6"],
+  #adminApp main [class*="p-5"] {
+    padding: 14px !important;
+  }
+}
