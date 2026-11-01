@@ -10,6 +10,7 @@ import { createDefaultSection, createDefaultBlock } from '../../utils/caseStudyU
 import { MediaPreview } from '../MediaPreview';
 import { Upload } from 'lucide-react';
 import { MediaUploadField } from './MediaUploadField';
+import { BufferedTextInput, BufferedTextarea } from './BufferedTextField';
 
 interface CaseStudyBuilderProps {
   sections: CaseStudySection[];
@@ -378,12 +379,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                   <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                     Sidebar Navigation Label
                   </label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={selectedSection.navigationLabel}
-                    onChange={(e) =>
-                      handleUpdateSection(selectedSection.id, { navigationLabel: e.target.value })
-                    }
+                    onCommit={(value) => handleUpdateSection(selectedSection.id, { navigationLabel: value })}
                     className="w-full px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-sm"
                     placeholder="e.g. The Problem"
                   />
@@ -393,10 +392,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                   <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                     Section Display Heading (Uppercase)
                   </label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={selectedSection.heading}
-                    onChange={(e) => handleUpdateSection(selectedSection.id, { heading: e.target.value })}
+                    onCommit={(value) => handleUpdateSection(selectedSection.id, { heading: value })}
                     className="w-full px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-sm"
                     placeholder="e.g. THE PROBLEM"
                   />
@@ -407,10 +406,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                 <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                   Intro Narrative / Hook (Optional)
                 </label>
-                <textarea
+                <BufferedTextarea
                   rows={2}
                   value={selectedSection.intro || ''}
-                  onChange={(e) => handleUpdateSection(selectedSection.id, { intro: e.target.value })}
+                  onCommit={(value) => handleUpdateSection(selectedSection.id, { intro: value })}
                   className="w-full px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-sm"
                   placeholder="Key summary or takeaway for this section..."
                 />
@@ -509,10 +508,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                       {/* Dynamic Block Form Inputs based on block.type */}
                       {block.type === 'paragraph' && (
                         <div className="flex flex-col gap-2">
-                          <textarea
+                          <BufferedTextarea
                             rows={3}
                             value={block.text}
-                            onChange={(e) => handleUpdateBlock(block.id, { text: e.target.value })}
+                            onCommit={(value) => handleUpdateBlock(block.id, { text: value })}
                             className="w-full px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-sm"
                             placeholder="Paragraph narrative content..."
                           />
@@ -530,10 +529,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
                       {block.type === 'heading' && (
                         <div className="flex items-center gap-3">
-                          <input
+                          <BufferedTextInput
                             type="text"
                             value={block.text}
-                            onChange={(e) => handleUpdateBlock(block.id, { text: e.target.value })}
+                            onCommit={(value) => handleUpdateBlock(block.id, { text: value })}
                             className="flex-1 px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-sm"
                             placeholder="Heading text..."
                           />
@@ -555,17 +554,17 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                         <div className="flex flex-col gap-3">
                           <MediaUploadField value={block.url} onChange={(url) => handleUpdateBlock(block.id, { url })} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label="section image" />
                           <div className="flex items-center gap-3">
-                            <input
+                            <BufferedTextInput
                               type="text"
                               value={block.alt || ''}
-                              onChange={(e) => handleUpdateBlock(block.id, { alt: e.target.value })}
+                              onCommit={(value) => handleUpdateBlock(block.id, { alt: value })}
                               className="flex-1 px-3 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs"
                               placeholder="Alt text description..."
                             />
-                            <input
+                            <BufferedTextInput
                               type="text"
                               value={block.caption || ''}
-                              onChange={(e) => handleUpdateBlock(block.id, { caption: e.target.value })}
+                              onCommit={(value) => handleUpdateBlock(block.id, { caption: value })}
                               className="flex-1 px-3 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs"
                               placeholder="Optional caption..."
                             />
@@ -592,7 +591,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                             <div key={`${block.id}-image-${index}`} className="rounded-lg border border-white/10 bg-zinc-900/60 p-3 flex flex-col gap-3">
                               <div className="flex items-center justify-between"><span className="text-xs font-medium text-white">Image {index + 1}</span><button type="button" onClick={() => handleUpdateBlock(block.id, { images: block.images.filter((_, itemIndex) => itemIndex !== index) })} className="text-xs text-red-300 hover:text-red-200">Remove</button></div>
                               <MediaUploadField value={image.url} onChange={(url) => { const images = [...block.images]; images[index] = { ...images[index], url }; handleUpdateBlock(block.id, { images }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`gallery image ${index + 1}`} />
-                              <input type="text" value={image.caption || ''} onChange={(event) => { const images = [...block.images]; images[index] = { ...images[index], caption: event.target.value }; handleUpdateBlock(block.id, { images }); }} className="w-full rounded bg-zinc-950 border border-white/10 px-3 py-2 text-xs text-white" placeholder="Optional image caption" />
+                              <BufferedTextInput type="text" value={image.caption || ''} onCommit={(value) => { const images = [...block.images]; images[index] = { ...images[index], caption: value }; handleUpdateBlock(block.id, { images }); }} className="w-full rounded bg-zinc-950 border border-white/10 px-3 py-2 text-xs text-white" placeholder="Optional image caption" />
                             </div>
                           ))}
                           <button type="button" onClick={() => handleUpdateBlock(block.id, { images: [...block.images, { url: '', alt: '', caption: '' }] })} className="self-start rounded-lg border border-white/10 bg-zinc-900 px-3 py-2 text-xs text-zinc-200 hover:bg-zinc-800">+ Add another image</button>
@@ -640,10 +639,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                 className="p-2.5 rounded bg-zinc-900 border border-white/5 flex flex-col gap-2"
                               >
                                 <div className="flex justify-between items-center">
-                                  <input
+                                  <BufferedTextInput
                                     type="text"
                                     value={card.title}
-                                    onChange={(e) => {
+                                    onCommit={(value) => {
                                       const newCards = [...block.cards];
                                       newCards[cIdx] = { ...newCards[cIdx], title: e.target.value };
                                       handleUpdateBlock(block.id, { cards: newCards });
@@ -662,10 +661,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     Remove
                                   </button>
                                 </div>
-                                <textarea
+                                <BufferedTextarea
                                   rows={2}
                                   value={card.desc || ''}
-                                  onChange={(e) => {
+                                  onCommit={(value) => {
                                     const newCards = [...block.cards];
                                     newCards[cIdx] = { ...newCards[cIdx], desc: e.target.value };
                                     handleUpdateBlock(block.id, { cards: newCards });
@@ -683,37 +682,37 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                           <div>
                             <label className="text-zinc-400 font-mono block mb-1">First Attempt</label>
-                            <textarea
+                            <BufferedTextarea
                               rows={2}
                               value={block.firstAttempt}
-                              onChange={(e) => handleUpdateBlock(block.id, { firstAttempt: e.target.value })}
+                              onCommit={(value) => handleUpdateBlock(block.id, { firstAttempt: value })}
                               className="w-full px-2 py-1 rounded bg-zinc-900 border border-white/10 text-white"
                             />
                           </div>
                           <div>
                             <label className="text-zinc-400 font-mono block mb-1">Problem</label>
-                            <textarea
+                            <BufferedTextarea
                               rows={2}
                               value={block.problem}
-                              onChange={(e) => handleUpdateBlock(block.id, { problem: e.target.value })}
+                              onCommit={(value) => handleUpdateBlock(block.id, { problem: value })}
                               className="w-full px-2 py-1 rounded bg-zinc-900 border border-white/10 text-white"
                             />
                           </div>
                           <div>
                             <label className="text-zinc-400 font-mono block mb-1">Fix</label>
-                            <textarea
+                            <BufferedTextarea
                               rows={2}
                               value={block.fix}
-                              onChange={(e) => handleUpdateBlock(block.id, { fix: e.target.value })}
+                              onCommit={(value) => handleUpdateBlock(block.id, { fix: value })}
                               className="w-full px-2 py-1 rounded bg-zinc-900 border border-white/10 text-white"
                             />
                           </div>
                           <div>
                             <label className="text-zinc-400 font-mono block mb-1">Learning</label>
-                            <textarea
+                            <BufferedTextarea
                               rows={2}
                               value={block.learning}
-                              onChange={(e) => handleUpdateBlock(block.id, { learning: e.target.value })}
+                              onCommit={(value) => handleUpdateBlock(block.id, { learning: value })}
                               className="w-full px-2 py-1 rounded bg-zinc-900 border border-white/10 text-white"
                             />
                           </div>
@@ -753,10 +752,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                 className="p-3 rounded bg-zinc-900 border border-white/5 flex flex-col gap-2"
                               >
                                 <div className="flex justify-between items-center">
-                                  <input
+                                  <BufferedTextInput
                                     type="text"
                                     value={dec.title}
-                                    onChange={(e) => {
+                                    onCommit={(value) => {
                                       const cloned = [...block.decisions];
                                       cloned[dIdx] = { ...cloned[dIdx], title: e.target.value };
                                       handleUpdateBlock(block.id, { decisions: cloned });
@@ -778,10 +777,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
                                   <div>
                                     <label className="text-zinc-400 font-mono block mb-0.5">Constraint</label>
-                                    <textarea
+                                    <BufferedTextarea
                                       rows={2}
                                       value={dec.constraint}
-                                      onChange={(e) => {
+                                      onCommit={(value) => {
                                         const cloned = [...block.decisions];
                                         cloned[dIdx] = { ...cloned[dIdx], constraint: e.target.value };
                                         handleUpdateBlock(block.id, { decisions: cloned });
@@ -791,10 +790,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                   </div>
                                   <div>
                                     <label className="text-zinc-400 font-mono block mb-0.5">What I Did</label>
-                                    <textarea
+                                    <BufferedTextarea
                                       rows={2}
                                       value={dec.whatIDid}
-                                      onChange={(e) => {
+                                      onCommit={(value) => {
                                         const cloned = [...block.decisions];
                                         cloned[dIdx] = { ...cloned[dIdx], whatIDid: e.target.value };
                                         handleUpdateBlock(block.id, { decisions: cloned });
@@ -804,10 +803,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                   </div>
                                   <div>
                                     <label className="text-[#ff853a] font-mono block mb-0.5">Why</label>
-                                    <textarea
+                                    <BufferedTextarea
                                       rows={2}
                                       value={dec.why}
-                                      onChange={(e) => {
+                                      onCommit={(value) => {
                                         const cloned = [...block.decisions];
                                         cloned[dIdx] = { ...cloned[dIdx], why: e.target.value };
                                         handleUpdateBlock(block.id, { decisions: cloned });
@@ -858,10 +857,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     alt="Thumb"
                                     className="w-12 h-10 object-cover rounded bg-black shrink-0"
                                   />
-                                  <input
+                                  <BufferedTextInput
                                     type="text"
                                     value={sl.title || ''}
-                                    onChange={(e) => {
+                                    onCommit={(value) => {
                                       const cloned = [...block.slides];
                                       cloned[sIdx] = { ...cloned[sIdx], title: e.target.value };
                                       handleUpdateBlock(block.id, { slides: cloned });
@@ -934,10 +933,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     alt="Thumb"
                                     className="w-10 h-12 object-cover rounded bg-black shrink-0"
                                   />
-                                  <input
+                                  <BufferedTextInput
                                     type="text"
                                     value={scr.label || ''}
-                                    onChange={(e) => {
+                                    onCommit={(value) => {
                                       const cloned = [...block.screens];
                                       cloned[scIdx] = { ...cloned[scIdx], label: e.target.value };
                                       handleUpdateBlock(block.id, { screens: cloned });
@@ -990,17 +989,17 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
                       {block.type === 'bulletList' && (
                         <div className="flex flex-col gap-2">
-                          <input
+                          <BufferedTextInput
                             type="text"
                             value={block.title || ''}
-                            onChange={(e) => handleUpdateBlock(block.id, { title: e.target.value })}
+                            onCommit={(value) => handleUpdateBlock(block.id, { title: value })}
                             className="px-3 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs"
                             placeholder="Optional list title (e.g. Constraints:)..."
                           />
-                          <textarea
+                          <BufferedTextarea
                             rows={3}
                             value={block.items?.join('\n') || ''}
-                            onChange={(e) =>
+                            onCommit={(value) =>
                               handleUpdateBlock(block.id, {
                                 items: e.target.value.split('\n').filter((l) => l.trim().length > 0)
                               })
@@ -1013,24 +1012,24 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
                       {block.type === 'quote' && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                          <textarea
+                          <BufferedTextarea
                             rows={2}
                             value={block.quote}
-                            onChange={(e) => handleUpdateBlock(block.id, { quote: e.target.value })}
+                            onCommit={(value) => handleUpdateBlock(block.id, { quote: value })}
                             className="md:col-span-3 px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-xs"
                             placeholder="Quote text..."
                           />
-                          <input
+                          <BufferedTextInput
                             type="text"
                             value={block.author || ''}
-                            onChange={(e) => handleUpdateBlock(block.id, { author: e.target.value })}
+                            onCommit={(value) => handleUpdateBlock(block.id, { author: value })}
                             className="px-2 py-1 rounded bg-zinc-900 border border-white/10 text-white text-xs"
                             placeholder="Author..."
                           />
-                          <input
+                          <BufferedTextInput
                             type="text"
                             value={block.role || ''}
-                            onChange={(e) => handleUpdateBlock(block.id, { role: e.target.value })}
+                            onCommit={(value) => handleUpdateBlock(block.id, { role: value })}
                             className="px-2 py-1 rounded bg-zinc-900 border border-white/10 text-white text-xs"
                             placeholder="Role / Title..."
                           />
@@ -1039,17 +1038,17 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
                       {block.type === 'cta' && (
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                          <input
+                          <BufferedTextInput
                             type="text"
                             value={block.label}
-                            onChange={(e) => handleUpdateBlock(block.id, { label: e.target.value })}
+                            onCommit={(value) => handleUpdateBlock(block.id, { label: value })}
                             className="w-full sm:w-48 px-2 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs"
                             placeholder="Button label..."
                           />
-                          <input
+                          <BufferedTextInput
                             type="text"
                             value={block.url}
-                            onChange={(e) => handleUpdateBlock(block.id, { url: e.target.value })}
+                            onCommit={(value) => handleUpdateBlock(block.id, { url: value })}
                             className="flex-1 px-2 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs"
                             placeholder="URL link..."
                           />

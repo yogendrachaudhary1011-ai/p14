@@ -5,6 +5,7 @@ import { ProjectCaseStudyTemplate } from '../project-case-study/ProjectCaseStudy
 import { normalizeProjectSections } from '../../utils/caseStudyUtils';
 import { MediaPreview } from '../MediaPreview';
 import { MediaUploadField } from './MediaUploadField';
+import { BufferedTextInput, BufferedTextarea } from './BufferedTextField';
 import { isVideoMedia } from '../../utils/media';
 
 interface ProjectEditorProps {
@@ -396,10 +397,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                 Project Title *
               </label>
-              <input
+              <BufferedTextInput
                 type="text"
                 value={title}
-                onChange={(e) => handleTitleChange(e.target.value)}
+                onCommit={handleTitleChange}
                 className="w-full px-3 py-2.5 rounded bg-zinc-950 border border-white/10 text-white text-sm"
                 placeholder="e.g. SOMTU or DANA"
                 required
@@ -417,10 +418,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                 <span className="px-3 py-2.5 bg-zinc-900 border border-r-0 border-white/10 text-zinc-500 text-xs rounded-l">
                   /
                 </span>
-                <input
+                <BufferedTextInput
                   type="text"
                   value={slug}
-                  onChange={(e) => { setSlug(e.target.value); setSlugManuallyEdited(true); }}
+                  onCommit={(value) => { setSlug(value); setSlugManuallyEdited(true); }}
                   className="w-full px-3 py-2.5 rounded-r bg-zinc-950 border border-white/10 text-white text-sm font-mono"
                   placeholder="e.g. somtu"
                   required
@@ -451,10 +452,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                 Badge / Tag Label
               </label>
-              <input
+              <BufferedTextInput
                 type="text"
                 value={categoryLabel}
-                onChange={(e) => setCategoryLabel(e.target.value)}
+                onCommit={setCategoryLabel}
                 className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-xs"
                 placeholder="e.g. Case Study"
               />
@@ -464,10 +465,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                 Project Year
               </label>
-              <input
+              <BufferedTextInput
                 type="text"
                 value={year}
-                onChange={(e) => setYear(e.target.value)}
+                onCommit={setYear}
                 className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-xs"
                 placeholder="2026"
               />
@@ -477,10 +478,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                 Display Order
               </label>
-              <input
+              <BufferedTextInput
                 type="number"
-                value={order}
-                onChange={(e) => setOrder(Number(e.target.value))}
+                value={String(order)}
+                onCommit={(value) => setOrder(Number(value) || 1)}
                 className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-xs"
               />
             </div>
@@ -523,10 +524,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
               Hero Subtitle / Short Summary (Right Column of Hero)
             </label>
-            <textarea
+            <BufferedTextarea
               rows={3}
               value={heroSubtitle}
-              onChange={(e) => setHeroSubtitle(e.target.value)}
+              onCommit={setHeroSubtitle}
               className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
               placeholder="A case study on designing the complete School of Management, Tribhuvan University website, from landing page to registration, across desktop and mobile..."
             />
@@ -539,10 +540,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
               Introduction Paragraph (Under Hero Image)
             </label>
-            <textarea
+            <BufferedTextarea
               rows={3}
               value={introduction}
-              onChange={(e) => setIntroduction(e.target.value)}
+              onCommit={setIntroduction}
               className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
               placeholder="The School of Management at Tribhuvan University (SOMTU) is a Kathmandu-based management school. I designed its public website..."
             />
@@ -553,10 +554,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                 My Role
               </label>
-              <input
+              <BufferedTextInput
                 type="text"
                 value={role}
-                onChange={(e) => setRole(e.target.value)}
+                onCommit={setRole}
                 className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
                 placeholder="e.g. UI/UX Design Intern or Lead Product Designer"
               />
@@ -566,10 +567,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                 Duration
               </label>
-              <input
+              <BufferedTextInput
                 type="text"
                 value={duration}
-                onChange={(e) => setDuration(e.target.value)}
+                onCommit={setDuration}
                 className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
                 placeholder="e.g. 1 Month or 6 Weeks"
               />
@@ -589,12 +590,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             {deliverableGroups.map((group, index) => (
               <section key={group.id} className="rounded-lg border border-white/10 bg-zinc-950/70 p-3 sm:p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <input aria-label={`Overview list ${index + 1} heading`} type="text" value={group.label} onChange={(event) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, label: event.target.value } : item))} className="min-w-0 flex-1 rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="e.g. Web Experience" />
+                  <BufferedTextInput aria-label={`Overview list ${index + 1} heading`} type="text" value={group.label} onCommit={(value) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, label: value } : item))} className="min-w-0 flex-1 rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="e.g. Web Experience" />
                   <button type="button" disabled={deliverableGroups.length <= 1} onClick={() => setDeliverableGroups((groups) => groups.filter((item) => item.id !== group.id))} className="rounded px-3 py-2 text-xs text-zinc-400 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-40" aria-label={`Remove ${group.label || `list ${index + 1}`}`}>Remove</button>
                 </div>
-                <textarea rows={Math.min(8, Math.max(3, group.items.length))} value={group.items.join('
-')} onChange={(event) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, items: event.target.value.split('
-') } : item))} className="w-full rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="Add one line per item" />
+                <BufferedTextarea rows={Math.min(8, Math.max(3, group.items.length))} value={group.items.join('\\n')} onCommit={(value) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, items: value.split('\\n') } : item))} className="w-full rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="Add one line per item" />
                 <p className="text-[11px] text-zinc-500">Each list is displayed in two columns on the project page.</p>
               </section>
             ))}
@@ -605,10 +604,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                 Figma Prototype / File URL
               </label>
-              <input
+              <BufferedTextInput
                 type="url"
                 value={figmaUrl}
-                onChange={(e) => setFigmaUrl(e.target.value)}
+                onCommit={setFigmaUrl}
                 className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
                 placeholder="https://www.figma.com/design/..."
               />
@@ -618,10 +617,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                 Figma Button Label
               </label>
-              <input
+              <BufferedTextInput
                 type="text"
                 value={figmaButtonText}
-                onChange={(e) => setFigmaButtonText(e.target.value)}
+                onCommit={setFigmaButtonText}
                 className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
                 placeholder="View Figma File"
               />
@@ -631,10 +630,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
                 External Live Project URL (Optional)
               </label>
-              <input
+              <BufferedTextInput
                 type="url"
                 value={externalProjectUrl}
-                onChange={(e) => setExternalProjectUrl(e.target.value)}
+                onCommit={setExternalProjectUrl}
                 className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
                 placeholder="https://somtu.edu.np"
               />
@@ -684,10 +683,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                 Primary Hero Banner Image
               </label>
               <MediaUploadField value={heroImageUrl} onChange={setHeroImageUrl} onUploadMedia={uploadProjectMedia} mediaLibrary={projectMedia} label="hero image" />
-              <input
+              <BufferedTextInput
                 type="text"
                 value={heroImageAlt}
-                onChange={(e) => setHeroImageAlt(e.target.value)}
+                onCommit={setHeroImageAlt}
                 className="w-full px-3 py-1.5 rounded bg-zinc-950 border border-white/10 text-white text-xs"
                 placeholder="Alt description..."
               />
@@ -721,10 +720,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
               Custom Page SEO Title
             </label>
-            <input
+            <BufferedTextInput
               type="text"
               value={seoTitle}
-              onChange={(e) => setSeoTitle(e.target.value)}
+              onCommit={setSeoTitle}
               className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
               placeholder={`${title || 'Project'} — Yogendra Chaudhary Portfolio`}
             />
@@ -734,10 +733,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
               Meta Description
             </label>
-            <textarea
+            <BufferedTextarea
               rows={3}
               value={seoDescription}
-              onChange={(e) => setSeoDescription(e.target.value)}
+              onCommit={setSeoDescription}
               className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
               placeholder="Concise overview for search engine result snippets and social shares..."
             />

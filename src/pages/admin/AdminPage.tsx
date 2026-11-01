@@ -3,6 +3,7 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { Project, ExperienceItem, EducationItem, AboutCertificate } from '../../types';
 import { initialSiteSettings } from '../../data/initialData';
 import { ProjectEditor } from '../../components/admin/ProjectEditor';
+import { BufferedTextInput, BufferedTextarea } from '../../components/admin/BufferedTextField';
 import { SiteCopyEditor } from '../../components/admin/SiteCopyEditor';
 import { MediaUploadField } from '../../components/admin/MediaUploadField';
 import { MediaPreview } from '../../components/MediaPreview';
@@ -895,10 +896,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <div className="p-3.5 bg-[#12131a] border border-white/10 rounded-xl flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
                   <div className="relative flex-1">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-                    <input
+                    <BufferedTextInput
                       type="text"
                       value={projectSearchQuery}
-                      onChange={(e) => setProjectSearchQuery(e.target.value)}
+                      onCommit={setProjectSearchQuery}
                       placeholder="Search case studies by title, slug, or label..."
                       className="w-full pl-9 pr-4 py-2 bg-[#0d0e14] border border-white/10 rounded-lg text-white text-xs sm:text-sm outline-none focus:border-[#f37021]"
                     />
@@ -1202,37 +1203,37 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Brand / Full Name</label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={settings.brandName}
-                    onChange={(e) => updateSettings({ brandName: e.target.value })}
+                    onCommit={(value) => updateSettings({ brandName: value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Designer Role / Title</label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={settings.brandRole}
-                    onChange={(e) => updateSettings({ brandRole: e.target.value })}
+                    onCommit={(value) => updateSettings({ brandRole: value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Location / Base</label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={settings.location}
-                    onChange={(e) => updateSettings({ location: e.target.value })}
+                    onCommit={(value) => updateSettings({ location: value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Availability Status</label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={settings.availabilityText}
-                    onChange={(e) => updateSettings({ availabilityText: e.target.value })}
+                    onCommit={(value) => updateSettings({ availabilityText: value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
@@ -1334,21 +1335,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <div className="pt-4 space-y-4">
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">About Introduction</label>
-                  <textarea
+                  <BufferedTextarea
                     rows={3}
                     value={settings.aboutIntro ?? initialSiteSettings.aboutIntro}
                     placeholder="Describe your design approach and the work you do."
-                    onChange={(e) => updateSettings({ aboutIntro: e.target.value })}
+                    onCommit={(value) => updateSettings({ aboutIntro: value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021] resize-y"
                   />
                 </div>
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">About Details</label>
-                  <textarea
+                  <BufferedTextarea
                     rows={3}
                     value={settings.aboutDetails ?? initialSiteSettings.aboutDetails}
                     placeholder="Describe your focus, specialties, and the products you work on."
-                    onChange={(e) => updateSettings({ aboutDetails: e.target.value })}
+                    onCommit={(value) => updateSettings({ aboutDetails: value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021] resize-y"
                   />
                 </div>
@@ -1432,19 +1433,19 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Email Address</label>
-                  <input
+                  <BufferedTextInput
                     type="email"
                     value={settings.email}
-                    onChange={(e) => updateSettings({ email: e.target.value })}
+                    onCommit={(value) => updateSettings({ email: value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Phone Number</label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={settings.phone}
-                    onChange={(e) => updateSettings({ phone: e.target.value })}
+                    onCommit={(value) => updateSettings({ phone: value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
@@ -1512,21 +1513,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 </div>
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">LinkedIn Profile URL</label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={settings.linkedinUrl || ''}
                     placeholder="https://www.linkedin.com/in/yogendrach"
-                    onChange={(e) => updateSettings({ linkedinUrl: e.target.value })}
+                    onCommit={(value) => updateSettings({ linkedinUrl: value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Behance Portfolio URL</label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={settings.behanceUrl || ''}
                     placeholder="https://www.behance.net/yogendrachaudhary1"
-                    onChange={(e) => updateSettings({ behanceUrl: e.target.value })}
+                    onCommit={(value) => updateSettings({ behanceUrl: value })}
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
@@ -1559,10 +1560,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">New Password</label>
                   <div className="relative">
-                    <input
+                    <BufferedTextInput
                       type={showAdminPassword ? 'text' : 'password'}
                       value={adminNewPassword}
-                      onChange={(e) => setAdminNewPassword(e.target.value)}
+                      onCommit={setAdminNewPassword}
                       placeholder="Enter new password"
                       className="w-full px-3 py-2.5 pr-10 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
@@ -1577,10 +1578,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 </div>
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Confirm New Password</label>
-                  <input
+                  <BufferedTextInput
                     type={showAdminPassword ? 'text' : 'password'}
                     value={adminConfirmPassword}
-                    onChange={(e) => setAdminConfirmPassword(e.target.value)}
+                    onCommit={setAdminConfirmPassword}
                     placeholder="Confirm new password"
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
@@ -1653,10 +1654,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">
                     Supabase Project URL
                   </label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={supabaseUrlInput}
-                    onChange={(e) => setSupabaseUrlInput(e.target.value)}
+                    onCommit={setSupabaseUrlInput}
                     placeholder="https://your-project.supabase.co"
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white font-mono text-xs sm:text-sm outline-none focus:border-[#f37021]"
                   />
@@ -1665,10 +1666,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">
                     Supabase Anon Key
                   </label>
-                  <input
+                  <BufferedTextInput
                     type="password"
                     value={supabaseKeyInput}
-                    onChange={(e) => setSupabaseKeyInput(e.target.value)}
+                    onCommit={setSupabaseKeyInput}
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
                     className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white font-mono text-xs sm:text-sm outline-none focus:border-[#f37021]"
                   />
@@ -1814,31 +1815,31 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Role / Title</label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       placeholder="e.g. Lead Product Designer"
                       value={expFormData.role || ''}
-                      onChange={(e) => setExpFormData({ ...expFormData, role: e.target.value })}
+                      onCommit={(value) => setExpFormData((current) => ({ ...current, role: value }))}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Company &amp; Location</label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       placeholder="e.g. Acme Studio · Remote"
                       value={expFormData.company || ''}
-                      onChange={(e) => setExpFormData({ ...expFormData, company: e.target.value })}
+                      onCommit={(value) => setExpFormData((current) => ({ ...current, company: value }))}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Dates / Period</label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       placeholder="e.g. Jan 2024 – Present"
                       value={expFormData.dates || ''}
-                      onChange={(e) => setExpFormData({ ...expFormData, dates: e.target.value })}
+                      onCommit={(value) => setExpFormData((current) => ({ ...current, dates: value }))}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
@@ -1856,11 +1857,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Description</label>
-                    <textarea
+                    <BufferedTextarea
                       rows={3}
                       placeholder="Summary of responsibilities, design deliverables, and team impact..."
                       value={expFormData.description || ''}
-                      onChange={(e) => setExpFormData({ ...expFormData, description: e.target.value })}
+                      onCommit={(value) => setExpFormData((current) => ({ ...current, description: value }))}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
@@ -1868,10 +1869,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">
                       Skills &amp; Tags (comma separated)
                     </label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       value={expTagsInput}
-                      onChange={(e) => setExpTagsInput(e.target.value)}
+                      onCommit={setExpTagsInput}
                       placeholder="Design Systems, Prototyping, Figma, User Research"
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
@@ -2006,11 +2007,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         <div className="space-y-2">
                           {getCertificatesForExperience(item).map((certificate) => (
                             <div key={certificate.id} className="flex flex-col gap-2 rounded-lg border border-white/10 bg-[#0d0e14] p-3 sm:flex-row sm:items-center">
-                              <input
+                              <BufferedTextInput
                                 aria-label={`Certificate title for ${item.role}`}
                                 value={certificate.title}
-                                onChange={(event) => {
-                                  const certificates = getCertificatesForExperience(item).map((current) => current.id === certificate.id ? { ...current, title: event.target.value } : current);
+                                onCommit={(value) => {
+                                  const certificates = getCertificatesForExperience(item).map((current) => current.id === certificate.id ? { ...current, title: value } : current);
                                   saveExperienceCertificates(item.id, certificates);
                                 }}
                                 className="min-w-0 flex-1 rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-[#f37021]"
@@ -2129,51 +2130,51 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Degree / Program Title</label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       placeholder="e.g. Bachelor in Information Management"
                       value={eduFormData.title || ''}
-                      onChange={(e) => setEduFormData({ ...eduFormData, title: e.target.value })}
+                      onCommit={(value) => setEduFormData((current) => ({ ...current, title: value }))}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Institution / University</label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       placeholder="e.g. Tribhuvan University"
                       value={eduFormData.institution || ''}
-                      onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })}
+                      onCommit={(value) => setEduFormData((current) => ({ ...current, institution: value }))}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Location</label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       placeholder="e.g. Kathmandu, Nepal"
                       value={eduFormData.location || ''}
-                      onChange={(e) => setEduFormData({ ...eduFormData, location: e.target.value })}
+                      onCommit={(value) => setEduFormData((current) => ({ ...current, location: value }))}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Dates / Year</label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       placeholder="e.g. 2019 – 2023"
                       value={eduFormData.dates || ''}
-                      onChange={(e) => setEduFormData({ ...eduFormData, dates: e.target.value })}
+                      onCommit={(value) => setEduFormData((current) => ({ ...current, dates: value }))}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Status / Honors</label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       placeholder="e.g. Graduated / First Division / In Progress"
                       value={eduFormData.status || ''}
-                      onChange={(e) => setEduFormData({ ...eduFormData, status: e.target.value })}
+                      onCommit={(value) => setEduFormData((current) => ({ ...current, status: value }))}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
@@ -2181,21 +2182,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">
                       Focus Areas &amp; Skills (comma separated)
                     </label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       placeholder="Design Systems, Human-Computer Interaction, Research"
                       value={eduTagsInput}
-                      onChange={(e) => setEduTagsInput(e.target.value)}
+                      onCommit={setEduTagsInput}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Description</label>
-                    <textarea
+                    <BufferedTextarea
                       rows={3}
                       placeholder="Details about coursework, major projects, thesis or awards..."
                       value={eduFormData.description || ''}
-                      onChange={(e) => setEduFormData({ ...eduFormData, description: e.target.value })}
+                      onCommit={(value) => setEduFormData((current) => ({ ...current, description: value }))}
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
@@ -2380,20 +2381,20 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Asset Name</label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={newMediaName}
-                    onChange={(e) => setNewMediaName(e.target.value)}
+                    onCommit={setNewMediaName}
                     placeholder="e.g. Dashboard Hero Preview"
                     className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
                 </div>
                 <div>
                   <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Asset URL / Path</label>
-                  <input
+                  <BufferedTextInput
                     type="text"
                     value={newMediaUrl}
-                    onChange={(e) => setNewMediaUrl(e.target.value)}
+                    onCommit={setNewMediaUrl}
                     placeholder="/assets/media/... or https://..."
                     className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                   />
@@ -2422,10 +2423,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             {/* SEARCH FILTER */}
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-              <input
+              <BufferedTextInput
                 type="text"
                 value={mediaSearchQuery}
-                onChange={(e) => setMediaSearchQuery(e.target.value)}
+                onCommit={setMediaSearchQuery}
                 placeholder="Search assets by name or path..."
                 className="w-full pl-9 pr-4 py-2.5 bg-[#12131a] border border-white/10 rounded-xl text-white text-xs sm:text-sm outline-none focus:border-[#f37021]"
               />
@@ -2512,28 +2513,28 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Site Title Tag</label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       value={settings.seo.title}
-                      onChange={(e) => updateSettings({ seo: { ...settings.seo, title: e.target.value } })}
+                      onCommit={(value) => updateSettings({ seo: { ...settings.seo, title: value } })}
                       className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Meta Description</label>
-                    <textarea
+                    <BufferedTextarea
                       rows={3}
                       value={settings.seo.description}
-                      onChange={(e) => updateSettings({ seo: { ...settings.seo, description: e.target.value } })}
+                      onCommit={(value) => updateSettings({ seo: { ...settings.seo, description: value } })}
                       className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
                   <div>
                     <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">Canonical Site URL</label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       value={settings.seo.canonicalUrl}
-                      onChange={(e) => updateSettings({ seo: { ...settings.seo, canonicalUrl: e.target.value } })}
+                      onCommit={(value) => updateSettings({ seo: { ...settings.seo, canonicalUrl: value } })}
                       className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
@@ -2541,10 +2542,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     <label className="block text-xs uppercase text-zinc-400 mb-1.5 font-semibold">
                       Open Graph Social Image URL
                     </label>
-                    <input
+                    <BufferedTextInput
                       type="text"
                       value={settings.seo.ogImage}
-                      onChange={(e) => updateSettings({ seo: { ...settings.seo, ogImage: e.target.value } })}
+                      onCommit={(value) => updateSettings({ seo: { ...settings.seo, ogImage: value } })}
                       className="w-full px-3 py-2.5 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>

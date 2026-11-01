@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
+import { BufferedTextInput, BufferedTextarea } from './BufferedTextField';
 
 type SiteCopy = Record<string, string>;
 
@@ -77,7 +78,7 @@ export const SiteCopyEditor: React.FC<SiteCopyEditorProps> = ({ defaults, values
               const longText = defaultValue.length > 72 || key.toLowerCase().includes('description');
               return <label key={key} className={longText ? 'xl:col-span-2' : ''}>
                 <span className="mb-1.5 block text-xs font-semibold text-zinc-300">{prettify(key)}</span>
-                {longText ? <textarea rows={3} value={value} onChange={(event) => onChange(key, event.target.value)} className="w-full resize-y rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2.5 text-sm text-white outline-none focus:border-[#f37021]" /> : <input type="text" value={value} onChange={(event) => onChange(key, event.target.value)} className="w-full rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2.5 text-sm text-white outline-none focus:border-[#f37021]" />}
+                {longText ? <BufferedTextarea rows={3} value={value} onCommit={(next) => onChange(key, next)} className="w-full resize-y rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2.5 text-sm text-white outline-none focus:border-[#f37021]" /> : <BufferedTextInput type="text" value={value} onCommit={(next) => onChange(key, next)} className="w-full rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2.5 text-sm text-white outline-none focus:border-[#f37021]" />}
               </label>;
             })}
           </div> : <div className="rounded-lg border border-dashed border-white/10 px-4 py-8 text-center text-sm text-zinc-400">No matching text in this group. Try another search.</div>}
