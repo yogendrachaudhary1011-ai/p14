@@ -6,6 +6,7 @@ interface MediaPreviewProps {
   alt?: string;
   mimeType?: string;
   className?: string;
+  style?: React.CSSProperties;
   loading?: 'eager' | 'lazy';
   fallbackSrc?: string;
   controls?: boolean;
@@ -16,12 +17,13 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   alt = '',
   mimeType,
   className,
+  style,
   loading = 'lazy',
   fallbackSrc,
   controls = true
 }) => {
   if (isVideoMedia(src, mimeType)) {
-    return <video src={src} className={className} controls={controls} playsInline preload="metadata" aria-label={alt || 'Video preview'} />;
+    return <video src={src} className={className} style={style} controls={controls} playsInline preload="metadata" aria-label={alt || 'Video preview'} />;
   }
 
   return (
@@ -29,6 +31,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
       src={src}
       alt={alt}
       className={className}
+      style={style}
       loading={loading}
       onError={(event) => {
         if (fallbackSrc && event.currentTarget.src !== new URL(fallbackSrc, window.location.href).href) {
