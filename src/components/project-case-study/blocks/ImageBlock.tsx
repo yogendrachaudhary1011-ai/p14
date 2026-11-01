@@ -7,6 +7,7 @@ interface ImageBlockProps {
 }
 
 export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
+  if (!block.url?.trim()) return null;
   const isFull = block.type === 'fullWidthImage';
 
   return (

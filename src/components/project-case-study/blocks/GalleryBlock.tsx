@@ -7,12 +7,15 @@ interface GalleryBlockProps {
 }
 
 export const GalleryBlock: React.FC<GalleryBlockProps> = ({ block }) => {
+  const images = block.images.filter((image) => image.url?.trim());
+  if (!images.length) return null;
+
   const columns = block.columns || 2;
   const colClass = columns === 3 ? 'grid-cols-1 md:grid-cols-3' : columns === 4 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-2';
 
   return (
     <div data-cols={columns} className={`w-full case-study-card-grid grid ${colClass} gap-4 my-2`}>
-      {block.images.map((img, idx) => (
+      {images.map((img, idx) => (
         <div key={idx} className="flex flex-col gap-1.5 group">
           <div className="rounded-[5px] overflow-hidden border border-white/10 bg-zinc-950 flex justify-center items-center transition-all duration-300 group-hover:border-white/30 group-hover:-translate-y-1 group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)]">
             <MediaPreview

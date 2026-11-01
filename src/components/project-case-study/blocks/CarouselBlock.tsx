@@ -8,7 +8,7 @@ interface CarouselBlockProps {
 
 export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const slides = block.slides || [];
+  const slides = (block.slides || []).filter((slide) => slide.url?.trim());
 
   if (slides.length === 0) return null;
 

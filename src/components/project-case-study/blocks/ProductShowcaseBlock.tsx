@@ -8,7 +8,7 @@ interface ProductShowcaseBlockProps {
 
 export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ block }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const screens = block.screens || [];
+  const screens = (block.screens || []).filter((screen) => screen.url?.trim());
 
   if (screens.length === 0) return null;
 

@@ -590,7 +590,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                           {block.images.map((image, index) => (
                             <div key={`${block.id}-image-${index}`} className="rounded-lg border border-white/10 bg-zinc-900/60 p-3 flex flex-col gap-3">
                               <div className="flex items-center justify-between"><span className="text-xs font-medium text-white">Image {index + 1}</span><button type="button" onClick={() => handleUpdateBlock(block.id, { images: block.images.filter((_, itemIndex) => itemIndex !== index) })} className="text-xs text-red-300 hover:text-red-200">Remove</button></div>
-                              <MediaUploadField value={image.url} onChange={(url) => { const images = [...block.images]; images[index] = { ...images[index], url }; handleUpdateBlock(block.id, { images }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`gallery image ${index + 1}`} />
+                              <MediaUploadField value={image.url} onChange={(url) => { const images = url ? block.images.map((item, itemIndex) => itemIndex === index ? { ...item, url } : item) : block.images.filter((_, itemIndex) => itemIndex !== index); handleUpdateBlock(block.id, { images }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`gallery image ${index + 1}`} />
                               <BufferedTextInput type="text" value={image.caption || ''} onCommit={(value) => { const images = [...block.images]; images[index] = { ...images[index], caption: value }; handleUpdateBlock(block.id, { images }); }} className="w-full rounded bg-zinc-950 border border-white/10 px-3 py-2 text-xs text-white" placeholder="Optional image caption" />
                             </div>
                           ))}
@@ -879,7 +879,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     Remove
                                   </button>
                                 </div>
-                                <div className="w-full flex-1"><MediaUploadField value={sl.url} onChange={(url) => { const cloned = [...block.slides]; cloned[sIdx] = { ...cloned[sIdx], url }; handleUpdateBlock(block.id, { slides: cloned }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`design system image ${sIdx + 1}`} /></div>
+                                <div className="w-full flex-1"><MediaUploadField value={sl.url} onChange={(url) => { const cloned = url ? block.slides.map((item, itemIndex) => itemIndex === sIdx ? { ...item, url } : item) : block.slides.filter((_, itemIndex) => itemIndex !== sIdx); handleUpdateBlock(block.id, { slides: cloned }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`design system image ${sIdx + 1}`} /></div>
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -970,7 +970,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     Remove
                                   </button>
                                 </div>
-                                <div className="w-full flex-1"><MediaUploadField value={scr.url} onChange={(url) => { const cloned = [...block.screens]; cloned[scIdx] = { ...cloned[scIdx], url }; handleUpdateBlock(block.id, { screens: cloned }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`product screen ${scIdx + 1}`} /></div>
+                                <div className="w-full flex-1"><MediaUploadField value={scr.url} onChange={(url) => { const cloned = url ? block.screens.map((item, itemIndex) => itemIndex === scIdx ? { ...item, url } : item) : block.screens.filter((_, itemIndex) => itemIndex !== scIdx); handleUpdateBlock(block.id, { screens: cloned }); }} onUploadMedia={onUploadMedia} mediaLibrary={mediaLibrary} label={`product screen ${scIdx + 1}`} /></div>
                                 <button
                                   type="button"
                                   onClick={() => {

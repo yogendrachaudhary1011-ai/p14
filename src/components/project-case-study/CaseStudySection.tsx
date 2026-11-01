@@ -46,7 +46,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
         return <TwoColumnComparisonBlock key={block.id} block={block} copy={copy} />;
       case 'image':
       case 'fullWidthImage':
-        return <ImageBlock key={block.id} block={block} />;
+        return block.url?.trim() ? <ImageBlock key={block.id} block={block} /> : null;
       case 'gallery':
         return <GalleryBlock key={block.id} block={block} />;
       case 'carousel':
