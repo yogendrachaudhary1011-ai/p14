@@ -60,7 +60,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
       setOutgoingIndex(null);
       setIsTransitioning(false);
       transitionTimer.current = null;
-    }, 560);
+    }, 340);
   };
 
   const nextSlide = () => void changeSlide(currentIndex < slides.length - 1 ? currentIndex + 1 : 0, 'next');
@@ -78,7 +78,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
             alt=""
             className="absolute inset-0 h-full w-full object-contain"
             style={{
-              transition: 'transform 480ms cubic-bezier(0.22, 0.72, 0.18, 1)',
+              transition: 'transform 280ms cubic-bezier(0.22, 0.72, 0.18, 1)',
               willChange: 'transform',
               backfaceVisibility: 'hidden',
               transform: isTransitioning ? `translate3d(${slideDirection === 'next' ? '-100%' : '100%'}, 0, 0)` : 'translate3d(0, 0, 0)'
@@ -92,7 +92,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
           className="absolute inset-0 z-[1] h-full w-full object-contain"
           style={{
-            transition: 'transform 480ms cubic-bezier(0.22, 0.72, 0.18, 1)',
+            transition: 'transform 280ms cubic-bezier(0.22, 0.72, 0.18, 1)',
             willChange: 'transform',
             backfaceVisibility: 'hidden',
             transform: outgoingSlide && !isTransitioning
