@@ -61,9 +61,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
         )}
       </div>
       <div className="flex min-h-[72px] items-center justify-between gap-4 border-t border-white/[0.07] px-4 py-3 sm:px-6">
-        <div className="min-w-0">
-          <p className="truncate text-xs font-medium tracking-wide text-white sm:text-sm">{currentSlide.title || `Slide ${currentIndex + 1}`}</p>
-        </div>
+        <div className="min-w-0" aria-hidden="true" />
         <div className="flex shrink-0 items-center gap-3">
           {slides.length > 1 && <div className="flex items-center gap-1.5" aria-label="Choose a slide">
             {slides.map((slide, idx) => (
