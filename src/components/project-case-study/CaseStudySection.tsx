@@ -27,11 +27,20 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
 
   if (!section.visible) return null;
   const normalizedSection = stackProductSectionImages([section])[0];
-  const visibleBlocks = section.type === 'challenge'
+  let visibleBlocks = section.type === 'challenge'
     ? (normalizedSection.blocks || [])
       .filter((block) => !['image', 'fullWidthImage', 'gallery', 'carousel', 'productShowcase'].includes(block.type))
       .map((block) => block.type === 'decisionList' ? { ...block, image: undefined, imageAlt: undefined } : block)
     : normalizedSection.blocks || [];
+  if (section.type === 'keyDecisions') {
+    const imageBlocks = visibleBlocks.filter((block) => block.type === 'image' || block.type === 'fullWidthImage');
+    if (imageBlocks.length) {
+      const otherBlocks = visibleBlocks.filter((block) => block.type !== 'image' && block.type !== 'fullWidthImage');
+      const decisionIndex = otherBlocks.findIndex((block) => block.type === 'decisionList');
+      otherBlocks.splice(decisionIndex < 0 ? otherBlocks.length : decisionIndex, 0, ...imageBlocks);
+      visibleBlocks = otherBlocks;
+    }
+  }
 
   const renderBlock = (block: CaseStudyBlock) => {
     switch (block.type) {

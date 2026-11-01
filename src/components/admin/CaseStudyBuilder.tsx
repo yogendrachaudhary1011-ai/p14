@@ -49,6 +49,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
     if (block.type === 'gallery') return count + block.images.length;
     if (block.type === 'carousel') return count + block.slides.filter((slide) => !slide.url.includes('placehold.co')).length;
     if (block.type === 'productShowcase') return count + block.screens.filter((screen) => !screen.url.includes('placehold.co')).length;
+    if (block.type === 'decisionList') return count + (block.image ? 1 : 0);
     return count;
   }, 0);
 
@@ -179,6 +180,55 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
           const at = blocks.findIndex((block) => block.id === carousel?.id);
           blocks[at] = { ...carousel, slides };
         }
+      } else if (selectedSection.type === 'keyDecisions') {
+        const decisionBlockIndex = blocks.findIndex((block) => block.type === 'decisionList');
+        if (decisionBlockIndex >= 0 && blocks[decisionBlockIndex].type === 'decisionList') {
+          const decisionBlock = blocks[decisionBlockIndex];
+          blocks[decisionBlockIndex] = {
+            ...decisionBlock,
+            image: imageAssets[0]?.url || decisionBlock.image,
+            imageAlt: imageAssets[0]?.name || decisionBlock.imageAlt
+          };
+        } else if (imageAssets[0]) {
+          blocks.push({
+            id: `blk-${Date.now()}-decisions`,
+            type: 'decisionList',
+            decisions: [],
+            image: imageAssets[0].url,
+            imageAlt: imageAssets[0].name
+          });
+        }
+        const extraImages = imageAssets.slice(1).map((asset) => ({
+          id: `blk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          type: 'fullWidthImage' as const,
+          url: asset.url,
+          alt: asset.name
+        }));
+        const currentDecisionIndex = blocks.findIndex((block) => block.type === 'decisionList');
+        blocks.splice(currentDecisionIndex < 0 ? blocks.length : currentDecisionIndex, 0, ...extraImages);
+      } else if (selectedSection.type === 'keyDecisions') {
+        const firstImage = imageAssets[0];
+        const decisionBlockIndex = blocks.findIndex((block) => block.type === 'decisionList');
+        if (decisionBlockIndex >= 0 && blocks[decisionBlockIndex].type === 'decisionList' && firstImage) {
+          const decisionBlock = blocks[decisionBlockIndex];
+          blocks[decisionBlockIndex] = { ...decisionBlock, image: firstImage.url, imageAlt: firstImage.name };
+        } else if (firstImage) {
+          blocks.push({
+            id: `blk-${Date.now()}-decisions`,
+            type: 'decisionList',
+            decisions: [],
+            image: firstImage.url,
+            imageAlt: firstImage.name
+          });
+        }
+        const extraImages = imageAssets.slice(1).map((asset) => ({
+          id: `blk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          type: 'fullWidthImage' as const,
+          url: asset.url,
+          alt: asset.name
+        }));
+        const currentDecisionIndex = blocks.findIndex((block) => block.type === 'decisionList');
+        blocks.splice(currentDecisionIndex < 0 ? blocks.length : currentDecisionIndex, 0, ...extraImages);
       } else {
         blocks.push(...imageAssets.map((asset) => ({
           id: `blk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -743,6 +793,17 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                             >
                               + Add Decision
                             </button>
+                          </div>
+
+                          <div className="rounded-lg border border-white/10 bg-zinc-950/60 p-3">
+                            <label className="mb-2 block text-xs font-medium text-zinc-300">Image asset</label>
+                            <MediaUploadField
+                              value={block.image || ''}
+                              onChange={(image) => handleUpdateBlock(block.id, { image })}
+                              onUploadMedia={onUploadMedia}
+                              mediaLibrary={mediaLibrary}
+                              label="Key Decisions image"
+                            />
                           </div>
 
                           <div className="flex flex-col gap-2">
