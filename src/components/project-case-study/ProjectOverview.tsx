@@ -53,12 +53,12 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
           </div>
         )}
 
-        {/* Metadata Table with room for overview text */}
-        <div className="w-full max-w-[1100px] flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
-          <div className="w-full flex flex-col justify-center items-start gap-6">
+        {/* Metadata Table matching the reference two-column alignment */}
+        <div className="w-full max-w-[700px] flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
+          <div className="w-full flex flex-col justify-center items-start gap-12">
             {/* My Role */}
             {role && (
-              <div className="w-full max-w-[700px] grid grid-cols-1 sm:grid-cols-[13rem_20rem] items-start gap-2 sm:gap-4 group">
+              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.roleLabel}
                 </div>
@@ -70,7 +70,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
 
             {/* Duration */}
             {duration && (
-              <div className="w-full max-w-[700px] grid grid-cols-1 sm:grid-cols-[13rem_20rem] items-start gap-2 sm:gap-4 group">
+              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.durationLabel}
                 </div>
@@ -86,11 +86,18 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               .map((group) => (
                 <div key={group.id} className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
                   <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">{group.label}</div>
-                  <div className="w-full max-w-[900px] flex flex-col gap-2.5">
-                    {group.items.map((item, index) => (
-                      <div key={index} className="text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5">{item}</div>
-                    ))}
-                  </div>
+                  <ul className="w-full sm:w-80 flex flex-col gap-4">
+                    {group.items
+                      .flatMap((item) => String(item ?? '').replace(/\\n/g, '\n').replace(/\/n/gi, '\n').split(/\r?\n/))
+                      .map((item) => item.trim())
+                      .filter(Boolean)
+                      .map((item, index) => (
+                        <li key={`${group.id}-${index}`} className="flex items-start gap-3 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">
+                          <span aria-hidden="true" className="mt-[0.65rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[#8be28b]" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                  </ul>
                 </div>
               ))}
 
