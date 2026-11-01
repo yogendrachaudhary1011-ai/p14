@@ -6,21 +6,13 @@ interface CarouselBlockProps {
   block: CarouselBlockItem;
 }
 
-interface ImageSize {
-  width: number;
-  height: number;
-}
-
 export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'next' | 'prev'>('next');
   const [outgoingIndex, setOutgoingIndex] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isPreparing, setIsPreparing] = useState(false);
-  const [frameHeight, setFrameHeight] = useState<number | null>(null);
   const transitionTimer = useRef<number | null>(null);
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const imageSizes = useRef(new Map<string, ImageSize>());
   const slides = (block.slides || []).filter((slide) => slide.url?.trim());
   const slideKey = slides.map((slide) => slide.url).join('|');
 
@@ -37,14 +29,6 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   const currentSlide = slides[currentIndex] || slides[0];
   const outgoingSlide = outgoingIndex === null ? null : slides[outgoingIndex];
 
-  const rememberImageSize = (url: string, image: HTMLImageElement) => {
-    if (!image.naturalWidth || !image.naturalHeight) return;
-    const size = { width: image.naturalWidth, height: image.naturalHeight };
-    imageSizes.current.set(url, size);
-    const stageWidth = stageRef.current?.clientWidth;
-    if (stageWidth) setFrameHeight(stageWidth * size.height / size.width);
-  };
-
   const changeSlide = async (nextIndex: number, direction: 'next' | 'prev') => {
     if (isPreparing || outgoingIndex !== null || nextIndex === currentIndex || slides.length < 2) return;
     setIsPreparing(true);
@@ -58,11 +42,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
       // Let the normal image fallback handle failed assets.
     }
 
-    if (image.naturalWidth && image.naturalHeight) {
-      const stageWidth = stageRef.current?.clientWidth;
-      imageSizes.current.set(nextSlide.url, { width: image.naturalWidth, height: image.naturalHeight });
-      if (stageWidth) setFrameHeight(stageWidth * image.naturalHeight / image.naturalWidth);
-    }
+
 
     if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
     setSlideDirection(direction);
@@ -89,9 +69,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   return (
     <div className="my-3 w-full overflow-hidden border border-white/10 bg-[#0b0d0b] shadow-[0_24px_70px_rgba(0,0,0,.24)]">
       <div
-        ref={stageRef}
-        className="relative isolate w-full overflow-hidden bg-[#080a08]"
-        style={frameHeight ? { height: frameHeight, transition: 'height 480ms cubic-bezier(0.22, 0.72, 0.18, 1)' } : undefined}
+        className="relative isolate h-[420px] w-full overflow-hidden bg-[#080a08] sm:h-[520px] lg:h-[620px]"
       >
         {outgoingSlide && (
           <MediaPreview
@@ -112,7 +90,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
           key={currentIndex}
           src={currentSlide.url}
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
-          className={frameHeight ? 'relative z-[1] block h-full w-full object-contain' : 'relative z-[1] block h-auto w-full object-contain'}
+          className="absolute inset-0 z-[1] h-full w-full object-contain"
           style={{
             transition: 'transform 480ms cubic-bezier(0.22, 0.72, 0.18, 1)',
             willChange: 'transform',
@@ -121,7 +99,6 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
               ? `translate3d(${slideDirection === 'next' ? '100%' : '-100%'}, 0, 0)`
               : 'translate3d(0, 0, 0)'
           }}
-          onLoad={(event) => rememberImageSize(currentSlide.url, event.currentTarget)}
           loading={outgoingSlide ? 'eager' : 'lazy'}
           fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
