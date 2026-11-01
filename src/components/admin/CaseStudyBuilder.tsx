@@ -4,7 +4,8 @@ import {
   CaseStudyBlock,
   SectionType,
   CaseStudyBlockType,
-  MediaAsset
+  MediaAsset,
+  DecisionDetail
 } from '../../types';
 import { createDefaultSection, createDefaultBlock } from '../../utils/caseStudyUtils';
 import { MediaPreview } from '../MediaPreview';
@@ -762,9 +763,14 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                   ...(block.decisions || []),
                                   {
                                     title: 'New Architecture Decision',
-                                    constraint: 'Specific challenge faced.',
-                                    whatIDid: 'What was built or designed.',
-                                    why: 'Why this solved the user problem.'
+                                    constraint: '',
+                                    whatIDid: '',
+                                    why: '',
+                                    details: [
+                                      { label: 'Constraint', text: 'Specific challenge faced.' },
+                                      { label: 'What I did', text: 'What was built or designed.' },
+                                      { label: 'Why', text: 'Why this solved the user problem.' }
+                                    ]
                                   }
                                 ];
                                 handleUpdateBlock(block.id, { decisions: updated });
@@ -787,7 +793,18 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                           </div>
 
                           <div className="flex flex-col gap-2">
-                            {block.decisions?.map((dec, dIdx) => (
+                            {block.decisions?.map((dec, dIdx) => {
+                              const details: DecisionDetail[] = dec.details ?? [
+                                { label: dec.constraintLabel ?? 'Constraint', text: dec.constraint || '' },
+                                { label: dec.whatIDidLabel ?? 'What I did', text: dec.whatIDid || '' },
+                                { label: dec.whyLabel ?? 'Why', text: dec.why || '' }
+                              ];
+                              const updateDetails = (nextDetails: DecisionDetail[]) => {
+                                const cloned = [...block.decisions];
+                                cloned[dIdx] = { ...cloned[dIdx], details: nextDetails };
+                                handleUpdateBlock(block.id, { decisions: cloned });
+                              };
+                              return (
                               <div
                                 key={dIdx}
                                 className="p-3 rounded bg-zinc-900 border border-white/5 flex flex-col gap-2"
@@ -798,7 +815,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     value={dec.title}
                                     onCommit={(value) => {
                                       const cloned = [...block.decisions];
-                                      cloned[dIdx] = { ...cloned[dIdx], title: e.target.value };
+                                      cloned[dIdx] = { ...cloned[dIdx], title: value };
                                       handleUpdateBlock(block.id, { decisions: cloned });
                                     }}
                                     className="px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs font-semibold flex-1 mr-2"
@@ -815,49 +832,42 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     Remove
                                   </button>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                                  <div>
-                                    <label className="text-zinc-400 font-mono block mb-0.5">Constraint</label>
-                                    <BufferedTextarea
-                                      rows={2}
-                                      value={dec.constraint}
-                                      onCommit={(value) => {
-                                        const cloned = [...block.decisions];
-                                        cloned[dIdx] = { ...cloned[dIdx], constraint: e.target.value };
-                                        handleUpdateBlock(block.id, { decisions: cloned });
-                                      }}
-                                      className="w-full px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-zinc-400 font-mono block mb-0.5">What I Did</label>
-                                    <BufferedTextarea
-                                      rows={2}
-                                      value={dec.whatIDid}
-                                      onCommit={(value) => {
-                                        const cloned = [...block.decisions];
-                                        cloned[dIdx] = { ...cloned[dIdx], whatIDid: e.target.value };
-                                        handleUpdateBlock(block.id, { decisions: cloned });
-                                      }}
-                                      className="w-full px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-[#ff853a] font-mono block mb-0.5">Why</label>
-                                    <BufferedTextarea
-                                      rows={2}
-                                      value={dec.why}
-                                      onCommit={(value) => {
-                                        const cloned = [...block.decisions];
-                                        cloned[dIdx] = { ...cloned[dIdx], why: e.target.value };
-                                        handleUpdateBlock(block.id, { decisions: cloned });
-                                      }}
-                                      className="w-full px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
-                                    />
-                                  </div>
+                                <div className="flex flex-col gap-2">
+                                  {details.map((detail, detailIndex) => (
+                                    <div key={detailIndex} className="rounded border border-white/5 bg-zinc-950/50 p-2.5 flex flex-col gap-2">
+                                      <div className="flex items-center gap-2">
+                                        <BufferedTextInput
+                                          type="text"
+                                          value={detail.label}
+                                          onCommit={(value) => updateDetails(details.map((item, index) => index === detailIndex ? { ...item, label: value } : item))}
+                                          className="min-w-0 flex-1 px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
+                                          placeholder="Optional label — leave blank to hide"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => updateDetails(details.filter((_, index) => index !== detailIndex))}
+                                          className="text-zinc-500 hover:text-red-400 text-xs px-2"
+                                          aria-label={`Remove detail ${detailIndex + 1}`}
+                                        >Remove detail</button>
+                                      </div>
+                                      <BufferedTextarea
+                                        rows={2}
+                                        value={detail.text}
+                                        onCommit={(value) => updateDetails(details.map((item, index) => index === detailIndex ? { ...item, text: value } : item))}
+                                        className="w-full px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
+                                        placeholder="Detail text..."
+                                      />
+                                    </div>
+                                  ))}
+                                  <button
+                                    type="button"
+                                    onClick={() => updateDetails([...details, { label: '', text: '' }])}
+                                    className="self-start rounded border border-white/10 px-2.5 py-1.5 text-xs text-zinc-300 hover:bg-white/5"
+                                  >+ Add detail</button>
                                 </div>
                               </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       )}
