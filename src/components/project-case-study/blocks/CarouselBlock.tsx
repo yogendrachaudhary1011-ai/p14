@@ -8,6 +8,7 @@ interface CarouselBlockProps {
 
 export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<'next' | 'prev'>('next');
   const slides = (block.slides || []).filter((slide) => slide.url?.trim());
   const slideKey = slides.map((slide) => slide.url).join('|');
 
@@ -34,7 +35,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
           key={currentIndex}
           src={currentSlide.url}
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
-          className="block h-auto w-full object-contain transition-all duration-500 ease-out design-carousel-slide-enter"
+          className={"block h-auto w-full object-contain design-carousel-slide-enter design-carousel-slide-enter--" + slideDirection}
           loading="lazy"
           fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
@@ -65,7 +66,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
             <button
               key={slide.url + "-" + idx}
               type="button"
-              onClick={() => setCurrentIndex(idx)}
+              onClick={() => { setSlideDirection(idx >= currentIndex ? "next" : "prev"); setCurrentIndex(idx); }}
               aria-label={"Go to slide " + (idx + 1)}
               aria-current={currentIndex === idx ? "true" : undefined}
               className={"h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9fc56] focus-visible:ring-offset-2 focus-visible:ring-offset-black " + (currentIndex === idx ? "w-7 bg-[#b9fc56]" : "w-1.5 bg-white/45 hover:bg-white")}
