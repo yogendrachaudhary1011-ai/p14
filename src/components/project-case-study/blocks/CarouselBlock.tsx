@@ -20,13 +20,24 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
 
   if (slides.length === 0) return null;
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev < slides.length - 1 ? prev + 1 : 0));
+  const changeSlide = (nextIndex: number, direction: 'next' | 'prev') => {
+    if (outgoingIndex !== null || nextIndex === currentIndex || slides.length < 2) return;
+    if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
+    setSlideDirection(direction);
+    setOutgoingIndex(currentIndex);
+    setCurrentIndex(nextIndex);
+    transitionTimer.current = window.setTimeout(() => {
+      setOutgoingIndex(null);
+      transitionTimer.current = null;
+    }, 520);
   };
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : slides.length - 1));
-  };
+  const nextSlide = () => changeSlide(currentIndex < slides.length - 1 ? currentIndex + 1 : 0, 'next');
+  const prevSlide = () => changeSlide(currentIndex > 0 ? currentIndex - 1 : slides.length - 1, 'prev');
+
+  useEffect(() => () => {
+    if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
+  }, []);
 
   const currentSlide = slides[currentIndex] || slides[0];
   const outgoingSlide = outgoingIndex === null ? null : slides[outgoingIndex];
