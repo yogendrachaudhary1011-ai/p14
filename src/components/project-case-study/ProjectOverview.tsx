@@ -94,7 +94,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                       .map((item, index) => (
                         <li key={`${group.id}-${index}`} className="flex items-start gap-3 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">
                           <span aria-hidden="true" className="mt-[0.65rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[#8be28b]" />
-                          <span>{item}</span>
+                          <span className="min-w-0 flex-1 md:whitespace-nowrap">{item}</span>
                         </li>
                       ))}
                   </ul>
