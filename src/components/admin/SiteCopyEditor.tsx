@@ -48,7 +48,7 @@ export const SiteCopyEditor: React.FC<SiteCopyEditorProps> = ({ defaults, values
         <div>
           <p className="text-[11px] uppercase tracking-[0.18em] font-semibold text-[#f37021]">Public website</p>
           <h3 id="site-copy-title" className="mt-1 text-lg font-bold text-white">Text & labels</h3>
-          <p className="mt-1 text-sm text-zinc-400">Choose a page area, then edit the words visitors see. Changes save automatically.</p>
+          <p className="mt-1 text-sm text-zinc-400">Choose a page area, edit the words visitors see, then press Save Changes when you are ready.</p>
         </div>
         <label className="relative block w-full sm:w-64">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />

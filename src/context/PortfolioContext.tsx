@@ -184,42 +184,51 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [cloudSaveStatus, setCloudSaveStatus] = useState<'idle' | 'unsaved' | 'saving' | 'saved' | 'error'>('idle');
   const [cloudSaveError, setCloudSaveError] = useState<string | null>(null);
   const [cloudReady, setCloudReady] = useState(false);
-  const saveQueue = useRef<Promise<void>>(Promise.resolve());
   const lastCloudSnapshot = useRef<string | null>(null);
-  const latestCloudSnapshot = useRef<string | null>(null);
   const hasUnsavedChanges = useRef(false);
+  const localChangeVersion = useRef(0);
+
+  const markUnsavedChanges = () => {
+    localChangeVersion.current += 1;
+    if (hasUnsavedChanges.current) return;
+    hasUnsavedChanges.current = true;
+    setCloudSaveStatus((current) => current === 'saving' ? current : 'unsaved');
+    setCloudSaveError(null);
+  };
 
   // Sync to local storage for fast boot
   useEffect(() => {
-    try {
-      safeStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
-    } catch (e) {
-      console.warn('Storage sync error:', e);
-    }
+    const timer = window.setTimeout(() => {
+      try { safeStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings)); }
+      catch (e) { console.warn('Storage sync error:', e); }
+    }, 150);
+    return () => window.clearTimeout(timer);
   }, [settings]);
 
   useEffect(() => {
-    try {
-      safeStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
-    } catch (e) {
-      console.warn('Storage sync error:', e);
-    }
+    const timer = window.setTimeout(() => {
+      try { safeStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects)); }
+      catch (e) { console.warn('Storage sync error:', e); }
+    }, 150);
+    return () => window.clearTimeout(timer);
   }, [projects]);
 
   useEffect(() => {
-    safeStorage.setItem(STORAGE_KEYS.EXPERIENCE, JSON.stringify(experience));
+    const timer = window.setTimeout(() => safeStorage.setItem(STORAGE_KEYS.EXPERIENCE, JSON.stringify(experience)), 150);
+    return () => window.clearTimeout(timer);
   }, [experience]);
 
   useEffect(() => {
-    safeStorage.setItem(STORAGE_KEYS.EDUCATION, JSON.stringify(education));
+    const timer = window.setTimeout(() => safeStorage.setItem(STORAGE_KEYS.EDUCATION, JSON.stringify(education)), 150);
+    return () => window.clearTimeout(timer);
   }, [education]);
 
   useEffect(() => {
-    try {
-      safeStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(media));
-    } catch (e) {
-      console.warn('Storage sync error:', e);
-    }
+    const timer = window.setTimeout(() => {
+      try { safeStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(media)); }
+      catch (e) { console.warn('Storage sync error:', e); }
+    }, 150);
+    return () => window.clearTimeout(timer);
   }, [media]);
 
   // Supabase session, initial cloud load, and live snapshot subscription.
@@ -295,17 +304,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, [supabaseConfig]);
 
-  // Keep changes local until Save Changes is pressed.
-  useEffect(() => {
-    const snapshot = { settings, projects, experience, education, media };
-    const serialized = JSON.stringify(snapshot);
-    latestCloudSnapshot.current = serialized;
-    if (!cloudReady) return;
-    const hasChanges = serialized !== lastCloudSnapshot.current;
-    hasUnsavedChanges.current = hasChanges;
-    setCloudSaveStatus(hasChanges ? 'unsaved' : 'saved');
-    setCloudSaveError(null);
-  }, [cloudReady, settings, projects, experience, education, media]);
+
 
   const syncAllProjectsToSupabase = useCallback(async (): Promise<{ success: boolean; count: number; message: string }> => {
     if (!isSupabaseConfigured()) {
@@ -314,19 +313,21 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return { success: false, count: 0, message: 'Supabase credentials are not configured yet.' };
     }
 
+    const versionAtSave = localChangeVersion.current;
     try {
       setCloudSaveStatus('saving');
       setCloudSaveError(null);
       const snapshot = { settings, projects, experience, education, media };
       const serialized = JSON.stringify(snapshot);
-      latestCloudSnapshot.current = serialized;
       const result = await savePortfolioSnapshot(snapshot);
       if (!result.success) throw new Error(result.error || 'Cloud save failed.');
       setIsSupabaseConnected(true);
       lastCloudSnapshot.current = serialized;
-      if (latestCloudSnapshot.current === serialized) {
+      if (versionAtSave === localChangeVersion.current) {
         hasUnsavedChanges.current = false;
         setCloudSaveStatus('saved');
+      } else {
+        setCloudSaveStatus('unsaved');
       }
       return {
         success: true,
@@ -335,9 +336,11 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       };
     } catch (err: any) {
       const message = err.message || 'Unknown error';
-      if (latestCloudSnapshot.current === JSON.stringify({ settings, projects, experience, education, media })) {
+      if (versionAtSave === localChangeVersion.current) {
         setCloudSaveStatus('error');
         setCloudSaveError(message);
+      } else {
+        setCloudSaveStatus('unsaved');
       }
       return {
         success: false,
@@ -350,8 +353,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const saveProjectsNow = async (nextProjects: Project[]): Promise<{ success: boolean; error?: string }> => {
     const supabase = getSupabase();
     if (!supabase || !isAdmin) return { success: false, error: 'Sign in to the Supabase admin account before saving projects.' };
+    markUnsavedChanges();
     setProjects(nextProjects);
-    setCloudSaveError(null);
     return { success: true };
   };
 
@@ -386,6 +389,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const updateSettings = (newSettings: Partial<SiteSettings>) => {
+    markUnsavedChanges();
     setSettings((prev) => {
       const merged: SiteSettings = {
         ...prev,
@@ -400,6 +404,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const addProject = (projectData: Partial<Project>): Project => {
+    markUnsavedChanges();
     const slug = (projectData.slug || projectData.title || `proj-${Date.now()}`)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -471,6 +476,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const updateProject = (id: string, updates: Partial<Project>) => {
+    markUnsavedChanges();
     setProjects((prev) =>
       prev.map((p) => {
         if (p.id === id) {
@@ -490,6 +496,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const deleteProject = (id: string) => {
+    markUnsavedChanges();
     setProjects((prev) => prev.filter((p) => p.id !== id));
   };
 
@@ -516,6 +523,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const reorderProjects = (orderedIds: string[]) => {
+    markUnsavedChanges();
     setProjects((prev) => {
       const map = new Map(prev.map((p) => [p.id, p]));
       const reordered: Project[] = [];
@@ -543,10 +551,12 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const deleteAllProjects = () => {
+    markUnsavedChanges();
     setProjects([]);
   };
 
   const addExperience = (item: Omit<ExperienceItem, 'id'>) => {
+    markUnsavedChanges();
     const newItem: ExperienceItem = {
       ...item,
       id: `exp-${Date.now()}`
@@ -555,14 +565,17 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const updateExperience = (id: string, updates: Partial<ExperienceItem>) => {
+    markUnsavedChanges();
     setExperience((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)));
   };
 
   const deleteExperience = (id: string) => {
+    markUnsavedChanges();
     setExperience((prev) => prev.filter((e) => e.id !== id));
   };
 
   const addEducation = (item: Omit<EducationItem, 'id'>) => {
+    markUnsavedChanges();
     const newItem: EducationItem = {
       ...item,
       id: `edu-${Date.now()}`
@@ -571,14 +584,17 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const updateEducation = (id: string, updates: Partial<EducationItem>) => {
+    markUnsavedChanges();
     setEducation((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)));
   };
 
   const deleteEducation = (id: string) => {
+    markUnsavedChanges();
     setEducation((prev) => prev.filter((e) => e.id !== id));
   };
 
   const addMedia = (name: string, url: string, mimeType: string, size: number): MediaAsset => {
+    markUnsavedChanges();
     const newAsset: MediaAsset = {
       id: `media-${Date.now()}`,
       name,
@@ -593,6 +609,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const saveResumeUpload = async (url: string, name: string, size: number): Promise<{ success: boolean; error?: string }> => {
     if (!isAdmin) return { success: false, error: 'Sign in to Supabase Auth before replacing the resume.' };
+    markUnsavedChanges();
     const asset: MediaAsset = {
       id: `media-${Date.now()}`,
       name,
@@ -608,10 +625,12 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const deleteMedia = (id: string) => {
+    markUnsavedChanges();
     setMedia((prev) => prev.filter((m) => m.id !== id));
   };
 
   const resetToDefaults = () => {
+    markUnsavedChanges();
     setSettings(initialSiteSettings);
     setProjects(initialProjects);
     setExperience(initialExperience);
