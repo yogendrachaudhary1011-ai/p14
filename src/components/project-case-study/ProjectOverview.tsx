@@ -58,7 +58,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
           <div className="w-full flex flex-col justify-center items-start gap-6">
             {/* My Role */}
             {role && (
-              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
+              <div className="w-full max-w-[700px] flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.roleLabel}
                 </div>
@@ -70,7 +70,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
 
             {/* Duration */}
             {duration && (
-              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
+              <div className="w-full max-w-[700px] flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.durationLabel}
                 </div>
