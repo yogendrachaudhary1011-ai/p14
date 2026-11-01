@@ -104,12 +104,18 @@ export interface CardGridBlock extends BaseBlock {
 
 export interface DecisionItem {
   title: string;
+  details?: DecisionDetail[];
   constraintLabel?: string;
   constraint: string;
   whatIDidLabel?: string;
   whatIDid: string;
   whyLabel?: string;
   why: string;
+}
+
+export interface DecisionDetail {
+  label: string;
+  text: string;
 }
 
 export interface DecisionListBlock extends BaseBlock {
