@@ -206,29 +206,6 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
         }));
         const currentDecisionIndex = blocks.findIndex((block) => block.type === 'decisionList');
         blocks.splice(currentDecisionIndex < 0 ? blocks.length : currentDecisionIndex, 0, ...extraImages);
-      } else if (selectedSection.type === 'keyDecisions') {
-        const firstImage = imageAssets[0];
-        const decisionBlockIndex = blocks.findIndex((block) => block.type === 'decisionList');
-        if (decisionBlockIndex >= 0 && blocks[decisionBlockIndex].type === 'decisionList' && firstImage) {
-          const decisionBlock = blocks[decisionBlockIndex];
-          blocks[decisionBlockIndex] = { ...decisionBlock, image: firstImage.url, imageAlt: firstImage.name };
-        } else if (firstImage) {
-          blocks.push({
-            id: `blk-${Date.now()}-decisions`,
-            type: 'decisionList',
-            decisions: [],
-            image: firstImage.url,
-            imageAlt: firstImage.name
-          });
-        }
-        const extraImages = imageAssets.slice(1).map((asset) => ({
-          id: `blk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          type: 'fullWidthImage' as const,
-          url: asset.url,
-          alt: asset.name
-        }));
-        const currentDecisionIndex = blocks.findIndex((block) => block.type === 'decisionList');
-        blocks.splice(currentDecisionIndex < 0 ? blocks.length : currentDecisionIndex, 0, ...extraImages);
       } else {
         blocks.push(...imageAssets.map((asset) => ({
           id: `blk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
