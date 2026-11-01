@@ -58,7 +58,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
           <div className="w-full flex flex-col justify-center items-start gap-12">
             {/* My Role */}
             {role && (
-              <div className="w-full grid grid-cols-1 sm:grid-cols-[24rem_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
+              <div className="w-full grid grid-cols-1 min-[480px]:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.roleLabel}
                 </div>
@@ -70,7 +70,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
 
             {/* Duration */}
             {duration && (
-              <div className="w-full grid grid-cols-1 sm:grid-cols-[24rem_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
+              <div className="w-full grid grid-cols-1 min-[480px]:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
                 <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.durationLabel}
                 </div>
@@ -96,7 +96,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 ? copy.deliverablesLabel
                 : 'What I Designed';
               return items.length > 0 ? (
-                <div className="w-full grid grid-cols-1 sm:grid-cols-[24rem_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
+                <div className="w-full grid grid-cols-1 min-[480px]:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start gap-2 sm:gap-5 group">
                   <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">{label}</div>
                   <ul className="w-full min-w-0 flex flex-col gap-4 pl-4">
                     {items.map((item, index) => (
