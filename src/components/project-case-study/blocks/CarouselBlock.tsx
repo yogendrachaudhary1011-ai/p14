@@ -59,7 +59,6 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
             </button>
           </>
         )}
-      </div>
       {slides.length > 1 && (
         <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/15 bg-black/55 px-3 py-2 backdrop-blur-md" aria-label="Choose a slide">
           {slides.map((slide, idx) => (
