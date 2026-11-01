@@ -32,7 +32,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   const outgoingSlide = outgoingIndex === null ? null : slides[outgoingIndex];
 
   return (
-    <div className="w-full my-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d0b] shadow-[0_24px_70px_rgba(0,0,0,.24)]">
+    <div className="w-full my-3 overflow-hidden border border-white/10 bg-[#0b0d0b] shadow-[0_24px_70px_rgba(0,0,0,.24)]">
       <div className="relative isolate w-full overflow-hidden bg-[#080a08]">
         {outgoingSlide && (
           <MediaPreview
