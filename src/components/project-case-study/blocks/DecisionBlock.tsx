@@ -21,7 +21,13 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
       )}
 
       <div data-cols="2" className="w-full case-study-card-grid grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {block.decisions.map((decision, idx) => (
+        {block.decisions.map((decision, idx) => {
+          const details = decision.details ?? [
+            { label: decision.constraintLabel ?? copy.decisionConstraint, text: decision.constraint || '' },
+            { label: decision.whatIDidLabel ?? copy.decisionAction, text: decision.whatIDid || '' },
+            { label: decision.whyLabel ?? copy.decisionWhy, text: decision.why || '' }
+          ];
+          return (
           <div
             key={idx}
             className="w-full h-full min-w-0 flex flex-col justify-start items-start gap-4 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 cs-interactive-card"
@@ -31,40 +37,27 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
             </h4>
 
             <div className="w-full flex flex-col gap-3">
-              {/* Constraint / Problem */}
-              <div className="flex flex-col gap-1">
-                <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4">
-                  {decision.constraintLabel || copy.decisionConstraint}
-                </span>
-                <p className="text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words">
-                  {decision.constraint}
-                </p>
-              </div>
-
-              {/* What I did */}
-              <div className="flex flex-col gap-1">
-                <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4">
-                  {decision.whatIDidLabel || copy.decisionAction}
-                </span>
-                <p className="text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words">
-                  {decision.whatIDid}
-                </p>
-              </div>
-
-              {/* Why */}
-              <div className="flex flex-col gap-1">
-                <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4">
-                  {decision.whyLabel || copy.decisionWhy}
-                </span>
-                <p className="text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words">
-                  {decision.why}
-                </p>
-              </div>
+              {details.filter((detail) => detail.label?.trim() || detail.text?.trim()).map((detail, detailIndex) => (
+                <div key={detailIndex} className="flex flex-col gap-1">
+                  {detail.label?.trim() && (
+                    <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4">
+                      {detail.label}
+                    </span>
+                  )}
+                  {detail.text?.trim() && (
+                    <p className="text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words">
+                      {detail.text}
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 };
+
 
