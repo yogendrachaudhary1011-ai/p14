@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CarouselBlockItem } from '../../../types';
 import { MediaPreview } from '../../MediaPreview';
 
@@ -9,6 +9,11 @@ interface CarouselBlockProps {
 export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const slides = (block.slides || []).filter((slide) => slide.url?.trim());
+  const slideKey = slides.map((slide) => slide.url).join('|');
+
+  useEffect(() => {
+    setCurrentIndex((index) => Math.min(index, Math.max(0, slides.length - 1)));
+  }, [slideKey, slides.length]);
 
   if (slides.length === 0) return null;
 
@@ -25,7 +30,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
   return (
     <div className="w-full my-2 flex flex-col gap-3">
       {/* Container matching Figma styling: dark neutral backdrop, rounded, framed */}
-      <div className="relative w-full rounded-[5px] overflow-hidden bg-neutral-900 border border-white/10 aspect-[16/10] max-h-[660px] flex items-center justify-center group">
+      <div className="relative isolate w-full rounded-[5px] overflow-hidden bg-neutral-900 border border-white/10 aspect-[16/10] max-h-[660px] flex items-center justify-center group">
         <MediaPreview
           key={currentIndex}
           src={currentSlide.url}
@@ -46,25 +51,28 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
         {slides.length > 1 && (
           <>
             <button
+              type="button"
               onClick={prevSlide}
               aria-label="Previous slide"
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all duration-200 cursor-pointer opacity-80 hover:opacity-100 hover:scale-110 active:scale-95"
+              className="absolute z-20 left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-black/95 text-white flex items-center justify-center backdrop-blur-md border border-white/30 transition-colors duration-200 cursor-pointer opacity-100 pointer-events-auto touch-manipulation"
             >
               <span className="material-symbols-rounded text-xl">chevron_left</span>
             </button>
             <button
+              type="button"
               onClick={nextSlide}
               aria-label="Next slide"
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all duration-200 cursor-pointer opacity-80 hover:opacity-100 hover:scale-110 active:scale-95"
+              className="absolute z-20 right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/70 hover:bg-black/95 text-white flex items-center justify-center backdrop-blur-md border border-white/30 transition-colors duration-200 cursor-pointer opacity-100 pointer-events-auto touch-manipulation"
             >
               <span className="material-symbols-rounded text-xl">chevron_right</span>
             </button>
 
             {/* Pagination dots matching Figma pill shape */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 h-7 px-3 bg-black/40 hover:bg-black/70 rounded-[50px] inline-flex justify-center items-center gap-1.5 backdrop-blur-md border border-white/10 transition-all">
+            <div className="absolute z-20 bottom-4 left-1/2 -translate-x-1/2 h-7 px-3 bg-black/60 rounded-[50px] inline-flex justify-center items-center gap-1.5 backdrop-blur-md border border-white/20 pointer-events-auto">
               {slides.map((_, idx) => (
                 <button
                   key={idx}
+                  type="button"
                   onClick={() => setCurrentIndex(idx)}
                   aria-label={`Go to slide ${idx + 1}`}
                   className={`h-2.5 rounded-[5px] transition-all cursor-pointer ${
@@ -79,3 +87,4 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
     </div>
   );
 };
+
