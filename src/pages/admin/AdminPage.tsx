@@ -861,7 +861,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     if (createdProject) deleteProject(createdProject.id);
                     throw new Error(result.error || 'Could not save the case study to Supabase.');
                   }
-                  showNotice(`${data.status === 'published' ? 'Published' : 'Saved draft'}: "${data.title || editingProject?.title || ''}". Press Save Changes to send it to Supabase.`);
+                  showNotice(`${data.status === 'published' ? 'Published' : 'Saved draft'}: "${data.title || editingProject?.title || ''}". Saved to Supabase.`);
                   setIsCreatingProject(false);
                   setEditingProject(null);
                 }}
