@@ -39,7 +39,6 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
             key={"outgoing-" + outgoingIndex}
             src={outgoingSlide.url}
             alt=""
-            aria-hidden="true"
             className={"absolute inset-0 h-full w-full object-contain design-carousel-slide-exit design-carousel-slide-exit--" + slideDirection}
             loading="eager"
           />
