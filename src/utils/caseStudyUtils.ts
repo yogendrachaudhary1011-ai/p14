@@ -26,7 +26,53 @@ export function stackProductSectionImages(sections: CaseStudySection[]): CaseStu
 export function normalizeProjectSections(project: Project): CaseStudySection[] {
   // If the project already has custom sections defined and not empty, use them
   if (project.sections && Array.isArray(project.sections) && project.sections.length > 0) {
-    return stackProductSectionImages(project.sections).sort((a, b) => a.order - b.order);
+    const sections = stackProductSectionImages(project.sections).map((section) => {
+      if (section.type !== 'designSystem') return section;
+
+      const blocks = [...(section.blocks || [])];
+      const existingCarouselIndex = blocks.findIndex((block) => block.type === 'carousel');
+      const existingSlides = existingCarouselIndex >= 0 && blocks[existingCarouselIndex].type === 'carousel'
+        ? blocks[existingCarouselIndex].slides.filter((slide) => slide.url?.trim())
+        : [];
+      const legacySlides = (project.designSystem?.images || [])
+        .filter((url) => url?.trim())
+        .map((url, index) => ({
+          url,
+          title: `Design System Component Spec #${index + 1}`,
+          alt: `Design System Slide ${index + 1}`
+        }));
+      const imageBlockIndexes = blocks
+        .map((block, index) => ({ block, index }))
+        .filter(({ block }) => block.type === 'image' || block.type === 'fullWidthImage');
+      const blockSlides = imageBlockIndexes.flatMap(({ block }) =>
+        block.type === 'image' || block.type === 'fullWidthImage'
+          ? block.url?.trim() ? [{ url: block.url, title: block.caption, alt: block.alt }] : []
+          : []
+      );
+      const slides = existingSlides.length ? existingSlides : legacySlides.length ? legacySlides : blockSlides;
+
+      // Older case studies stored Design System images as standalone image blocks (or
+      // only in the legacy designSystem.images field). Promote them to the carousel so
+      // existing project media remains visible after the section format changed.
+      if (!slides.length) return section;
+      const carousel = existingCarouselIndex >= 0 && blocks[existingCarouselIndex].type === 'carousel'
+        ? { ...blocks[existingCarouselIndex], slides }
+        : { id: `${section.id}-carousel`, type: 'carousel' as const, slides };
+      const firstImageIndex = imageBlockIndexes[0]?.index;
+      const withoutImages = blocks.filter((block) => block.type !== 'image' && block.type !== 'fullWidthImage');
+      const insertAt = existingCarouselIndex >= 0
+        ? withoutImages.findIndex((block) => block.type === 'carousel')
+        : Math.min(firstImageIndex ?? withoutImages.length, withoutImages.length);
+      if (existingCarouselIndex >= 0) {
+        const carouselIndex = withoutImages.findIndex((block) => block.type === 'carousel');
+        withoutImages[carouselIndex] = carousel;
+      } else {
+        withoutImages.splice(insertAt, 0, carousel);
+      }
+      return { ...section, blocks: withoutImages };
+    });
+
+    return sections.sort((a, b) => a.order - b.order);
   }
 
   // Otherwise, construct sections from the project's legacy/structured properties
@@ -562,4 +608,5 @@ export function createDefaultBlock(type: CaseStudyBlockType): CaseStudyBlock {
       return { id, type: 'paragraph', text: 'Text block' };
   }
 }
+
 
