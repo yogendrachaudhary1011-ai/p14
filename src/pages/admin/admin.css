@@ -858,3 +858,10 @@
     font-size: 10px;
   }
 }
+
+
+/* Keep all admin UI copy consistent with the public portfolio typography. */
+#adminApp *:not(.material-symbols-rounded),
+#loginView *:not(.material-symbols-rounded) {
+  font-family: 'Plus Jakarta Sans', 'DM Sans', system-ui, -apple-system, sans-serif !important;
+}
