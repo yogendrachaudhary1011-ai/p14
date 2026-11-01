@@ -29,12 +29,12 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
 
   return (
     <div className="w-full my-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d0b] shadow-[0_24px_70px_rgba(0,0,0,.24)]">
-      <div className="relative isolate flex aspect-[16/10] max-h-[660px] w-full items-center justify-center overflow-hidden bg-[#080a08] sm:aspect-[16/9]">
+      <div className="relative isolate w-full overflow-hidden bg-[#080a08]">
         <MediaPreview
           key={currentIndex}
           src={currentSlide.url}
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
-          className="absolute inset-0 h-full w-full object-cover transition-all duration-500 ease-out animate-cs-fade-in"
+          className="block h-auto w-full object-contain transition-all duration-500 ease-out animate-cs-fade-in"
           loading="lazy"
           fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
