@@ -24,7 +24,7 @@ interface PortfolioContextType {
   isAdmin: boolean;
   adminUser: string | null;
   isSupabaseConnected: boolean;
-  cloudSaveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  cloudSaveStatus: 'idle' | 'unsaved' | 'saving' | 'saved' | 'error';
   cloudSaveError: string | null;
   supabaseConfig: { url: string; key: string };
   updateSupabaseConfig: (url: string, key: string) => boolean;
@@ -181,12 +181,13 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(() => {
     return false;
   });
-  const [cloudSaveStatus, setCloudSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [cloudSaveStatus, setCloudSaveStatus] = useState<'idle' | 'unsaved' | 'saving' | 'saved' | 'error'>('idle');
   const [cloudSaveError, setCloudSaveError] = useState<string | null>(null);
   const [cloudReady, setCloudReady] = useState(false);
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
   const lastCloudSnapshot = useRef<string | null>(null);
   const latestCloudSnapshot = useRef<string | null>(null);
+  const hasUnsavedChanges = useRef(false);
 
   // Sync to local storage for fast boot
   useEffect(() => {
@@ -257,6 +258,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           setCloudSaveError(null);
         }
         lastCloudSnapshot.current = snapshot ? JSON.stringify(snapshot) : null;
+        hasUnsavedChanges.current = false;
         if (snapshot) {
           setSettings(mergeSiteSettings(snapshot.settings));
           setProjects(snapshot.projects);
@@ -266,7 +268,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
 
         unsubscribe = subscribeToPortfolioSnapshot((fresh) => {
-          if (!active) return;
+          if (!active || hasUnsavedChanges.current) return;
           const serialized = JSON.stringify(fresh);
           if (serialized === lastCloudSnapshot.current) return;
           lastCloudSnapshot.current = serialized;
@@ -293,56 +295,17 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, [supabaseConfig]);
 
-  // Queue atomic saves so rapid edits cannot finish out of order and overwrite newer state.
+  // Keep changes local until Save Changes is pressed.
   useEffect(() => {
     const snapshot = { settings, projects, experience, education, media };
     const serialized = JSON.stringify(snapshot);
     latestCloudSnapshot.current = serialized;
     if (!cloudReady) return;
-    if (serialized === lastCloudSnapshot.current) return;
-    setCloudSaveStatus('saving');
+    const hasChanges = serialized !== lastCloudSnapshot.current;
+    hasUnsavedChanges.current = hasChanges;
+    setCloudSaveStatus(hasChanges ? 'unsaved' : 'saved');
     setCloudSaveError(null);
-    const timer = window.setTimeout(() => {
-      const performSave = async () => {
-        try {
-          const result = await savePortfolioSnapshot(snapshot);
-          setIsSupabaseConnected(result.success);
-          if (result.success) {
-            lastCloudSnapshot.current = serialized;
-            if (latestCloudSnapshot.current === serialized) {
-              setCloudSaveStatus('saved');
-              setCloudSaveError(null);
-            }
-          } else {
-            console.error('Supabase portfolio save failed:', result.error);
-            if (latestCloudSnapshot.current === serialized) {
-              setCloudSaveStatus('error');
-              setCloudSaveError(result.error || 'Cloud save failed.');
-            }
-          }
-        } catch (error) {
-          console.error('Supabase portfolio save failed:', error);
-          if (latestCloudSnapshot.current === serialized) {
-            setIsSupabaseConnected(false);
-            setCloudSaveStatus('error');
-            setCloudSaveError(error instanceof Error ? error.message : 'Cloud save failed.');
-          }
-        }
-      };
-      saveQueue.current = saveQueue.current.then(performSave, performSave);
-    }, 300);
-    return () => window.clearTimeout(timer);
   }, [cloudReady, settings, projects, experience, education, media]);
-
-  const updateSupabaseConfig = (url: string, key: string): boolean => {
-    const success = saveSupabaseCredentials(url, key);
-    if (success) {
-      setCloudReady(false);
-      setSupabaseConfigState({ url: url.trim(), key: key.trim() });
-      setIsSupabaseConnected(isSupabaseConfigured());
-    }
-    return success;
-  };
 
   const syncAllProjectsToSupabase = useCallback(async (): Promise<{ success: boolean; count: number; message: string }> => {
     if (!isSupabaseConfigured()) {
@@ -361,7 +324,10 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (!result.success) throw new Error(result.error || 'Cloud save failed.');
       setIsSupabaseConnected(true);
       lastCloudSnapshot.current = serialized;
-      if (latestCloudSnapshot.current === serialized) setCloudSaveStatus('saved');
+      if (latestCloudSnapshot.current === serialized) {
+        hasUnsavedChanges.current = false;
+        setCloudSaveStatus('saved');
+      }
       return {
         success: true,
         count: projects.length,
@@ -384,43 +350,9 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const saveProjectsNow = async (nextProjects: Project[]): Promise<{ success: boolean; error?: string }> => {
     const supabase = getSupabase();
     if (!supabase || !isAdmin) return { success: false, error: 'Sign in to the Supabase admin account before saving projects.' };
-
-    const fallbackSnapshot = { settings, projects, experience, education, media };
-    let currentSnapshot = fallbackSnapshot;
-    try {
-      if (latestCloudSnapshot.current) currentSnapshot = JSON.parse(latestCloudSnapshot.current) as typeof fallbackSnapshot;
-    } catch {
-      currentSnapshot = fallbackSnapshot;
-    }
-
-    const snapshot = { ...currentSnapshot, projects: nextProjects };
-    const serialized = JSON.stringify(snapshot);
-    setCloudSaveStatus('saving');
+    setProjects(nextProjects);
     setCloudSaveError(null);
-    latestCloudSnapshot.current = serialized;
-
-    return await new Promise((resolve) => {
-      const persist = async () => {
-        try {
-          const result = await savePortfolioSnapshot(snapshot);
-          if (!result.success) throw new Error(result.error || 'Supabase rejected the project changes.');
-          lastCloudSnapshot.current = serialized;
-          latestCloudSnapshot.current = serialized;
-          setProjects(nextProjects);
-          setIsSupabaseConnected(true);
-          setCloudSaveStatus('saved');
-          setCloudSaveError(null);
-          resolve({ success: true });
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Could not save projects to Supabase.';
-          if (latestCloudSnapshot.current === serialized) latestCloudSnapshot.current = lastCloudSnapshot.current;
-          setCloudSaveStatus('error');
-          setCloudSaveError(message);
-          resolve({ success: false, error: message });
-        }
-      };
-      saveQueue.current = saveQueue.current.then(persist, persist);
-    });
+    return { success: true };
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -661,7 +593,6 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const saveResumeUpload = async (url: string, name: string, size: number): Promise<{ success: boolean; error?: string }> => {
     if (!isAdmin) return { success: false, error: 'Sign in to Supabase Auth before replacing the resume.' };
-
     const asset: MediaAsset = {
       id: `media-${Date.now()}`,
       name,
@@ -670,54 +601,10 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       size,
       uploadedAt: new Date().toISOString()
     };
-    let current: PortfolioSnapshot;
-    try {
-      current = latestCloudSnapshot.current
-        ? JSON.parse(latestCloudSnapshot.current) as PortfolioSnapshot
-        : { settings, projects, experience, education, media };
-    } catch {
-      current = { settings, projects, experience, education, media };
-    }
-    const snapshot: PortfolioSnapshot = {
-      ...current,
-      settings: { ...current.settings, resumeUrl: url },
-      media: [asset, ...(Array.isArray(current.media) ? current.media : [])]
-    };
-    const serialized = JSON.stringify(snapshot);
-
-    setCloudSaveStatus('saving');
+    setSettings((current) => ({ ...current, resumeUrl: url }));
+    setMedia((current) => [asset, ...current]);
     setCloudSaveError(null);
-    latestCloudSnapshot.current = serialized;
-    return await new Promise<{ success: boolean; error?: string }>((resolve) => {
-      const persistResume = async () => {
-        try {
-          const result = await savePortfolioSnapshot(snapshot);
-          if (!result.success) {
-            setIsSupabaseConnected(false);
-            setCloudSaveStatus('error');
-            setCloudSaveError(result.error || 'Resume uploaded, but the portfolio record could not be saved.');
-            resolve({ success: false, error: result.error || 'Could not save the new resume link to Supabase.' });
-            return;
-          }
-
-          lastCloudSnapshot.current = serialized;
-          latestCloudSnapshot.current = serialized;
-          setSettings(snapshot.settings);
-          setMedia(snapshot.media);
-          setIsSupabaseConnected(true);
-          setCloudSaveStatus('saved');
-          setCloudSaveError(null);
-          resolve({ success: true });
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Could not save the new resume link to Supabase.';
-          setIsSupabaseConnected(false);
-          setCloudSaveStatus('error');
-          setCloudSaveError(message);
-          resolve({ success: false, error: message });
-        }
-      };
-      saveQueue.current = saveQueue.current.then(persistResume, persistResume);
-    });
+    return { success: true };
   };
 
   const deleteMedia = (id: string) => {

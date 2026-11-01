@@ -227,6 +227,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
   const cloudStatusLabel = cloudSaveStatus === 'saving'
     ? 'Saving to Supabase…'
+    : cloudSaveStatus === 'unsaved'
+      ? 'Unsaved changes'
     : cloudSaveStatus === 'error'
       ? 'Cloud save failed'
       : cloudSaveStatus === 'saved'
@@ -560,7 +562,17 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             >
               <i /> {cloudStatusLabel}
             </span>
-            <button onClick={() => onNavigate('/')}>
+            {isAdmin && (
+              <button type="button" disabled={syncingSupabase || !isSupabaseConnected} onClick={async () => {
+                setSyncingSupabase(true);
+                const result = await syncAllProjectsToSupabase();
+                setSyncingSupabase(false);
+                showNotice(result.success ? 'All changes saved to Supabase.' : result.message);
+              }} className="admin-save-changes-button" title={cloudSaveError || 'Save all pending changes to Supabase'}>
+                <CheckCircle2 size={14} /> {syncingSupabase ? 'Saving…' : 'Save Changes'}
+              </button>
+            )}
+            <button onClick={() => onNavigate('/')>
               <ArrowUpRight size={14} className="text-[#f37021]" /> View public site
             </button>
           </div>
@@ -848,7 +860,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     if (createdProject) deleteProject(createdProject.id);
                     throw new Error(result.error || 'Could not save the case study to Supabase.');
                   }
-                  showNotice(`${data.status === 'published' ? 'Published' : 'Saved draft'} "${data.title || editingProject?.title || ''}" in Supabase.`);
+                  showNotice(`${data.status === 'published' ? 'Published' : 'Saved draft'}: "${data.title || editingProject?.title || ''}". Press Save Changes to send it to Supabase.`);
                   setIsCreatingProject(false);
                   setEditingProject(null);
                 }}
@@ -1244,7 +1256,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
               <div className="border-t border-white/10 pt-5">
                 <label className="mb-2 block text-xs font-semibold uppercase text-zinc-400">About section video</label>
-                <p className="mb-3 text-xs text-zinc-500">Upload an MP4 or WebM. It replaces the video shown on both the landing page and About page, and saves to Supabase automatically.</p>
+                <p className="mb-3 text-xs text-zinc-500">Upload an MP4 or WebM. It replaces the video shown on both the landing page and About page, Press Save Changes to publish the new video setting.</p>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                   <div className="w-full max-w-sm overflow-hidden rounded-lg border border-white/10 bg-black">
                     <video
@@ -1278,7 +1290,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                           if (!result.url) throw new Error(result.error || 'Video upload failed.');
                           addMedia(file.name.replace(/\.[^.]+$/, '') || file.name, result.url, file.type, file.size);
                           updateSettings({ aboutVideo: result.url });
-                          showNotice('About video uploaded. Saving the new video to Supabase…');
+                          showNotice('About video uploaded. Press Save Changes to publish it to the site.');
                         } catch (error) {
                           showNotice(error instanceof Error ? error.message : 'Video upload failed.');
                         } finally {
@@ -1302,7 +1314,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         disabled={!isAdmin || uploadingAboutVideo}
                         onClick={() => {
                           updateSettings({ aboutVideo: '' });
-                          showNotice('Restored the default About video. Saving to Supabase…');
+                          showNotice('Default About video restored locally. Press Save Changes to publish it.');
                         }}
                         className="rounded-lg px-3 py-2 text-xs text-zinc-400 hover:bg-white/5 hover:text-white disabled:opacity-50"
                       >
@@ -1458,7 +1470,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         if (!result.url) throw new Error(result.error || 'Resume upload failed.');
                         const saved = await saveResumeUpload(result.url, file.name, file.size);
                         if (!saved.success) throw new Error(saved.error || 'The uploaded PDF could not be saved as the current resume.');
-                        showNotice('Resume uploaded and saved to Supabase. The header and About page now use it.');
+                        showNotice('Resume uploaded. Press Save Changes to publish it in the header and About page.');
                       } catch (error) {
                         showNotice(error instanceof Error ? error.message : 'Resume upload failed.');
                       } finally {
@@ -1488,7 +1500,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         disabled={!isAdmin || uploadingResume}
                         onClick={() => {
                           updateSettings({ resumeUrl: initialSiteSettings.resumeUrl });
-                          showNotice('Restored the default resume. Saving to Supabase…');
+                          showNotice('Default resume restored locally. Press Save Changes to publish it.');
                         }}
                         className="rounded-lg px-3 py-2 text-xs text-zinc-400 hover:bg-white/5 hover:text-white disabled:opacity-50"
                       >
