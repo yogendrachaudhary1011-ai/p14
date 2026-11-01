@@ -692,6 +692,17 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                     Remove
                                   </button>
                                 </div>
+                                <BufferedTextInput
+                                  type="text"
+                                  value={card.badge || ''}
+                                  onCommit={(value) => {
+                                    const newCards = [...block.cards];
+                                    newCards[cIdx] = { ...newCards[cIdx], badge: value };
+                                    handleUpdateBlock(block.id, { cards: newCards });
+                                  }}
+                                  className="px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
+                                  placeholder="Optional badge or label..."
+                                />
                                 <BufferedTextarea
                                   rows={2}
                                   value={card.desc || ''}
@@ -702,6 +713,20 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                   }}
                                   className="px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
                                   placeholder="Card body text..."
+                                />
+                                <BufferedTextarea
+                                  rows={Math.min(6, Math.max(2, card.items?.length || 2))}
+                                  value={(card.items || []).join('\n')}
+                                  onCommit={(value) => {
+                                    const newCards = [...block.cards];
+                                    newCards[cIdx] = {
+                                      ...newCards[cIdx],
+                                      items: value.split('\n').map((item) => item.trim()).filter(Boolean)
+                                    };
+                                    handleUpdateBlock(block.id, { cards: newCards });
+                                  }}
+                                  className="px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white text-xs"
+                                  placeholder="Optional bullet points, one per line..."
                                 />
                               </div>
                             ))}
