@@ -34,7 +34,7 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
           key={currentIndex}
           src={currentSlide.url}
           alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
-          className="block h-auto w-full object-contain transition-all duration-500 ease-out animate-cs-fade-in"
+          className="block h-auto w-full object-contain transition-all duration-500 ease-out design-carousel-slide-enter"
           loading="lazy"
           fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
