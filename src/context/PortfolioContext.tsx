@@ -361,9 +361,37 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const saveProjectsNow = async (nextProjects: Project[]): Promise<{ success: boolean; error?: string }> => {
     const supabase = getSupabase();
     if (!supabase || !isAdmin) return { success: false, error: 'Sign in to the Supabase admin account before saving projects.' };
+
     markUnsavedChanges();
+    const versionAtSave = localChangeVersion.current;
+    const snapshot = { settings, projects: nextProjects, experience, education, media };
     setProjects(nextProjects);
-    return { success: true };
+    setCloudSaveStatus('saving');
+    setCloudSaveError(null);
+
+    try {
+      const result = await savePortfolioSnapshot(snapshot);
+      if (!result.success) throw new Error(result.error || 'Could not save the case study to Supabase.');
+
+      setIsSupabaseConnected(true);
+      lastCloudSnapshot.current = JSON.stringify(snapshot);
+      if (versionAtSave === localChangeVersion.current) {
+        hasUnsavedChanges.current = false;
+        setCloudSaveStatus('saved');
+      } else {
+        setCloudSaveStatus('unsaved');
+      }
+      return { success: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not save the case study to Supabase.';
+      if (versionAtSave === localChangeVersion.current) {
+        setCloudSaveStatus('error');
+        setCloudSaveError(message);
+      } else {
+        setCloudSaveStatus('unsaved');
+      }
+      return { success: false, error: message };
+    }
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
