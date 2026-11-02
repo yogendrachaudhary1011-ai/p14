@@ -13,13 +13,17 @@ export const BulletListBlock: React.FC<BulletListBlockProps> = ({ block }) => {
           {block.title}
         </div>
       )}
-      <div className="w-full flex flex-col gap-2.5">
+      <div className="w-full flex flex-col gap-3">
         {block.items.map((item, idx) => (
           <div
             key={idx}
-            className="text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words"
+            className="flex items-start gap-3 text-zinc-300 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed break-words group"
           >
-            {item}
+            <span
+              className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#8be28b] mt-2 shrink-0 shadow-[0_0_8px_rgba(139,226,139,0.5)] transition-transform duration-200 group-hover:scale-125"
+              aria-hidden="true"
+            />
+            <span className="flex-1 min-w-0">{item}</span>
           </div>
         ))}
       </div>
