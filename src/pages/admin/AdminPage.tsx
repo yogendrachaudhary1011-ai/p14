@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { Project, ExperienceItem, EducationItem, AboutCertificate } from '../../types';
 import { initialSiteSettings } from '../../data/initialData';
@@ -127,6 +127,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutSeconds, setLockoutSeconds] = useState(0);
 
   // Confirmation dialog modal state
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -243,19 +246,43 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
+ 
+  // Rate-limiting lockout countdown
+  useEffect(() => {
+    if (lockoutSeconds <= 0) return;
+    const timer = setInterval(() => {
+      setLockoutSeconds((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutSeconds]);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutSeconds > 0) return;
     if (!username.trim() || !password.trim()) {
-      setLoginError('Enter your Supabase Auth email and password.');
+      setLoginError('Please enter both your email/username and password.');
       return;
     }
-    const success = await login(username, password);
-    if (success) {
-      setLoginError('');
-      showNotice('Welcome back to Portfolio Studio!');
-    } else {
-      setLoginError('Sign-in failed. Check your Supabase Auth email and password.');
+    setIsLoggingIn(true);
+    setLoginError('');
+    try {
+      const success = await login(username, password);
+      if (success) {
+        setLoginError('');
+        setFailedAttempts(0);
+        showNotice('Welcome back to Portfolio Studio!');
+      } else {
+        const nextAttempts = failedAttempts + 1;
+        setFailedAttempts(nextAttempts);
+        if (nextAttempts >= 5) {
+          setLockoutSeconds(30);
+          setLoginError('Too many failed attempts. Access locked for 30 seconds.');
+        } else {
+          setLoginError(`Sign-in failed. Please check your credentials.`);
+        }
+      }
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -340,26 +367,25 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   className="admin-login-input"
                   type="text"
                   value={username}
-                  placeholder="admin@yogendrachaudhary.com"
-                  autoComplete="email"
+                  placeholder="name@domain.com"
+                  autoComplete="username"
                   onChange={(e) => setUsername(e.target.value)}
+                  disabled={isLoggingIn || lockoutSeconds > 0}
                   required
                 />
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="mb-0">Password / Passkey</label>
-                  <span className="text-[10px] text-zinc-500 font-mono">Default: admin123</span>
-                </div>
+                <label>Password</label>
                 <div className="relative">
                   <input
                     className="admin-login-input pr-10"
                     type={showLoginPassword ? 'text' : 'password'}
                     value={password}
-                    placeholder="Enter password"
+                    placeholder="••••••••••••"
                     autoComplete="current-password"
                     onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoggingIn || lockoutSeconds > 0}
                     required
                   />
                   <button
@@ -373,33 +399,23 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              <button type="submit" className="admin-login-submit cursor-pointer">
-                <span>Enter Workspace</span>
-                <ArrowUpRight size={17} />
+              <button
+                type="submit"
+                disabled={isLoggingIn || lockoutSeconds > 0}
+                className="admin-login-submit cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {lockoutSeconds > 0 ? (
+                  <span>Locked ({lockoutSeconds}s)</span>
+                ) : isLoggingIn ? (
+                  <span>Authenticating…</span>
+                ) : (
+                  <>
+                    <span>Enter Workspace</span>
+                    <ArrowUpRight size={17} />
+                  </>
+                )}
               </button>
             </form>
-
-            {/* Quick 1-Click Access for easy testing and evaluation */}
-            <div className="mt-4 pt-4 border-t border-white/10 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={async () => {
-                  setUsername('admin@yogendrachaudhary.com');
-                  setPassword('admin123');
-                  const success = await login('admin@yogendrachaudhary.com', 'admin123');
-                  if (success) {
-                    showNotice('Signed in as Portfolio Studio Administrator.');
-                  }
-                }}
-                className="w-full py-2.5 px-4 rounded-lg bg-[#f37021]/15 hover:bg-[#f37021]/25 border border-[#f37021]/30 text-[#f37021] text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
-              >
-                <Sparkles size={14} />
-                <span>Quick 1-Click Admin Access (Demo Mode)</span>
-              </button>
-              <p className="text-[11px] text-zinc-500 text-center leading-relaxed">
-                Supports both Supabase Auth credentials and offline Studio passkey (<code className="text-zinc-400 font-mono">admin123</code>).
-              </p>
-            </div>
 
             <div className="admin-login-footer">
               <button onClick={() => onNavigate('/')} className="admin-back-link cursor-pointer">

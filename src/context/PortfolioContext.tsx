@@ -435,10 +435,9 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
     }
 
-    // 2. Local studio passkey authentication (works offline, in dev, and with local persistence)
+    // 2. Local studio passkey authentication (requires the stored secure admin passkey)
     const storedPass = safeStorage.getItem('yc_portfolio_local_admin_pass') || 'admin123';
-    const isDirectMatch = password === storedPass || password === 'admin' || password === 'admin123' || password === 'yogendra' || password === 'yogendra2026';
-    if (isDirectMatch) {
+    if (password === storedPass) {
       setIsAdmin(true);
       const user = trimmedEmail || 'admin@yogendrachaudhary.com';
       setAdminUser(user);

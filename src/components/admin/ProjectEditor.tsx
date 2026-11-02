@@ -7,6 +7,8 @@ import { MediaPreview } from '../MediaPreview';
 import { MediaUploadField } from './MediaUploadField';
 import { BufferedTextInput, BufferedTextarea } from './BufferedTextField';
 import { isVideoMedia } from '../../utils/media';
+import { ImageCropPanZoomModal } from './ImageCropPanZoomModal';
+import { Crop, Move, ZoomIn, Maximize2, Minimize2, Eye, Sliders, Check } from 'lucide-react';
 
 interface ProjectEditorProps {
   initialProject?: Project | null;
@@ -73,10 +75,16 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   const [coverImage, setCoverImage] = useState(
     initialProject?.coverImage || '/assets/media/home-media-04-f775f2921176.webp'
   );
+  const [coverClass, setCoverClass] = useState<string>(
+    initialProject?.coverClass || ''
+  );
   const [heroImageUrl, setHeroImageUrl] = useState(
     initialProject?.heroImage?.url || initialProject?.coverImage || '/assets/media/home-media-04-f775f2921176.webp'
   );
   const [heroImageAlt, setHeroImageAlt] = useState(initialProject?.heroImage?.alt || '');
+  const [adjustingCropTarget, setAdjustingCropTarget] = useState<'hero' | 'cover' | null>(null);
+  const [previewHeroAspect, setPreviewHeroAspect] = useState<'21:9' | '16:9' | '16:10'>('21:9');
+  const [previewCoverAspect, setPreviewCoverAspect] = useState<'16:9' | '4:3' | '1:1'>('16:9');
 
   // SEO
   const [seoTitle, setSeoTitle] = useState(initialProject?.seo?.title || '');
@@ -210,6 +218,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
       figmaButtonText: figmaButtonText.trim() || 'View Figma File',
       externalProjectUrl: externalProjectUrl.trim(),
       coverImage: coverImage.trim(),
+      coverClass: coverClass.trim() || undefined,
       heroImage: {
         url: heroImageUrl.trim() || coverImage.trim(),
         alt: heroImageAlt.trim() || title.trim()
@@ -677,38 +686,312 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             {uploadMessage && <p role="status" className="mt-4 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-zinc-200">{uploadMessage}</p>}
             {projectMedia.length > 0 && <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">{projectMedia.slice(0, 10).map((asset) => <div key={asset.id} className="overflow-hidden rounded-lg border border-white/10 bg-zinc-950"><div className="aspect-video"><MediaPreview src={asset.url} alt={asset.name} mimeType={asset.mimeType} className="h-full w-full object-cover" /></div><p className="truncate px-2.5 py-2 text-xs text-zinc-300">{asset.name}</p></div>)}</div>}
           </section>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-3">
-              <label className="block text-xs font-mono uppercase text-zinc-400">
-                Primary Hero Banner Image
-              </label>
-              <MediaUploadField value={heroImageUrl} onChange={setHeroImageUrl} onUploadMedia={uploadProjectMedia} mediaLibrary={projectMedia} label="hero image" />
-              <BufferedTextInput
-                type="text"
-                value={heroImageAlt}
-                onCommit={setHeroImageAlt}
-                className="w-full px-3 py-1.5 rounded bg-zinc-950 border border-white/10 text-white text-xs"
-                placeholder="Alt description..."
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* PRIMARY HERO BANNER IMAGE */}
+            <div className="flex flex-col gap-4 p-5 rounded-xl bg-zinc-950/70 border border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="block text-xs font-mono uppercase text-[#ff853a] font-semibold">
+                    Primary Hero Banner Image
+                  </label>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                    Displayed prominently at the top of the case study in wide cinematic framing.
+                  </p>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-zinc-400">
+                  Case Study Top
+                </span>
+              </div>
+
+              <MediaUploadField
+                value={heroImageUrl}
+                onChange={setHeroImageUrl}
+                onUploadMedia={uploadProjectMedia}
+                mediaLibrary={projectMedia}
+                label="hero image"
+                cropAspectRatio={previewHeroAspect}
               />
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] text-zinc-400 font-medium">Hero Image Alt Text</label>
+                <BufferedTextInput
+                  type="text"
+                  value={heroImageAlt}
+                  onCommit={setHeroImageAlt}
+                  className="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-white/10 text-white text-xs"
+                  placeholder="Alt description for screen readers and accessibility..."
+                />
+              </div>
+
+              {/* Framing, Pan/Zoom & Crop Cutoff Inspector */}
               {heroImageUrl && (
-                <div className="w-full rounded border border-white/10 overflow-hidden bg-black aspect-[16/9] flex items-center justify-center">
-                  <MediaPreview src={heroImageUrl} alt="Hero preview" className="w-full h-full object-cover" />
+                <div className="flex flex-col gap-3 pt-2 border-t border-white/10">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <Sliders size={13} className="text-[#ff853a]" />
+                      <span>Live Framing &amp; Cutoff Preview</span>
+                    </span>
+
+                    {/* Aspect Ratio Preview Selector */}
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-zinc-400 font-mono mr-1">RATIO:</span>
+                      {(['21:9', '16:9', '16:10'] as const).map((ratio) => (
+                        <button
+                          key={ratio}
+                          type="button"
+                          onClick={() => setPreviewHeroAspect(ratio)}
+                          className={`px-2 py-0.5 rounded text-[11px] font-mono cursor-pointer transition-colors ${
+                            previewHeroAspect === ratio
+                              ? 'bg-[#ff853a] text-white font-bold'
+                              : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+                          }`}
+                        >
+                          {ratio}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Framing Viewport with interactive launcher */}
+                  <div
+                    style={{ aspectRatio: previewHeroAspect.replace(':', '/') }}
+                    className="w-full rounded-lg border border-white/20 overflow-hidden bg-black relative group flex items-center justify-center shadow-inner"
+                  >
+                    <MediaPreview
+                      src={heroImageUrl}
+                      alt="Hero preview"
+                      className="w-full h-full object-cover"
+                    />
+
+                    {/* Framing corner guides */}
+                    <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#ff853a] pointer-events-none" />
+                    <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#ff853a] pointer-events-none" />
+                    <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#ff853a] pointer-events-none" />
+                    <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#ff853a] pointer-events-none" />
+
+                    {/* Live frame badge */}
+                    <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/80 backdrop-blur-sm border border-white/10 text-[10px] font-mono text-zinc-300">
+                      Hero Framing: {previewHeroAspect}
+                    </div>
+
+                    {/* Hover Pan & Zoom action */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-xs">
+                      <button
+                        type="button"
+                        onClick={() => setAdjustingCropTarget('hero')}
+                        className="px-3.5 py-2 rounded-lg bg-[#ff853a] hover:bg-[#ff721a] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-[#ff853a]/30"
+                      >
+                        <Crop size={14} />
+                        <span>Pan, Zoom &amp; Reframe</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <p className="text-[11px] text-zinc-400">
+                      Prevent parts from getting cut off by adjusting position and zoom.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setAdjustingCropTarget('hero')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#ff853a]/40 bg-[#ff853a]/10 hover:bg-[#ff853a]/20 text-[#ffb17d] hover:text-white text-xs font-medium cursor-pointer transition-colors shrink-0"
+                    >
+                      <Move size={12} />
+                      <ZoomIn size={12} />
+                      <span>Adjust Size, Pan &amp; Zoom</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col gap-3">
-              <label className="block text-xs font-mono uppercase text-zinc-400">
-                Listing &amp; Card Cover Image
-              </label>
-              <MediaUploadField value={coverImage} onChange={setCoverImage} onUploadMedia={uploadProjectMedia} mediaLibrary={projectMedia} label="cover image" />
+            {/* LISTING & CARD COVER IMAGE */}
+            <div className="flex flex-col gap-4 p-5 rounded-xl bg-zinc-950/70 border border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="block text-xs font-mono uppercase text-[#ff853a] font-semibold">
+                    Listing &amp; Card Cover Image
+                  </label>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                    Displayed on homepage Selected Work cards and archive directory.
+                  </p>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-zinc-400">
+                  Homepage Cards
+                </span>
+              </div>
+
+              <MediaUploadField
+                value={coverImage}
+                onChange={setCoverImage}
+                onUploadMedia={uploadProjectMedia}
+                mediaLibrary={projectMedia}
+                label="cover image"
+                cropAspectRatio={previewCoverAspect}
+              />
+
+              {/* Fit Mode Selector (Cover vs Contain / No Crop) */}
+              <div className="flex flex-col gap-2 p-3 rounded-lg bg-zinc-900 border border-white/10">
+                <label className="text-[11px] text-zinc-300 font-medium flex items-center justify-between">
+                  <span>Card Display Mode (Prevent Cropping)</span>
+                  <span className="text-[10px] font-mono text-zinc-500">HOMEPAGE GRID</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCoverClass('')}
+                    className={`px-3 py-2 rounded-lg text-xs font-medium text-left border cursor-pointer transition-all flex flex-col gap-0.5 ${
+                      !coverClass.includes('object-contain')
+                        ? 'bg-[#ff853a]/15 border-[#ff853a]/60 text-white shadow-xs'
+                        : 'bg-white/5 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-semibold text-[11px]">
+                      <Maximize2 size={12} className={!coverClass.includes('object-contain') ? 'text-[#ff853a]' : ''} />
+                      <span>Fill Card (Cover)</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 font-normal">
+                      Fills entire card frame (edges cropped if aspect differs)
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setCoverClass('object-contain bg-zinc-950 p-2')}
+                    className={`px-3 py-2 rounded-lg text-xs font-medium text-left border cursor-pointer transition-all flex flex-col gap-0.5 ${
+                      coverClass.includes('object-contain')
+                        ? 'bg-[#8be28b]/15 border-[#8be28b]/60 text-[#8be28b] shadow-xs'
+                        : 'bg-white/5 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-semibold text-[11px]">
+                      <Minimize2 size={12} className={coverClass.includes('object-contain') ? 'text-[#8be28b]' : ''} />
+                      <span>Fit Entire Image (No Crop)</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 font-normal">
+                      Never crops; preserves 100% of image with dark border
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Framing, Pan/Zoom & Crop Cutoff Inspector */}
               {coverImage && (
-                <div className="w-full rounded border border-white/10 overflow-hidden bg-black aspect-[16/9] flex items-center justify-center">
-                  <MediaPreview src={coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+                <div className="flex flex-col gap-3 pt-2 border-t border-white/10">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <Sliders size={13} className="text-[#ff853a]" />
+                      <span>Card Framing Preview</span>
+                    </span>
+
+                    {/* Aspect Ratio Preview Selector */}
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-zinc-400 font-mono mr-1">CARD:</span>
+                      {(['16:9', '4:3', '1:1'] as const).map((ratio) => (
+                        <button
+                          key={ratio}
+                          type="button"
+                          onClick={() => setPreviewCoverAspect(ratio)}
+                          className={`px-2 py-0.5 rounded text-[11px] font-mono cursor-pointer transition-colors ${
+                            previewCoverAspect === ratio
+                              ? 'bg-[#ff853a] text-white font-bold'
+                              : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+                          }`}
+                        >
+                          {ratio}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Framing Viewport with interactive launcher */}
+                  <div
+                    style={{ aspectRatio: previewCoverAspect.replace(':', '/') }}
+                    className="w-full rounded-lg border border-white/20 overflow-hidden bg-black relative group flex items-center justify-center shadow-inner"
+                  >
+                    <MediaPreview
+                      src={coverImage}
+                      alt="Cover preview"
+                      className={`w-full h-full ${coverClass.includes('object-contain') ? 'object-contain bg-zinc-950 p-2' : 'object-cover'}`}
+                    />
+
+                    {/* Framing corner guides */}
+                    <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#ff853a] pointer-events-none" />
+                    <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#ff853a] pointer-events-none" />
+                    <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#ff853a] pointer-events-none" />
+                    <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#ff853a] pointer-events-none" />
+
+                    {/* Live frame badge */}
+                    <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/80 backdrop-blur-sm border border-white/10 text-[10px] font-mono text-zinc-300">
+                      Card: {previewCoverAspect} · {coverClass.includes('object-contain') ? 'Fit Mode (No Crop)' : 'Cover Mode'}
+                    </div>
+
+                    {/* Hover Pan & Zoom action */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-xs">
+                      <button
+                        type="button"
+                        onClick={() => setAdjustingCropTarget('cover')}
+                        className="px-3.5 py-2 rounded-lg bg-[#ff853a] hover:bg-[#ff721a] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-[#ff853a]/30"
+                      >
+                        <Crop size={14} />
+                        <span>Pan, Zoom &amp; Reframe</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <p className="text-[11px] text-zinc-400">
+                      {coverClass.includes('object-contain')
+                        ? 'Fit mode enabled: whole image is shown without cropping.'
+                        : 'Cover mode enabled: use Pan & Zoom to align focal points.'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setAdjustingCropTarget('cover')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#ff853a]/40 bg-[#ff853a]/10 hover:bg-[#ff853a]/20 text-[#ffb17d] hover:text-white text-xs font-medium cursor-pointer transition-colors shrink-0"
+                    >
+                      <Move size={12} />
+                      <ZoomIn size={12} />
+                      <span>Adjust Size, Pan &amp; Zoom</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
           </div>
+
+          {/* Dedicated Pan, Zoom & Crop Cutoff Modal */}
+          <ImageCropPanZoomModal
+            isOpen={adjustingCropTarget !== null}
+            onClose={() => setAdjustingCropTarget(null)}
+            imageUrl={adjustingCropTarget === 'hero' ? heroImageUrl : coverImage}
+            imageTitle={
+              adjustingCropTarget === 'hero'
+                ? 'Adjust Hero Banner Framing (Pan, Zoom & Size)'
+                : 'Adjust Listing Cover Framing (Pan, Zoom & Size)'
+            }
+            defaultAspectRatio={adjustingCropTarget === 'hero' ? previewHeroAspect : previewCoverAspect}
+            onApplyCrop={async (dataUrl, blob) => {
+              const target = adjustingCropTarget;
+              const fileName = `${target || 'asset'}-${Date.now()}.webp`;
+              const file = new File([blob], fileName, { type: 'image/webp' });
+              try {
+                const asset = await uploadProjectMedia(file);
+                if (target === 'hero') {
+                  setHeroImageUrl(asset.url);
+                } else {
+                  setCoverImage(asset.url);
+                }
+              } catch {
+                if (target === 'hero') {
+                  setHeroImageUrl(dataUrl);
+                } else {
+                  setCoverImage(dataUrl);
+                }
+              }
+              setAdjustingCropTarget(null);
+            }}
+          />
 
         </div>
       )}
