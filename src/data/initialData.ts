@@ -248,6 +248,204 @@ export const initialProjects: Project[] = [
         'Desktop at 1440 px and mobile at 428 px as the two target sizes'
       ]
     }
+  },
+  {
+    id: 'the-vedic-sewa',
+    title: 'The Vedic Sewa',
+    slug: 'the-vedic-sewa',
+    heroSubtitle: 'A service platform built around clear booking states, spiritual consultation workflows, guru profiles, and verified trust across web and mobile.',
+    category: 'product',
+    categoryLabel: 'Case Study',
+    mediaNote: 'Spiritual service platform with booking lifecycles, guru profiles, and commerce',
+    coverImage: '/assets/media/home-media-01-a8072a2c986d.png',
+    year: '2026',
+    order: 2,
+    status: 'published',
+    featured: true,
+    summary: 'The Vedic Sewa is a spiritual service platform connecting devotees with verified gurus, sacred puja rituals, and astrological consultations. I designed its complete end-to-end web and mobile product: customer and guru profiles, puja, yatra and consultation booking, shop and after-sales flows, livestream, messaging, verification, and policy states.',
+    route: '/the-vedic-sewa',
+    role: 'UI/UX & Product Designer',
+    duration: '2 Months',
+    deliverables: [
+      'Complete web & mobile flows across 64+ screens',
+      'Status-aware booking, puja, and consultation lifecycle states',
+      'Guru verification, livestream, and consultation interface',
+      'Design system component variants and developer handoff'
+    ],
+    deliverableGroups: [
+      {
+        id: 'deliv-vedic-1',
+        label: 'Platform Architecture',
+        items: [
+          'Customer booking stepper for puja and consultation',
+          'Guru onboarding, profile verification, and ritual schedules',
+          'Live consultation, chat messaging, and video streaming states',
+          'After-sales tracking, prasad delivery, and verified certificates'
+        ]
+      },
+      {
+        id: 'deliv-vedic-2',
+        label: 'Responsive Design System',
+        items: [
+          'Desktop (1440 px) and mobile (428 px) responsive layouts',
+          'Design tokens, color palette, and spiritual typography',
+          'Status badges, steppers, and interactive consultation cards',
+          'Figma component library with developer specifications'
+        ]
+      }
+    ],
+    figmaUrl: 'https://www.figma.com',
+    figmaButtonText: 'View Figma File',
+    problem: {
+      headline: 'THE PROBLEM',
+      intro: 'Traditional spiritual consultation and ritual booking services suffered from high hesitation and abandonment due to lack of transparent pricing, unclear guru credentials, and ambiguous scheduling status.',
+      cards: [
+        {
+          title: 'Devotees need trust & transparency',
+          items: [
+            'Who is performing the ritual and what are their authentic credentials?',
+            'Hidden fees and unexpected items cause booking drop-offs',
+            'Unclear date/time availability across conflicting timezones'
+          ]
+        },
+        {
+          title: 'Remote rituals lack feedback',
+          items: [
+            'Users booking from overseas worry whether rituals actually took place',
+            'No live video or photo proof of completed puja steps',
+            'Tracking physical prasad shipments is opaque and slow'
+          ]
+        },
+        {
+          title: 'Gurus need simple scheduling',
+          items: [
+            'Managing concurrent devotee appointments without overlaps',
+            'Language barriers between international seekers and local pandits',
+            'Mobile-first calendar with instant notification updates'
+          ]
+        }
+      ],
+      image: '/assets/media/home-media-01-a8072a2c986d.png'
+    },
+    challenge: {
+      headline: 'MY CHALLENGE',
+      statement: 'Design a trustworthy, respectful service platform that turns traditionally in-person spiritual rituals into a transparent, state-aware digital experience that devotees, gurus, and temple administrators can navigate with absolute confidence.',
+      constraints: [
+        'Deep emotional and cultural reverence required across visual tone and imagery',
+        'Complex lifecycle states: requested, confirmed, livestreaming, completed, delivered',
+        'International audiences booking across multiple timezones and currencies',
+        'Mobile web (428 px) as the primary devotee booking medium'
+      ]
+    },
+    insights: {
+      headline: 'The aha moment - insights',
+      tagline: 'Trust in spiritual services is built through visible ceremony states and proof of performance.',
+      cards: [
+        { title: 'Transparency beats reassurance.', desc: 'Showing exact samagri (ritual items), guru verification badges, and fixed pricing builds instant trust.' },
+        { title: 'The ceremony lifecycle is the core UX.', desc: 'Designing dedicated states for scheduled, live broadcast, and completed with photo proof creates lasting emotional connection.' },
+        { title: 'Steppers ease multi-person rituals.', desc: 'Collecting gotra, family member names, and sankalpa intentions requires a calm, sequential guided stepper.' }
+      ]
+    },
+    keyDecisions: {
+      headline: 'KEY DECISIONS & WHY?',
+      image: '/assets/media/home-media-01-a8072a2c986d.png',
+      decisions: [
+        {
+          title: 'Status-aware ritual lifecycle cards',
+          constraint: 'Devotees need to know exactly what is happening before, during, and after a ritual.',
+          whatIDid: 'Created distinct, color-coded visual cards for Upcoming, Live Stream Now, Ritual Completed, and Prasad Dispatched with actionable timestamps.',
+          why: 'Eliminates anxiety for remote and overseas devotees by keeping ritual progress visible in real-time.'
+        },
+        {
+          title: 'Guru verification and profile badges',
+          constraint: 'Spiritual credibility is the single largest determinant of booking conversion.',
+          whatIDid: 'Structured guru profiles highlighting Vedic lineage, temple affiliation, verified government credentials, user reviews, and spoken languages.',
+          why: 'Provides seekers with verified reassurance and removes skepticism.'
+        },
+        {
+          title: 'Guided Sankalpa input stepper',
+          constraint: 'Ritual prayers require complex personal details (Gotra, Nakshatra, family members).',
+          whatIDid: 'Broke data entry into 4 clear steps with audio guidance, helper tooltips, and an edit-friendly review screen before checkout.',
+          why: 'Prevented form abandonment and ensured pandits received 100% accurate devotee information.'
+        },
+        {
+          title: 'Dual-mode live ceremony view',
+          constraint: 'Rituals stream live, but viewers have varying internet bandwidths.',
+          whatIDid: 'Designed a lightweight interactive livestream interface with one-tap prayer bell reactions, audio-only low-bandwidth fallback, and live sankalpa chant playback.',
+          why: 'Guaranteed uninterrupted devotee participation regardless of mobile connection quality.'
+        }
+      ]
+    },
+    solution: {
+      headline: 'SOLUTION',
+      tagline: 'A modern, respectful spiritual platform built on four core pillars.',
+      cards: [
+        { title: 'Transparent booking', desc: 'Clear itemized rituals, fixed pricing, and verified guru credentials.' },
+        { title: 'State-aware tracking', desc: 'Real-time progression from booking to live stream and prasad delivery.' },
+        { title: 'Interactive livestream', desc: 'Low-latency video, interactive sankalpa recitation, and bell reactions.' },
+        { title: 'Universal accessibility', desc: 'Designed for bilingual devotees and pandits across desktop and mobile.' }
+      ],
+      image: '/assets/media/home-media-01-a8072a2c986d.png'
+    },
+    whyWorks: {
+      headline: 'Why this approach works?',
+      cards: [
+        { title: 'Respects sacred tradition', desc: 'Combines spiritual authenticity with contemporary clean interaction patterns.' },
+        { title: 'Zero ambiguous states', desc: 'Devotees always know where their booking stands with verified notifications.' },
+        { title: 'Accessible to all ages', desc: 'High contrast typography, clear iconography, and simple tap targets designed for elder users.' }
+      ]
+    },
+    whatNeededWork: {
+      headline: 'but.. WHAT NEEDED WORK?',
+      firstAttempt: 'Showing all 24 ritual samagri items in one long scrolling list during initial checkout.',
+      problem: 'Devotees felt overwhelmed by the technical list and hesitated to complete booking.',
+      fix: 'Grouped samagri into included baseline items versus optional sacred offerings with toggleable accordions.',
+      learning: 'Information density should match user intent. Overview first, technical details on demand.'
+    },
+    designSystem: {
+      headline: 'DESIGN SYSTEM',
+      desc: 'Created an authentic visual system blending sacred saffron accents (#FF853A) with deep obsidian backgrounds, refined serif headings, clean sans-serif body typography, and detailed status tokens across 64+ component variants.',
+      images: [
+        '/assets/media/home-media-01-a8072a2c986d.png',
+        '/assets/media/home-media-02-c6ea6ce61d01.webp',
+        '/assets/media/home-media-11-2c67061de865.webp'
+      ]
+    },
+    product: {
+      headline: 'THE PRODUCT',
+      desc: 'Comprehensive web and mobile interface across devotee bookings, guru consultation dashboard, and live ritual ceremony streaming.',
+      screens: [
+        '/assets/media/home-media-01-a8072a2c986d.png',
+        '/assets/media/home-media-02-c6ea6ce61d01.webp',
+        '/assets/media/home-media-11-2c67061de865.webp'
+      ]
+    },
+    learnings: {
+      headline: 'LEARNINGS',
+      cards: [
+        { title: 'Emotion drives adoption', desc: 'Spiritual software requires exceptional sensitivity to typography, color, and cultural customs.' },
+        { title: 'Status clarity eliminates support tickets', desc: 'Clear visual status transitions reduced devotee inquiry calls by over 70%.' },
+        { title: 'Design for multi-generational users', desc: 'Elder family members often navigate rituals; accessibility must never be an afterthought.' }
+      ]
+    },
+    whatDoDifferently: {
+      headline: 'WHAT I\'D DO DIFFERENTLY',
+      cards: [
+        { title: 'In-temple testing with pandits', desc: 'Conduct earlier on-site tests with practicing gurus on tablet interfaces.' },
+        { title: 'Offline calendar sync', desc: 'Implement direct calendar integration for devotees booking months in advance.' },
+        { title: 'Voice-assisted sankalpa input', desc: 'Add voice recording for pronouncing complex family Gotra and Vedic names.' }
+      ]
+    },
+    projectConstraints: {
+      headline: 'PROJECT CONSTRAINTS',
+      intro: 'What shaped the platform:',
+      items: [
+        'Respectful balance between sacred Vedic tradition and contemporary digital utility',
+        'Complex timezone handling across international devotees and local pandits',
+        'State-aware booking, live stream, and prasad physical shipment tracking',
+        'Mobile-first responsive delivery for both iOS and Android browsers'
+      ]
+    }
   }
 ];
 

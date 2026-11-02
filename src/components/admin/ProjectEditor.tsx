@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Project, CaseStudySection, DeliverableGroup, MediaAsset } from '../../types';
 import { CaseStudyBuilder } from './CaseStudyBuilder';
 import { ProjectCaseStudyTemplate } from '../project-case-study/ProjectCaseStudyTemplate';
-import { normalizeProjectSections } from '../../utils/caseStudyUtils';
+import { normalizeProjectSections, getFullCaseStudyTemplate } from '../../utils/caseStudyUtils';
 import { MediaPreview } from '../MediaPreview';
 import { MediaUploadField } from './MediaUploadField';
 import { BufferedTextInput, BufferedTextarea } from './BufferedTextField';
@@ -96,44 +96,8 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
     if (initialProject) {
       return normalizeProjectSections(initialProject);
     }
-    // New project default sections matching SOMTU template
-    return normalizeProjectSections({
-      id: 'template',
-      title: 'New Case Study',
-      slug: 'new-case-study',
-      summary: '',
-      category: 'product',
-      categoryLabel: 'Case Study',
-      coverImage: '/assets/media/home-media-04-f775f2921176.webp',
-      year: '2026',
-      order: 1,
-      status: 'published',
-      featured: true,
-      route: '/new-case-study',
-      role: 'UI/UX Designer',
-      duration: '1 Month',
-      problem: {
-        headline: 'THE PROBLEM',
-        intro: 'Users were experiencing friction navigating workflows.',
-        cards: [
-          { title: 'Users need a clear path', items: ['Clear primary actions', 'Fewer clicks'] },
-          { title: 'Returning users need speed', items: ['Fast lookups', 'Mobile-first layout'] }
-        ]
-      },
-      challenge: {
-        headline: 'MY CHALLENGE',
-        statement: 'Design one connected interface where every audience can reach their task in a few taps.',
-        constraints: ['Responsive desktop & mobile', 'Scalable component system']
-      },
-      insights: {
-        headline: 'The aha moment - insights',
-        tagline: 'Consistency is emotional, not functional.',
-        cards: [
-          { title: 'People come to do one thing.', desc: 'Every key screen should make its main action obvious.' },
-          { title: 'Lists are the website.', desc: 'Shared search and chips provide instant familiarity.' }
-        ]
-      }
-    } as Project);
+    // New project default sections: comprehensive 12-chapter template with all block types
+    return getFullCaseStudyTemplate('New Case Study');
   });
 
   const handleTitleChange = (val: string) => {
@@ -653,12 +617,61 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
       {/* TAB 3: CASE STUDY BUILDER */}
       {activeTab === 'caseStudy' && (
-        <CaseStudyBuilder
-          sections={sections}
-          onChange={(newSections) => setSections(newSections)}
-          mediaLibrary={projectMedia}
-          onUploadMedia={uploadProjectMedia}
-        />
+        <div className="flex flex-col gap-4">
+          {/* Quick Case Study Template Presets */}
+          <div className="p-4 rounded-[8px] bg-zinc-950 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-rounded text-[#ff853a] text-xl">auto_stories</span>
+              <div>
+                <span className="text-white text-xs font-semibold block">Case Study Template Presets</span>
+                <span className="text-zinc-400 text-[11px]">
+                  Apply all 12 standard chapters (Problem with image block, Key Decisions with constraint/what/why, Design System carousel, Two-column comparisons, Product showcase) to this project.
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap shrink-0">
+              <button
+                type="button"
+                onClick={() => setSections(getFullCaseStudyTemplate(title || 'Project'))}
+                className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/15 text-white text-xs font-medium border border-white/10 cursor-pointer transition-colors"
+                title="Populate complete 12 standard chapters with all visual block options"
+              >
+                Reset to Full 12-Section Template
+              </button>
+              {existingProjects.some((p) => p.slug === 'somtu' || p.id === 'somtu') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const somtu = existingProjects.find((p) => p.slug === 'somtu' || p.id === 'somtu');
+                    if (somtu) setSections(normalizeProjectSections(somtu));
+                  }}
+                  className="px-3 py-1.5 rounded bg-[#ff853a]/15 hover:bg-[#ff853a]/25 text-[#ff853a] text-xs font-medium border border-[#ff853a]/30 cursor-pointer transition-colors"
+                >
+                  Copy All from SOMTU
+                </button>
+              )}
+              {existingProjects.some((p) => p.slug === 'the-vedic-sewa' || p.id === 'the-vedic-sewa') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const vedic = existingProjects.find((p) => p.slug === 'the-vedic-sewa' || p.id === 'the-vedic-sewa');
+                    if (vedic) setSections(normalizeProjectSections(vedic));
+                  }}
+                  className="px-3 py-1.5 rounded bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-xs font-medium border border-emerald-500/30 cursor-pointer transition-colors"
+                >
+                  Copy All from The Vedic Sewa
+                </button>
+              )}
+            </div>
+          </div>
+
+          <CaseStudyBuilder
+            sections={sections}
+            onChange={(newSections) => setSections(newSections)}
+            mediaLibrary={projectMedia}
+            onUploadMedia={uploadProjectMedia}
+          />
+        </div>
       )}
 
       {/* TAB 4: MEDIA ASSETS */}

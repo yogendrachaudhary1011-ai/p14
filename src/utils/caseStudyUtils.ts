@@ -441,6 +441,323 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
   return sections;
 }
 
+/** Provides a complete 12-chapter case study template matching the standard editorial design with all image, card, comparison, carousel, and decision blocks. */
+export function getFullCaseStudyTemplate(projectTitle = 'Case Study'): CaseStudySection[] {
+  let order = 1;
+  return [
+    {
+      id: 'the-problem',
+      type: 'problem',
+      navigationLabel: 'The Problem',
+      heading: 'THE PROBLEM',
+      intro: 'Users were experiencing friction navigating multi-step workflows and locating core actions.',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-prob-cg`,
+          type: 'cardGrid',
+          columns: 2,
+          cards: [
+            {
+              title: 'Audience needs a clear path',
+              items: ['Primary actions are easily lost in dense navigation', 'Multi-step tasks require clear progression indicators', 'Mobile views must prioritize quick-lookup items']
+            },
+            {
+              title: 'Returning users need speed',
+              items: ['Fast status verification and search', 'One-tap access to primary services', 'Immediate feedback on form submission states']
+            }
+          ]
+        },
+        {
+          id: `blk-${Date.now()}-prob-img`,
+          type: 'fullWidthImage',
+          url: '/assets/media/home-media-04-f775f2921176.webp',
+          alt: `${projectTitle} Problem Discovery and Research`
+        }
+      ]
+    },
+    {
+      id: 'my-challenge',
+      type: 'challenge',
+      navigationLabel: 'My Challenge',
+      heading: 'MY CHALLENGE',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-chal-p`,
+          type: 'paragraph',
+          text: 'Design an intuitive, connected digital experience where every audience can accomplish their primary goal in a few taps across desktop and mobile, while maintaining design system consistency across every view.'
+        },
+        {
+          id: `blk-${Date.now()}-chal-bl`,
+          type: 'bulletList',
+          title: 'Constraints:',
+          items: [
+            'Support multi-step forms and status-aware workflows',
+            'Cohesive brand identity across all customer and admin touchpoints',
+            'Desktop (1440 px) and mobile (428 px) responsive designs as equal priorities',
+            'Comprehensive developer documentation and component specs'
+          ]
+        }
+      ]
+    },
+    {
+      id: 'insights',
+      type: 'insights',
+      navigationLabel: 'Insights',
+      heading: 'The aha moment - insights',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-ins-tag`,
+          type: 'paragraph',
+          text: 'Consistency is emotional, not functional.',
+          highlight: true
+        },
+        {
+          id: `blk-${Date.now()}-ins-cg`,
+          type: 'cardGrid',
+          columns: 3,
+          cards: [
+            { title: 'People come to do one thing.', desc: 'Every key screen should make its main action obvious in the first viewport.' },
+            { title: 'Standardize core patterns.', desc: 'Shared search, filter sheets, and card styles establish immediate familiarity.' },
+            { title: 'Long tasks need a guided stepper.', desc: 'A visible stepper, review step, and clear confirmation eliminate drop-offs.' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'key-decisions',
+      type: 'keyDecisions',
+      navigationLabel: 'Key Decisions & Why?',
+      heading: 'KEY DECISIONS & WHY?',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-dec-img`,
+          type: 'fullWidthImage',
+          url: '/assets/media/home-media-04-f775f2921176.webp',
+          alt: `${projectTitle} Key Architecture Decisions`
+        },
+        {
+          id: `blk-${Date.now()}-dec-list`,
+          type: 'decisionList',
+          decisions: [
+            {
+              title: 'One shell for every page',
+              constraint: 'Multiple feature areas, each with its own target audience.',
+              whatIDid: 'Built a shared header with utility links, category navigation, and a persistent action button.',
+              why: 'Users always recognize where they are and every view inherits predictable structure.'
+            },
+            {
+              title: 'Action-first landing page',
+              constraint: 'Homepages often present too much information at once.',
+              whatIDid: 'Created a focused hero with two primary paths, leading directly into core catalog highlights.',
+              why: 'Both exploratory visitors and goal-driven users get an immediate starting tap.'
+            },
+            {
+              title: 'Registration & booking as a guided stepper',
+              constraint: 'Complex data collection creates cognitive fatigue and abandonment.',
+              whatIDid: 'Split dense forms into bite-sized steps with review summaries and confirmation IDs.',
+              why: 'People track progress easily, can inspect inputs before submission, and receive verified confirmation.'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'solutions',
+      type: 'solution',
+      navigationLabel: 'Solutions',
+      heading: 'SOLUTION',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-sol-tag`,
+          type: 'paragraph',
+          text: 'Six core principles held the entire product interface together.',
+          highlight: true
+        },
+        {
+          id: `blk-${Date.now()}-sol-cg`,
+          type: 'cardGrid',
+          columns: 3,
+          cards: [
+            { title: 'One shell', desc: 'Shared header, footer, and navigation cues across all pages.' },
+            { title: 'Action-first pages', desc: 'Each page makes its main call to action prominent.' },
+            { title: 'Reusable pattern library', desc: 'Shared search, filter cards, and pagination across all lists.' },
+            { title: 'Guided multi-step forms', desc: 'Step-by-step progress, validation, and review steps.' },
+            { title: 'State-aware screens', desc: 'Upcoming, active, empty, and success states designed explicitly.' },
+            { title: 'Mobile as an equal', desc: 'Every workflow tailored for thumb-reach and mobile viewports.' }
+          ]
+        },
+        {
+          id: `blk-${Date.now()}-sol-img`,
+          type: 'fullWidthImage',
+          url: '/assets/media/home-media-04-f775f2921176.webp',
+          alt: `${projectTitle} Solution Overview`
+        }
+      ]
+    },
+    {
+      id: 'why-works',
+      type: 'whyItWorks',
+      navigationLabel: 'Why it Works',
+      heading: 'Why this approach works?',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-why-cg`,
+          type: 'cardGrid',
+          columns: 3,
+          cards: [
+            { title: 'Familiar everywhere', desc: 'Learn one flow and you instantly understand the rest of the product.' },
+            { title: 'Faster task completion', desc: 'Prominent search, filters, and shortcuts reach any item in a few taps.' },
+            { title: 'Reliable engineering handoff', desc: 'Repeated patterns and documented Figma tokens reduce development revisions.' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'what-didnt-work',
+      type: 'whatDidNotWork',
+      navigationLabel: 'What didn’t work',
+      heading: 'but.. WHAT NEEDED WORK?',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-comp`,
+          type: 'twoColumnComparison',
+          firstAttempt: 'Displaying complete desktop filter button arrays inline across mobile screens.',
+          problem: 'Numerous chips with counters overflowed small screens and pushed content below the fold.',
+          fix: 'Moved the full filter set into a dedicated bottom sheet with sort, reset, and apply buttons.',
+          learning: 'Desktop patterns do not simply scale down. Mobile layouts must be purpose-designed for thumb reach.'
+        }
+      ]
+    },
+    {
+      id: 'design-system',
+      type: 'designSystem',
+      navigationLabel: 'Design System',
+      heading: 'DESIGN SYSTEM',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-ds-desc`,
+          type: 'paragraph',
+          text: 'Extended the brand visual identity into a robust tokenized component system: primary actions, input fields, state cards, modal dialogs, and navigation headers across responsive viewports.'
+        },
+        {
+          id: `blk-${Date.now()}-ds-car`,
+          type: 'carousel',
+          slides: [
+            { url: '/assets/media/home-media-04-f775f2921176.webp', title: 'Component Library & Variants Spec', alt: 'Design system components' },
+            { url: '/assets/media/home-media-02-c6ea6ce61d01.webp', title: 'Typography, Grid & Color Tokens', alt: 'Design system typography' },
+            { url: '/assets/media/home-media-03-d6c887bed8af.webp', title: 'Responsive Mobile UI Tokens', alt: 'Mobile UI components' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'the-product',
+      type: 'product',
+      navigationLabel: 'The Product',
+      heading: 'THE PRODUCT',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-prod-desc`,
+          type: 'paragraph',
+          text: 'Key responsive feature workflows designed for both desktop (1440 px) and mobile (428 px).'
+        },
+        {
+          id: `blk-${Date.now()}-prod-img-1`,
+          type: 'fullWidthImage',
+          url: '/assets/media/home-media-04-f775f2921176.webp',
+          alt: `${projectTitle} Desktop & Mobile Screens`
+        },
+        {
+          id: `blk-${Date.now()}-prod-img-2`,
+          type: 'fullWidthImage',
+          url: '/assets/media/home-media-02-c6ea6ce61d01.webp',
+          alt: `${projectTitle} Detailed Workflows`
+        }
+      ]
+    },
+    {
+      id: 'learnings',
+      type: 'learnings',
+      navigationLabel: 'Learnings',
+      heading: 'LEARNINGS',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-learn-cg`,
+          type: 'cardGrid',
+          columns: 2,
+          cards: [
+            { title: 'Systems beat isolated pages', desc: 'A unified layout shell and shared components unify complex products.' },
+            { title: 'Design every state explicitly', desc: 'Empty, loading, active, and completed states are integral to usability.' },
+            { title: 'Match layout to reading behavior', desc: 'Browse vs lookup tasks each require distinct typographic and spatial hierarchy.' },
+            { title: 'Mobile demands bespoke patterns', desc: 'Filters, steppers, and long lists require thumb-friendly mobile patterns.' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'differently',
+      type: 'whatIdDoDifferently',
+      navigationLabel: "What I'd do differently",
+      heading: "WHAT I'D DO DIFFERENTLY",
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-diff-cg`,
+          type: 'cardGrid',
+          columns: 3,
+          cards: [
+            { title: 'Test with target users early', desc: 'Conduct usability sessions on critical registration and booking paths.' },
+            { title: 'Document design rationale', desc: 'Include brief rationale notes beside each Figma component for developers.' },
+            { title: 'Plan localization from day one', desc: 'Account for variable string lengths across multiple language translations.' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'constraints',
+      type: 'constraints',
+      navigationLabel: 'Constraints',
+      heading: 'PROJECT CONSTRAINTS',
+      visible: true,
+      order: order++,
+      blocks: [
+        {
+          id: `blk-${Date.now()}-const-bl`,
+          type: 'bulletList',
+          title: 'What shaped the work:',
+          items: [
+            'Real-world business and client workflow constraints',
+            'Brand continuity requiring evolution rather than total replacement',
+            'High volume of state-dependent content, forms, and documents',
+            'Desktop at 1440 px and mobile at 428 px as equal design priorities'
+          ]
+        }
+      ]
+    }
+  ];
+}
+
 export function createDefaultSection(type: SectionType, order: number): CaseStudySection {
   const titles: Record<SectionType, { label: string; heading: string }> = {
     problem: { label: 'The Problem', heading: 'THE PROBLEM' },
@@ -468,6 +785,61 @@ export function createDefaultSection(type: SectionType, order: number): CaseStud
       { id: `blk-${Date.now()}-2`, type: 'cardGrid', columns: 2, cards: [
         { title: 'Core Friction Point 1', items: ['Unclear primary action', 'Cognitive overload', 'Lack of immediate feedback'] },
         { title: 'Core Friction Point 2', items: ['Slow mobile performance', 'Dense tables without search', 'Inconsistent UI styling'] }
+      ]},
+      { id: `blk-${Date.now()}-3`, type: 'fullWidthImage', url: '', alt: 'Problem Discovery and Research' }
+    ];
+  } else if (type === 'challenge') {
+    defaultBlocks = [
+      { id: `blk-${Date.now()}-1`, type: 'paragraph', text: 'Design one connected interface where every audience can reach their task in a few taps across desktop and mobile.' },
+      { id: `blk-${Date.now()}-2`, type: 'bulletList', title: 'Constraints:', items: ['Desktop & mobile responsive layouts', 'Scalable component library'] }
+    ];
+  } else if (type === 'insights') {
+    defaultBlocks = [
+      { id: `blk-${Date.now()}-1`, type: 'paragraph', text: 'Consistency is emotional, not functional.', highlight: true },
+      { id: `blk-${Date.now()}-2`, type: 'cardGrid', columns: 3, cards: [
+        { title: 'People come to do one thing.', desc: 'Every key screen should make its main action obvious.' },
+        { title: 'Shared patterns build trust.', desc: 'Shared search and chips provide instant familiarity.' },
+        { title: 'Guided steps ease dense flows.', desc: 'Steppers and clear confirmations keep users oriented.' }
+      ]}
+    ];
+  } else if (type === 'keyDecisions') {
+    defaultBlocks = [
+      { id: `blk-${Date.now()}-0`, type: 'fullWidthImage', url: '', alt: 'Key Decisions Architecture' },
+      {
+        id: `blk-${Date.now()}-1`,
+        type: 'decisionList',
+        decisions: [
+          {
+            title: 'Unified Component Architecture',
+            constraint: 'Multiple sub-teams building inconsistent flows.',
+            whatIDid: 'Created a standardized design system token kit with reusable navigation, cards, and input states.',
+            why: 'Ensures consistent mental models across every screen and saves developer implementation time.'
+          },
+          {
+            title: 'Action-First Layout Hierarchy',
+            constraint: 'Users overwhelmed by competing interface elements.',
+            whatIDid: 'Structured pages around one primary action with secondary utilities grouped clearly.',
+            why: 'Directs user attention and increases completion rates.'
+          }
+        ]
+      }
+    ];
+  } else if (type === 'solution') {
+    defaultBlocks = [
+      { id: `blk-${Date.now()}-1`, type: 'paragraph', text: 'Core principles that held the product interface together.', highlight: true },
+      { id: `blk-${Date.now()}-2`, type: 'cardGrid', columns: 3, cards: [
+        { title: 'One shell', desc: 'Shared header, footer, and navigation cues across all pages.' },
+        { title: 'Action-first pages', desc: 'Each page makes its main call to action prominent.' },
+        { title: 'Reusable pattern library', desc: 'Shared search, filter cards, and pagination across all lists.' }
+      ]},
+      { id: `blk-${Date.now()}-3`, type: 'fullWidthImage', url: '', alt: 'Solution Overview' }
+    ];
+  } else if (type === 'whyItWorks') {
+    defaultBlocks = [
+      { id: `blk-${Date.now()}-1`, type: 'cardGrid', columns: 3, cards: [
+        { title: 'Familiar everywhere', desc: 'Learn one page and you know the rest.' },
+        { title: 'Faster tasks', desc: 'Search and filters reach any item in a few taps.' },
+        { title: 'Easier to build', desc: 'Repeated patterns cut developer questions.' }
       ]}
     ];
   } else if (type === 'whatDidNotWork') {
@@ -481,20 +853,38 @@ export function createDefaultSection(type: SectionType, order: number): CaseStud
         learning: 'Desktop patterns do not shrink. They have to be redesigned for thumbs.'
       }
     ];
-  } else if (type === 'keyDecisions') {
+  } else if (type === 'designSystem') {
     defaultBlocks = [
-      {
-        id: `blk-${Date.now()}-1`,
-        type: 'decisionList',
-        decisions: [
-          {
-            title: 'Unified Component Architecture',
-            constraint: 'Multiple sub-teams building inconsistent flows.',
-            whatIDid: 'Created a standardized design system token kit with reusable navigation, cards, and input states.',
-            why: 'Ensures consistent mental models across every screen and saves developer implementation time.'
-          }
-        ]
-      }
+      { id: `blk-${Date.now()}-1`, type: 'paragraph', text: 'Extended the brand into a reusable tokenized component library with documented variants.' },
+      { id: `blk-${Date.now()}-2`, type: 'carousel', slides: [
+        { url: '', title: 'Component Specs #1', alt: 'Design system slide 1' },
+        { url: '', title: 'Component Specs #2', alt: 'Design system slide 2' }
+      ]}
+    ];
+  } else if (type === 'product') {
+    defaultBlocks = [
+      { id: `blk-${Date.now()}-1`, type: 'paragraph', text: 'Core responsive feature areas designed for desktop and mobile viewports.' },
+      { id: `blk-${Date.now()}-2`, type: 'fullWidthImage', url: '', alt: 'Product Screen 1' },
+      { id: `blk-${Date.now()}-3`, type: 'fullWidthImage', url: '', alt: 'Product Screen 2' }
+    ];
+  } else if (type === 'learnings') {
+    defaultBlocks = [
+      { id: `blk-${Date.now()}-1`, type: 'cardGrid', columns: 2, cards: [
+        { title: 'Systems beat pages', desc: 'A shared shell and list pattern made distinct feature areas feel like one product.' },
+        { title: 'Design every state', desc: 'Upcoming, ended, empty, and success states are part of the experience.' }
+      ]}
+    ];
+  } else if (type === 'whatIdDoDifferently') {
+    defaultBlocks = [
+      { id: `blk-${Date.now()}-1`, type: 'cardGrid', columns: 3, cards: [
+        { title: 'Test with real users earlier', desc: 'Run quick usability sessions on core checkout and registration flows.' },
+        { title: 'Document design rationale', desc: 'Write short decision notes beside each Figma chapter.' },
+        { title: 'Plan for localization', desc: 'Account for multilingual typography and varying text lengths.' }
+      ]}
+    ];
+  } else if (type === 'constraints') {
+    defaultBlocks = [
+      { id: `blk-${Date.now()}-1`, type: 'bulletList', title: 'What shaped the work:', items: ['Established brand constraints', 'Dense forms and documents', 'Desktop and mobile as equal priorities'] }
     ];
   } else {
     defaultBlocks = [

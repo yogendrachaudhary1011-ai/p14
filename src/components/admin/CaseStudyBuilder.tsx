@@ -111,9 +111,10 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
   };
 
   // Block handlers for selected section
-  const handleAddBlock = () => {
+  const handleAddBlock = (blockType?: CaseStudyBlockType) => {
     if (!selectedSection) return;
-    const newBlk = createDefaultBlock(newBlockType);
+    const typeToUse = blockType || newBlockType;
+    const newBlk = createDefaultBlock(typeToUse);
     const updatedBlocks = [...(selectedSection.blocks || []), newBlk];
     handleUpdateSection(selectedSection.id, { blocks: updatedBlocks });
   };
@@ -478,13 +479,61 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
                   <button
                     type="button"
-                    onClick={handleAddBlock}
+                    onClick={() => handleAddBlock()}
                     className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-medium flex items-center justify-center gap-1 cursor-pointer border border-white/10 shrink-0"
                   >
                     <span className="material-symbols-rounded text-sm">add</span>
                     <span>Insert Block</span>
                   </button>
                 </div>
+              </div>
+
+              {/* Quick Add Block Shortcuts */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">QUICK INSERT:</span>
+                <button
+                  type="button"
+                  onClick={() => handleAddBlock('fullWidthImage')}
+                  className="px-2.5 py-1 rounded-md bg-[#ff853a]/15 hover:bg-[#ff853a]/25 text-[#ff853a] border border-[#ff853a]/30 text-xs font-medium cursor-pointer transition-colors flex items-center gap-1"
+                >
+                  <span className="material-symbols-rounded text-xs">image</span>
+                  <span>+ Image Block</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddBlock('cardGrid')}
+                  className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  + Card Grid
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddBlock('decisionList')}
+                  className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  + Decision Cards
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddBlock('twoColumnComparison')}
+                  className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  + First Attempt &amp; Fix
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddBlock('carousel')}
+                  className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  + Slide Carousel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddBlock('bulletList')}
+                  className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  + Bullet List
+                </button>
               </div>
 
               {/* Blocks Array */}
