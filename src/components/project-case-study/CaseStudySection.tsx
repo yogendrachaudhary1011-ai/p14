@@ -27,11 +27,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
 
   if (!section.visible) return null;
   const normalizedSection = stackProductSectionImages([section])[0];
-  let visibleBlocks = section.type === 'challenge'
-    ? (normalizedSection.blocks || [])
-      .filter((block) => !['image', 'fullWidthImage', 'gallery', 'carousel', 'productShowcase'].includes(block.type))
-      .map((block) => block.type === 'decisionList' ? { ...block, image: undefined, imageAlt: undefined } : block)
-    : normalizedSection.blocks || [];
+  let visibleBlocks = normalizedSection.blocks || [];
   if (section.type === 'keyDecisions') {
     const imageBlocks = visibleBlocks.filter((block) => block.type === 'image' || block.type === 'fullWidthImage');
     if (imageBlocks.length) {
