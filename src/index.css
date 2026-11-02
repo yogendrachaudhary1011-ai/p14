@@ -50,6 +50,19 @@
     width: 100% !important;
   }
 
+  /* Ensure number badges and circular indicators remain centered in their frames */
+  button span.rounded-full,
+  [class*="rounded-full"][class*="w-"],
+  [class*="rounded-full"][class*="h-"] {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    grid-template-columns: none !important;
+    gap: 0 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+  }
+
   /* Baseline grid column definitions with explicit !important */
   .grid-cols-1,
   .case-study-card-grid[data-cols="1"] {

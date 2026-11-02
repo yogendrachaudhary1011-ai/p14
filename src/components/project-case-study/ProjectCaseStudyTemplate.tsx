@@ -135,7 +135,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
       )}
 
       {/* Main Container */}
-      <div className="w-full max-w-[1440px] mx-auto relative bg-black flex flex-col justify-start items-center box-border animate-cs-fade-in">
+      <div className="w-full max-w-full mx-auto relative bg-black flex flex-col justify-start items-center box-border animate-cs-fade-in">
         {/* Decorative Grid Lines matching Figma spec */}
         <div className="w-full h-[735.20px] left-0 top-[1px] absolute opacity-5 pointer-events-none select-none overflow-hidden">
           <div className="w-px h-[735.20px] left-[7%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
@@ -178,7 +178,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
         />
 
         {/* Two-Column Case Study Section with Left Sticky Navigation */}
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col lg:flex-row justify-between items-start gap-8 sm:gap-12 lg:gap-16 relative pb-28 pt-4 box-border">
+        <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col lg:flex-row justify-between items-start gap-8 sm:gap-12 lg:gap-16 relative pb-28 pt-4 box-border">
           {/* Left Table of Contents Nav */}
           <SectionNavigation
             sections={navSections}
@@ -188,7 +188,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
           />
 
           {/* Right Column: Case Study Sections */}
-          <main className="w-full min-w-0 flex-1 max-w-[1200px] flex flex-col gap-12 sm:gap-16 lg:gap-20 self-stretch">
+          <main className="w-full min-w-0 flex-1 max-w-full flex flex-col gap-12 sm:gap-16 lg:gap-20 self-stretch">
             {sections.map((section, idx) => (
               <CaseStudySection key={section.id} section={section} index={idx} copy={copy} />
             ))}

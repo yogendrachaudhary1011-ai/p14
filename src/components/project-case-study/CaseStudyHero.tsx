@@ -16,7 +16,7 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
   return (
     <div className="w-full flex flex-col items-center relative z-10 pt-2 sm:pt-4">
       {/* Top back navigation bar */}
-      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-2 sm:pt-4 pb-4 sm:pb-6 flex justify-between items-center gap-2 box-border animate-cs-fade-in">
+      <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-2 sm:pt-4 pb-4 sm:pb-6 flex justify-between items-center gap-2 box-border animate-cs-fade-in">
         <a
           href="/#work"
           className="inline-flex items-center gap-1.5 sm:gap-2 text-zinc-400 hover:text-white transition-all duration-200 text-xs sm:text-sm font-medium py-1.5 px-2.5 sm:px-3 rounded hover:bg-white/5 hover:-translate-x-1 cursor-pointer"
@@ -30,7 +30,7 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
       </div>
 
       {/* Hero Title & Subtitle flex row matching Figma spec */}
-      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-4 sm:py-6 flex flex-col justify-between items-center box-border">
+      <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-4 sm:py-6 flex flex-col justify-between items-center box-border">
         <div className="w-full flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 pb-4 sm:pb-6">
           {/* Big Project Title */}
           <div className="w-full lg:max-w-[700px] flex-1 flex flex-col justify-center items-start">

@@ -372,10 +372,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
               }`}
             >
-              <span className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-bold ${isActive ? 'bg-[#ff853a] text-white' : 'bg-white/5 text-zinc-400'}`}>{stepNumber}</span>
+              <span className={`inline-flex items-center justify-center shrink-0 w-5 h-5 min-w-[20px] min-h-[20px] rounded-full text-[10px] font-bold leading-none select-none text-center ${isActive ? 'bg-[#ff853a] text-white shadow-xs' : 'bg-white/10 text-zinc-300'}`}>{stepNumber}</span>
               <span>{tab.label}</span>
               {tab.id === 'caseStudy' && (
-                <span className="px-1.5 py-0.5 rounded-full bg-[#ff853a]/20 text-[#ff853a] text-[10px]">
+                <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-[#ff853a]/20 text-[#ff853a] text-[10px] font-medium leading-none">
                   {sections.length}
                 </span>
               )}

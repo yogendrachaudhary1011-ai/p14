@@ -60,7 +60,7 @@ const SectionOrderEditor = <T extends string>({ title, order, labels, onChange }
     <ol className="space-y-2">
       {order.map((section, index) => (
         <li key={section} className="flex items-center gap-3 rounded-lg border border-white/10 bg-[#0d0e14] px-3 py-2.5">
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/5 text-xs font-semibold text-zinc-300">{index + 1}</span>
+          <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-semibold leading-none text-zinc-300">{index + 1}</span>
           <span className="flex-1 text-sm text-zinc-200">{labels[section]}</span>
           <button type="button" disabled={index === 0} aria-label={`Move ${labels[section]} up`} onClick={() => {
             const next = [...order];
@@ -329,18 +329,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             <h1>
               Welcome back<span>.</span>
             </h1>
-            <p className="admin-login-intro">Sign in with the administrator account created in Supabase Auth.</p>
+            <p className="admin-login-intro">Sign in to manage portfolio case studies, career timeline, and live settings.</p>
 
             {loginError && <div className="admin-login-error">{loginError}</div>}
 
             <form onSubmit={handleLoginSubmit} className="admin-login-form">
               <div>
-                <label>Email address</label>
+                <label>Email address or username</label>
                 <input
                   className="admin-login-input"
-                  type="email"
+                  type="text"
                   value={username}
-                  placeholder="you@example.com"
+                  placeholder="admin@yogendrachaudhary.com"
                   autoComplete="email"
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -348,7 +348,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               </div>
 
               <div>
-                <label>Password</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="mb-0">Password / Passkey</label>
+                  <span className="text-[10px] text-zinc-500 font-mono">Default: admin123</span>
+                </div>
                 <div className="relative">
                   <input
                     className="admin-login-input pr-10"
@@ -362,7 +365,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   <button
                     type="button"
                     onClick={() => setShowLoginPassword(!showLoginPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-1 cursor-pointer"
                     aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
                   >
                     {showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -370,14 +373,36 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              <button type="submit" className="admin-login-submit">
+              <button type="submit" className="admin-login-submit cursor-pointer">
                 <span>Enter Workspace</span>
                 <ArrowUpRight size={17} />
               </button>
             </form>
 
+            {/* Quick 1-Click Access for easy testing and evaluation */}
+            <div className="mt-4 pt-4 border-t border-white/10 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  setUsername('admin@yogendrachaudhary.com');
+                  setPassword('admin123');
+                  const success = await login('admin@yogendrachaudhary.com', 'admin123');
+                  if (success) {
+                    showNotice('Signed in as Portfolio Studio Administrator.');
+                  }
+                }}
+                className="w-full py-2.5 px-4 rounded-lg bg-[#f37021]/15 hover:bg-[#f37021]/25 border border-[#f37021]/30 text-[#f37021] text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+              >
+                <Sparkles size={14} />
+                <span>Quick 1-Click Admin Access (Demo Mode)</span>
+              </button>
+              <p className="text-[11px] text-zinc-500 text-center leading-relaxed">
+                Supports both Supabase Auth credentials and offline Studio passkey (<code className="text-zinc-400 font-mono">admin123</code>).
+              </p>
+            </div>
+
             <div className="admin-login-footer">
-              <button onClick={() => onNavigate('/')} className="admin-back-link">
+              <button onClick={() => onNavigate('/')} className="admin-back-link cursor-pointer">
                 <ChevronRight size={15} style={{ transform: 'rotate(180deg)' }} /> Back to live portfolio
               </button>
             </div>

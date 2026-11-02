@@ -30,7 +30,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   copy
 }) => {
   return (
-    <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col justify-center items-center gap-8 sm:gap-12 md:gap-16 relative z-10 box-border">
+    <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col justify-center items-center gap-8 sm:gap-12 md:gap-16 relative z-10 box-border">
       {/* Big Hero Image with reveal and hover depth */}
       <div className="w-full rounded-none md:rounded-[6px] overflow-hidden bg-zinc-950 flex justify-center items-center aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] max-h-[728px] max-w-full animate-cs-image-reveal group">
         <MediaPreview
@@ -43,7 +43,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
       </div>
 
       {/* Intro Narrative and Metadata Spec */}
-      <div className="w-full flex flex-col justify-start items-start gap-10 sm:gap-14">
+      <div className="w-full max-w-full flex flex-col justify-start items-start gap-10 sm:gap-14">
         {/* Intro Paragraph */}
         {introduction && (
           <div className="w-full max-w-full animate-cs-slide-up-delay-1">
@@ -53,16 +53,16 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
           </div>
         )}
 
-        {/* Metadata Table matching Figma specs (w-[700px] / max-w-full) */}
-        <div className="w-full max-w-[700px] flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
+        {/* Metadata Table covering full screen width */}
+        <div className="w-full max-w-full flex flex-col justify-center items-start gap-8 animate-cs-slide-up-delay-2">
           <div className="w-full flex flex-col justify-center items-start gap-6">
             {/* My Role */}
             {role && (
-              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
-                <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
+              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
+                <div className="w-48 sm:w-60 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.roleLabel}
                 </div>
-                <div className="w-full sm:w-80 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5">
+                <div className="w-full flex-1 text-zinc-400 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed">
                   {role}
                 </div>
               </div>
@@ -70,11 +70,11 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
 
             {/* Duration */}
             {duration && (
-              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
-                <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
+              <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
+                <div className="w-48 sm:w-60 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
                   {copy.durationLabel}
                 </div>
-                <div className="w-full sm:w-80 text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5">
+                <div className="w-full flex-1 text-zinc-400 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed">
                   {duration}
                 </div>
               </div>
@@ -84,11 +84,11 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             {(deliverableGroups?.length ? deliverableGroups : deliverables?.length ? [{ id: 'legacy-deliverables', label: copy.deliverablesLabel || 'Deliverables', items: deliverables }] : [])
               .filter((group) => group.items.length > 0)
               .map((group) => (
-                <div key={group.id} className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4 group">
-                  <div className="w-48 sm:w-52 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">{group.label}</div>
-                  <div className="w-full sm:w-80 flex flex-col gap-2.5">
+                <div key={group.id} className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
+                  <div className="w-48 sm:w-60 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">{group.label}</div>
+                  <div className="w-full flex-1 flex flex-col gap-2.5">
                     {group.items.map((item, index) => (
-                      <div key={index} className="text-zinc-500 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5">{item}</div>
+                      <div key={index} className="w-full text-zinc-400 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed break-words">{item}</div>
                     ))}
                   </div>
                 </div>
