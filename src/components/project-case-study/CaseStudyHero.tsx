@@ -9,6 +9,7 @@ interface CaseStudyHeroProps {
   badgeLabel?: string;
   backButtonText?: string;
   titleSize?: ProjectTheme['titleSize'];
+  heroLayout?: ProjectTheme['heroLayout'];
   copy: Record<string, string>;
 }
 
@@ -19,9 +20,11 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
   badgeLabel,
   backButtonText,
   titleSize = 'normal',
+  heroLayout = 'stacked',
   copy
 }) => {
   const sizeClasses = TITLE_SIZE_CLASSES[titleSize] || TITLE_SIZE_CLASSES.normal;
+  const isSplit = heroLayout === 'split';
 
   return (
     <div className="w-full flex flex-col items-center relative z-10 pt-2 sm:pt-4">
@@ -47,31 +50,58 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
         </div>
       </div>
 
-      {/* Hero Title & Subtitle flex row matching Figma spec */}
-      <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-4 sm:py-6 flex flex-col justify-between items-center box-border">
-        <div className="w-full flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 pb-4 sm:pb-6">
-          {/* Big Project Title */}
-          <div className="w-full lg:max-w-[700px] flex-1 flex flex-col justify-center items-start">
-            <h1
-              className={`font-bold uppercase tracking-tight break-words hyphens-auto w-full animate-cs-slide-up ${sizeClasses}`}
-              style={{ color: 'var(--cs-hero-title, var(--cs-heading, #ffffff))' }}
-            >
-              {title}
-            </h1>
-          </div>
-
-          {/* Right Subtitle */}
-          {subtitle && (
-            <div className="w-full lg:max-w-[560px] pb-1 lg:pb-5 flex flex-col justify-start items-start animate-cs-slide-up-delay-1">
-              <p
-                className="text-base sm:text-lg lg:text-xl font-normal leading-relaxed sm:leading-7 [text-wrap:pretty]"
-                style={{ color: 'var(--cs-hero-subtitle, var(--cs-body, #ffffff))' }}
+      {/* Hero Title & Subtitle container: identical stacked layout for desktop and mobile */}
+      <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-4 sm:py-6 flex flex-col justify-start items-start box-border">
+        {isSplit ? (
+          <div className="w-full flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 pb-4 sm:pb-6">
+            {/* Split Big Project Title */}
+            <div className="w-full lg:max-w-[700px] flex-1 flex flex-col justify-center items-start">
+              <h1
+                className={`font-bold uppercase tracking-tight break-words hyphens-auto w-full animate-cs-slide-up ${sizeClasses}`}
+                style={{ color: 'var(--cs-hero-title, var(--cs-heading, #ffffff))' }}
               >
-                {subtitle}
-              </p>
+                {title}
+              </h1>
             </div>
-          )}
-        </div>
+
+            {/* Split Subtitle */}
+            {subtitle && (
+              <div className="w-full lg:max-w-[560px] pb-1 lg:pb-5 flex flex-col justify-start items-start animate-cs-slide-up-delay-1">
+                <p
+                  className="text-base sm:text-lg lg:text-xl font-normal leading-relaxed sm:leading-7 [text-wrap:pretty]"
+                  style={{ color: 'var(--cs-hero-subtitle, var(--cs-body, #ffffff))' }}
+                >
+                  {subtitle}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Stacked Layout: Same for desktop and mobile */
+          <div className="w-full flex flex-col justify-start items-start gap-4 sm:gap-6 pb-4 sm:pb-6">
+            {/* Big Project Title */}
+            <div className="w-full max-w-full flex flex-col justify-center items-start">
+              <h1
+                className={`font-bold uppercase tracking-tight break-words hyphens-auto w-full animate-cs-slide-up ${sizeClasses}`}
+                style={{ color: 'var(--cs-hero-title, var(--cs-heading, #ffffff))' }}
+              >
+                {title}
+              </h1>
+            </div>
+
+            {/* Subtitle directly below Title - Full sized with increased max width */}
+            {subtitle && (
+              <div className="w-full max-w-full pb-1 flex flex-col justify-start items-start animate-cs-slide-up-delay-1">
+                <p
+                  className="w-full max-w-full text-lg sm:text-xl lg:text-2xl font-normal leading-relaxed sm:leading-8 [text-wrap:pretty]"
+                  style={{ color: 'var(--cs-hero-subtitle, var(--cs-body, #ffffff))' }}
+                >
+                  {subtitle}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Crisp divider matching theme with expand animation */}
         <div
@@ -82,4 +112,3 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
     </div>
   );
 };
-

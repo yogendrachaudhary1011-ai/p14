@@ -452,3 +452,125 @@
   background-color: var(--cs-divider, rgba(255, 255, 255, 0.2)) !important;
 }
 
+/* ==========================================================================
+   Header Dynamic Scroll Sizing & Contrast Protection
+   ========================================================================== */
+#siteHeader.header {
+  height: 72px;
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.3s ease,
+              border-color 0.3s ease,
+              backdrop-filter 0.3s ease,
+              box-shadow 0.3s ease !important;
+  will-change: height;
+}
+
+#siteHeader.header.is-scrolled {
+  height: 52px !important;
+  background-color: rgba(8, 8, 8, 0.9) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+#siteHeader .nav {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  transition: padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#siteHeader.is-scrolled .nav {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+#siteHeader.is-scrolled .nav-links a {
+  font-size: 9.5px !important;
+}
+
+#siteHeader.is-scrolled .nav-availability {
+  padding: 3px 8px !important;
+  font-size: 7.5px !important;
+}
+
+#siteHeader.is-scrolled .nav-talk {
+  min-height: 32px !important;
+  padding: 0 12px !important;
+  font-size: 9.5px !important;
+}
+
+#siteHeader.is-scrolled .mobile-nav {
+  top: 52px !important;
+}
+
+/* Match exact styling of landing page header CTA button (sharp edges, no radius) */
+.nav-talk {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  min-height: 38px !important;
+  padding: 0 13px !important;
+  border-radius: 0px !important;
+  font-family: var(--mono) !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.055em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  background-color: var(--header-contact-btn-bg, var(--lime, #b8ff57));
+  color: var(--header-contact-btn-text, #050505);
+  border: 1px solid var(--header-contact-btn-border, var(--lime, #b8ff57));
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.28s ease,
+              color 0.28s ease,
+              border-color 0.28s ease,
+              min-height 0.3s ease,
+              padding 0.3s ease !important;
+}
+
+.nav-talk span {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px !important;
+  line-height: 1;
+  color: inherit !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-talk:hover,
+.nav-talk:focus-visible {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3) !important;
+  outline: none !important;
+}
+
+.nav-talk:hover span,
+.nav-talk:focus-visible span {
+  transform: translate(2px, -2px) !important;
+}
+
+.mobile-talk {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 0px !important;
+  background-color: var(--header-contact-btn-bg, var(--lime, #b8ff57));
+  color: var(--header-contact-btn-text, #050505);
+  border: 1px solid var(--header-contact-btn-border, var(--lime, #b8ff57));
+  font-weight: 500 !important;
+}
+
+.mobile-talk span {
+  color: inherit !important;
+}
+
+
+

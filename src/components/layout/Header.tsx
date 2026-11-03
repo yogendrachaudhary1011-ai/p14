@@ -21,13 +21,12 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
   const emailUrl = getGmailComposeUrl(settings.email || 'yogendrachaudhary2061@gmail.com');
   const resumeUrl = settings.resumeUrl || '/assets/Yogendra_Chaudhary_CV.pdf';
 
-  const isCaseStudy = currentPath !== '/' && currentPath !== '/projects' && currentPath !== '/about' && currentPath !== '/admin';
-  const resolvedHeaderTheme = isCaseStudy && projectTheme ? resolveProjectTheme(projectTheme) : null;
+  const resolvedHeaderTheme = projectTheme ? resolveProjectTheme(projectTheme) : null;
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 16 || isCaseStudy);
+      setIsScrolled(scrollY > 20);
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
       const pct = maxScroll > 0 ? Math.min(100, Math.max(0, (scrollY / maxScroll) * 100)) : 0;
       setProgressWidth(pct);
@@ -40,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
     };
-  }, [isCaseStudy]);
+  }, []);
 
   const handleNavClick = (e: React.MouseEvent, path: string) => {
     e.preventDefault();
@@ -65,8 +64,9 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
       <header
         className={`header ${isScrolled ? 'is-scrolled' : ''}`}
         id="siteHeader"
-        style={
-          resolvedHeaderTheme
+        style={{
+          height: isScrolled ? '52px' : '72px',
+          ...(resolvedHeaderTheme
             ? {
                 backgroundColor: isScrolled
                   ? resolvedHeaderTheme.headerBg
@@ -74,12 +74,24 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
                   ? `${resolvedHeaderTheme.headerBg}f0`
                   : undefined,
                 borderColor: resolvedHeaderTheme.headerBorderColor,
-                backdropFilter: 'blur(16px)'
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                ['--header-contact-btn-bg' as any]: resolvedHeaderTheme.headerContactBtnBg,
+                ['--header-contact-btn-text' as any]: resolvedHeaderTheme.headerContactBtnText,
+                ['--header-contact-btn-border' as any]: resolvedHeaderTheme.headerContactBtnBorder
               }
-            : undefined
-        }
+            : {}),
+          transition: 'height 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease'
+        }}
       >
-      <nav aria-label="Main navigation" className="shell nav">
+      <nav
+        aria-label="Main navigation"
+        className="shell nav"
+        style={{
+          height: '100%',
+          transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
+      >
 
         <div className="nav-links">
           <a
@@ -179,13 +191,20 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
                 ? {
                     backgroundColor: resolvedHeaderTheme.headerContactBtnBg,
                     color: resolvedHeaderTheme.headerContactBtnText,
-                    borderColor: resolvedHeaderTheme.headerContactBtnBorder
+                    borderColor: resolvedHeaderTheme.headerContactBtnBorder,
+                    ['--header-contact-btn-bg' as any]: resolvedHeaderTheme.headerContactBtnBg,
+                    ['--header-contact-btn-text' as any]: resolvedHeaderTheme.headerContactBtnText,
+                    ['--header-contact-btn-border' as any]: resolvedHeaderTheme.headerContactBtnBorder
                   }
                 : undefined
             }
           >
             {copy.navContact}
-            <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
+            <span
+              aria-hidden="true"
+              className="material-symbols-rounded material-arrow-icon"
+              style={resolvedHeaderTheme ? { color: resolvedHeaderTheme.headerContactBtnText } : undefined}
+            >
               arrow_outward
             </span>
           </a>
@@ -207,14 +226,16 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
         <div
           className={`mobile-nav ${mobileMenuOpen ? 'is-open' : ''}`}
           id="mobileNav"
-          style={
-            resolvedHeaderTheme
+          style={{
+            top: isScrolled ? '52px' : '72px',
+            transition: 'top 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            ...(resolvedHeaderTheme
               ? {
                   backgroundColor: resolvedHeaderTheme.headerBg,
                   borderColor: resolvedHeaderTheme.headerBorderColor
                 }
-              : undefined
-          }
+              : {})
+          }}
         >
           <a
             href="/"
@@ -263,13 +284,20 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
                 ? {
                     backgroundColor: resolvedHeaderTheme.headerContactBtnBg,
                     color: resolvedHeaderTheme.headerContactBtnText,
-                    borderColor: resolvedHeaderTheme.headerContactBtnBorder
+                    borderColor: resolvedHeaderTheme.headerContactBtnBorder,
+                    ['--header-contact-btn-bg' as any]: resolvedHeaderTheme.headerContactBtnBg,
+                    ['--header-contact-btn-text' as any]: resolvedHeaderTheme.headerContactBtnText,
+                    ['--header-contact-btn-border' as any]: resolvedHeaderTheme.headerContactBtnBorder
                   }
                 : undefined
             }
           >
             {copy.navContact}
-            <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
+            <span
+              aria-hidden="true"
+              className="material-symbols-rounded material-arrow-icon"
+              style={resolvedHeaderTheme ? { color: resolvedHeaderTheme.headerContactBtnText } : undefined}
+            >
               arrow_outward
             </span>
           </a>

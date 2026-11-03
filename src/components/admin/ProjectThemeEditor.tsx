@@ -348,6 +348,163 @@ export const ProjectThemeEditor: React.FC<ProjectThemeEditorProps> = ({
     }
   };
 
+  const renderHeaderTalkButtonControls = (contextLabel = "Site Header") => (
+    <div className="sm:col-span-2 p-4 rounded-xl bg-zinc-950/80 border border-white/10 flex flex-col gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono uppercase text-[#b8ff57] font-semibold tracking-wider flex items-center gap-1.5">
+              <span>Header &ldquo;Let&apos;s Talk&rdquo; CTA Button</span>
+            </span>
+            <span className="text-[10px] font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-white/10">
+              {contextLabel}
+            </span>
+          </div>
+          <p className="text-[11px] text-zinc-400 mt-0.5">
+            Configure the top-right CTA button color specifically for this project (sharp rectangular button matching landing page).
+          </p>
+        </div>
+
+        {/* Quick Style Presets for the Let's Talk button */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => {
+              handleFieldChange('headerContactBtnBg', resolved.accentColor);
+              handleFieldChange('headerContactBtnBorder', resolved.accentColor);
+              handleFieldChange('headerContactBtnText', '#050505');
+            }}
+            className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-[10px] font-mono text-white transition-colors cursor-pointer flex items-center gap-1"
+            title="Set button fill to current project accent color"
+          >
+            <Sparkles size={11} className="text-[#ff853a]" />
+            <span>Match Accent</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              handleFieldChange('headerContactBtnBg', '#b8ff57');
+              handleFieldChange('headerContactBtnBorder', '#b8ff57');
+              handleFieldChange('headerContactBtnText', '#050505');
+            }}
+            className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-[10px] font-mono text-[#b8ff57] transition-colors cursor-pointer"
+            title="Reset to default neon lime"
+          >
+            Neon Lime
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              handleFieldChange('headerContactBtnBg', '#18181b');
+              handleFieldChange('headerContactBtnBorder', resolved.accentColor);
+              handleFieldChange('headerContactBtnText', resolved.accentColor);
+            }}
+            className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-[10px] font-mono text-zinc-300 transition-colors cursor-pointer"
+            title="Dark surface with accent outline and text"
+          >
+            Dark Outline
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              handleFieldChange('headerContactBtnBg', '#ffffff');
+              handleFieldChange('headerContactBtnBorder', '#ffffff');
+              handleFieldChange('headerContactBtnText', '#000000');
+            }}
+            className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-[10px] font-mono text-white transition-colors cursor-pointer"
+            title="Monochrome pure white button"
+          >
+            Pure White
+          </button>
+        </div>
+      </div>
+
+      {/* Button Color Fields */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <ColorHexField
+          label="Button Fill (Background)"
+          description="Fill color of 'Let's Talk' header CTA"
+          value={resolved.headerContactBtnBg}
+          fallbackHex="#b8ff57"
+          placeholder="#b8ff57 or #8be28b"
+          allowRgba={true}
+          swatches={[
+            { name: 'Neon Lime', hex: '#b8ff57' },
+            { name: 'Mint Accent', hex: '#8be28b' },
+            { name: 'Warm Amber', hex: '#ff853a' },
+            { name: 'Indigo Accent', hex: '#6366f1' },
+            { name: 'Pure White', hex: '#ffffff' },
+            { name: 'Dark Surface', hex: '#18181b' },
+            { name: 'Transparent', hex: 'transparent' }
+          ]}
+          onChange={(val) => handleFieldChange('headerContactBtnBg', val)}
+        />
+        <ColorHexField
+          label="Button Text & Arrow Color"
+          description="Label text & icon color inside button"
+          value={resolved.headerContactBtnText}
+          fallbackHex="#050505"
+          placeholder="#050505 or #ffffff"
+          allowRgba={true}
+          swatches={[
+            { name: 'Pitch Dark', hex: '#050505' },
+            { name: 'Pure Black', hex: '#000000' },
+            { name: 'Pure White', hex: '#ffffff' },
+            { name: 'Neon Lime', hex: '#b8ff57' },
+            { name: 'Mint Accent', hex: '#8be28b' },
+            { name: 'Warm Amber', hex: '#ff853a' }
+          ]}
+          onChange={(val) => handleFieldChange('headerContactBtnText', val)}
+        />
+        <ColorHexField
+          label="Button Border Stroke"
+          description="Stroke outline of the header button"
+          value={resolved.headerContactBtnBorder}
+          fallbackHex="#b8ff57"
+          placeholder="#b8ff57 or transparent"
+          allowRgba={true}
+          swatches={[
+            { name: 'Neon Lime', hex: '#b8ff57' },
+            { name: 'Match Accent', hex: resolved.accentColor },
+            { name: 'Subtle White', hex: 'rgba(255, 255, 255, 0.20)' },
+            { name: 'Solid White', hex: '#ffffff' },
+            { name: 'Transparent', hex: 'transparent' }
+          ]}
+          onChange={(val) => handleFieldChange('headerContactBtnBorder', val)}
+        />
+      </div>
+
+      {/* Live Preview Strip for this specific button */}
+      <div className="p-3 rounded-lg bg-black/60 border border-white/10 flex items-center justify-between gap-4">
+        <div className="flex flex-col">
+          <span className="text-[11px] font-mono font-medium text-zinc-300">
+            Real-Time Button Result:
+          </span>
+          <span className="text-[10px] text-zinc-500">
+            Rendered with sharp 0px radius matching landing page header CTA
+          </span>
+        </div>
+
+        <div
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.055em] transition-all select-none shadow-sm"
+          style={{
+            backgroundColor: resolved.headerContactBtnBg,
+            color: resolved.headerContactBtnText,
+            borderColor: resolved.headerContactBtnBorder,
+            borderWidth: '1px',
+            borderStyle: 'solid',
+            borderRadius: '0px'
+          }}
+        >
+          <span>LET&apos;S TALK</span>
+          <span className="material-symbols-rounded" style={{ fontSize: '13px', lineHeight: 1, color: 'inherit' }}>
+            arrow_outward
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="w-full flex flex-col gap-6 text-white">
       {/* Top Header Banner with Action Buttons */}
@@ -553,55 +710,8 @@ export const ProjectThemeEditor: React.FC<ProjectThemeEditorProps> = ({
                   onChange={(val) => handleFieldChange('headerAvailabilityBg', val)}
                 />
 
-                {/* Header Contact Button Background */}
-                <ColorHexField
-                  label="Contact Button Fill"
-                  description="Background of 'Get in touch' header button"
-                  value={resolved.headerContactBtnBg}
-                  fallbackHex="transparent"
-                  placeholder="transparent or #8be28b"
-                  allowRgba={true}
-                  swatches={[
-                    { name: 'Transparent', hex: 'transparent' },
-                    { name: 'Mint Accent', hex: '#8be28b' },
-                    { name: 'Warm Amber', hex: '#ff853a' },
-                    { name: 'Dark Surface', hex: '#18181b' }
-                  ]}
-                  onChange={(val) => handleFieldChange('headerContactBtnBg', val)}
-                />
-
-                {/* Header Contact Button Text */}
-                <ColorHexField
-                  label="Contact Button Text"
-                  description="Label inside the header contact button"
-                  value={resolved.headerContactBtnText}
-                  fallbackHex="#ffffff"
-                  placeholder="#ffffff"
-                  swatches={[
-                    { name: 'Pure White', hex: '#ffffff' },
-                    { name: 'Pitch Black', hex: '#000000' },
-                    { name: 'Mint Accent', hex: '#8be28b' }
-                  ]}
-                  onChange={(val) => handleFieldChange('headerContactBtnText', val)}
-                />
-
-                {/* Header Contact Button Border */}
-                <div className="sm:col-span-2">
-                  <ColorHexField
-                    label="Contact Button Border Stroke"
-                    description="Border line of the header contact button"
-                    value={resolved.headerContactBtnBorder}
-                    fallbackHex="rgba(255, 255, 255, 0.16)"
-                    placeholder="rgba(255, 255, 255, 0.16)"
-                    allowRgba={true}
-                    swatches={[
-                      { name: 'Subtle White', hex: 'rgba(255, 255, 255, 0.16)' },
-                      { name: 'Accent Stroke', hex: resolved.accentColor },
-                      { name: 'Transparent', hex: 'transparent' }
-                    ]}
-                    onChange={(val) => handleFieldChange('headerContactBtnBorder', val)}
-                  />
-                </div>
+                {/* Dedicated Header Let's Talk CTA Button Controls */}
+                {renderHeaderTalkButtonControls("Header Tab")}
               </div>
             </div>
           )}
@@ -911,6 +1021,9 @@ export const ProjectThemeEditor: React.FC<ProjectThemeEditorProps> = ({
                   Button Elements
                 </span>
               </div>
+
+              {/* Dedicated Header Let's Talk CTA Button Controls */}
+              {renderHeaderTalkButtonControls("Buttons Tab")}
 
               {/* Primary Button Group */}
               <div className="p-4 rounded-xl bg-zinc-950/60 border border-white/10 flex flex-col gap-3">
@@ -1352,6 +1465,44 @@ export const ProjectThemeEditor: React.FC<ProjectThemeEditorProps> = ({
                   </div>
                 </div>
 
+                {/* Hero Title Layout (Stacked vs Split) */}
+                <div>
+                  <label className="block text-xs font-mono text-zinc-400 mb-2">Hero Title Layout</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {[
+                      {
+                        id: 'stacked',
+                        label: 'Stacked (Desktop & Mobile Same)',
+                        detail: 'Title on top, subtitle below — consistent full-width flow across all viewports'
+                      },
+                      {
+                        id: 'split',
+                        label: 'Split Columns (Desktop Row)',
+                        detail: 'Title on the left, subtitle aligned to bottom right on desktop'
+                      }
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => handleFieldChange('heroLayout', item.id as any)}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                          resolved.heroLayout === item.id
+                            ? 'bg-zinc-800 border-[#ff853a] text-white shadow-xs'
+                            : 'bg-zinc-950/70 border-white/10 text-zinc-400 hover:text-white hover:bg-zinc-900'
+                        }`}
+                      >
+                        <div className="text-xs font-medium flex items-center justify-between">
+                          <span>{item.label}</span>
+                          {resolved.heroLayout === item.id && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#ff853a]" />
+                          )}
+                        </div>
+                        <div className="text-[10px] text-zinc-500 mt-1 leading-normal">{item.detail}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Card Corner Radius */}
                 <div>
                   <label className="block text-xs font-mono text-zinc-400 mb-2">Card Corner Radius</label>
@@ -1558,14 +1709,20 @@ export const ProjectThemeEditor: React.FC<ProjectThemeEditorProps> = ({
                   Available
                 </span>
                 <span
-                  className="text-[9px] font-mono uppercase px-2 py-0.5 rounded border"
+                  className="text-[9px] font-mono font-medium uppercase px-2.5 py-1 tracking-[0.055em] flex items-center gap-1 transition-all"
                   style={{
                     backgroundColor: resolved.headerContactBtnBg,
                     color: resolved.headerContactBtnText,
-                    borderColor: resolved.headerContactBtnBorder
+                    borderColor: resolved.headerContactBtnBorder,
+                    borderWidth: '1px',
+                    borderStyle: 'solid',
+                    borderRadius: '0px'
                   }}
                 >
-                  Contact ↗
+                  <span>LET&apos;S TALK</span>
+                  <span className="material-symbols-rounded" style={{ fontSize: '11px', lineHeight: 1, color: 'inherit' }}>
+                    arrow_outward
+                  </span>
                 </span>
               </div>
             </div>
@@ -1614,17 +1771,31 @@ export const ProjectThemeEditor: React.FC<ProjectThemeEditorProps> = ({
               </div>
 
               {/* Hero Title & Subtitle */}
-              <div className="flex flex-col gap-1.5">
-                <h2
-                  className="font-bold uppercase tracking-tight break-words text-xl sm:text-2xl"
-                  style={{ color: resolved.heroTitleColor }}
-                >
-                  {projectTitle || 'PROJECT TITLE'}
-                </h2>
-                <p className="text-xs leading-relaxed" style={{ color: resolved.heroSubtitleColor }}>
-                  Strategic design system and end-to-end user workflow architecture.
-                </p>
-              </div>
+              {resolved.heroLayout === 'split' ? (
+                <div className="flex items-end justify-between gap-3">
+                  <h2
+                    className="font-bold uppercase tracking-tight break-words text-lg sm:text-xl flex-1"
+                    style={{ color: resolved.heroTitleColor }}
+                  >
+                    {projectTitle || 'PROJECT TITLE'}
+                  </h2>
+                  <p className="text-[11px] leading-relaxed max-w-[170px] text-right" style={{ color: resolved.heroSubtitleColor }}>
+                    Strategic design system & workflow.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  <h2
+                    className="font-bold uppercase tracking-tight break-words text-xl sm:text-2xl"
+                    style={{ color: resolved.heroTitleColor }}
+                  >
+                    {projectTitle || 'PROJECT TITLE'}
+                  </h2>
+                  <p className="text-xs leading-relaxed" style={{ color: resolved.heroSubtitleColor }}>
+                    Strategic design system and end-to-end user workflow architecture.
+                  </p>
+                </div>
+              )}
 
               {/* Metadata Spec Table */}
               <div className="p-3 rounded-lg flex flex-col gap-2" style={{ backgroundColor: `${resolved.cardBackground}80` }}>

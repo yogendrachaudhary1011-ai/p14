@@ -391,6 +391,7 @@ export interface ProjectTheme {
   // Typography & Layout Options
   fontFamily?: 'plus-jakarta' | 'dm-sans' | 'inter' | 'serif' | 'mono';
   titleSize?: 'compact' | 'normal' | 'large' | 'oversized';
+  heroLayout?: 'stacked' | 'split';
   cardRadius?: 'sharp' | 'subtle' | 'rounded' | 'pill';
   backgroundPattern?: 'grid' | 'dots' | 'glow' | 'none';
   showProgressBar?: boolean;

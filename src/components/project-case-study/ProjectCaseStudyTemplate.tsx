@@ -229,6 +229,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
           subtitle={subtitle}
           year={project.year}
           titleSize={resolvedTheme.titleSize}
+          heroLayout={resolvedTheme.heroLayout}
           copy={copy}
         />
 
