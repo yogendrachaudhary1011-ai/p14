@@ -323,6 +323,35 @@ export interface DeliverableGroup {
   items: string[];
 }
 
+export interface ProjectTheme {
+  preset?: 'default' | 'cyberpunk' | 'amber' | 'emerald' | 'minimal' | 'rose' | 'light' | 'custom';
+  backgroundColor?: string;
+
+  // Comprehensive Text Colors
+  textColor?: string;         // Master fallback text color
+  headingColor?: string;      // Hero title, chapter and section headings (H1, H2, H3, H4)
+  bodyTextColor?: string;     // Narrative paragraphs, overview intro, block text
+  mutedTextColor?: string;    // Subtitles, metadata labels, footnotes, image captions
+  cardTitleColor?: string;    // Card titles, decision titles, comparison headers
+  cardTextColor?: string;     // Card descriptions, bullet points, detail text
+  accentTextColor?: string;   // Chapter index numbers (01, 02), tags, active nav indicator
+  navTextColor?: string;      // Table of contents inactive links
+  buttonTextColor?: string;   // Action button text
+
+  // Surfaces, Accents & Dividers
+  accentColor?: string;
+  cardBackground?: string;
+  cardBorderColor?: string;
+  dividerColor?: string;
+
+  // Typography & Layout Options
+  fontFamily?: 'plus-jakarta' | 'dm-sans' | 'inter' | 'serif' | 'mono';
+  titleSize?: 'compact' | 'normal' | 'large' | 'oversized';
+  cardRadius?: 'sharp' | 'subtle' | 'rounded' | 'pill';
+  backgroundPattern?: 'grid' | 'dots' | 'glow' | 'none';
+  showProgressBar?: boolean;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -358,6 +387,9 @@ export interface Project {
 
   // Case Study Sections
   sections?: CaseStudySection[];
+
+  // Theme & Styling Customization
+  theme?: ProjectTheme;
 
   // SEO
   seo?: {

@@ -32,7 +32,10 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
             key={idx}
             className="w-full h-full min-w-0 flex flex-col justify-start items-start gap-4 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 cs-interactive-card"
           >
-            <h4 className="text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 border-b border-white/10 pb-3 w-full break-words">
+            <h4
+              className="text-lg font-normal leading-6 border-b border-white/10 pb-3 w-full break-words"
+              style={{ color: 'var(--cs-card-title, #ffffff)' }}
+            >
               {decision.title}
             </h4>
 
@@ -40,12 +43,18 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
               {details.filter((detail) => detail.label?.trim() || detail.text?.trim()).map((detail, detailIndex) => (
                 <div key={detailIndex} className="flex flex-col gap-1">
                   {detail.label?.trim() && (
-                    <span className="text-white text-xs font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4">
+                    <span
+                      className="text-xs font-normal leading-4"
+                      style={{ color: 'var(--cs-heading, #ffffff)' }}
+                    >
                       {detail.label}
                     </span>
                   )}
                   {detail.text?.trim() && (
-                    <p className="text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words">
+                    <p
+                      className="text-sm sm:text-base font-normal leading-5 break-words"
+                      style={{ color: 'var(--cs-card-text, #a1a1aa)' }}
+                    >
                       {detail.text}
                     </p>
                   )}

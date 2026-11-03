@@ -12,7 +12,7 @@ export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block }) => {
 
   // Decide responsive grid class based on column setting and card count
   let gridColsClass = 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3';
-  if (targetCols === 1 || cardCount === 1) {
+  if ((targetCols as number) === 1 || cardCount === 1) {
     gridColsClass = 'grid-cols-1';
   } else if (targetCols === 2 || cardCount === 2) {
     gridColsClass = 'grid-cols-1 md:grid-cols-2';
@@ -42,13 +42,19 @@ export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block }) => {
               </span>
             )}
             <div className="w-full flex flex-col justify-start items-start">
-              <h4 className="text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 break-words">
+              <h4
+                className="text-lg font-normal leading-6 break-words"
+                style={{ color: 'var(--cs-card-title, #ffffff)' }}
+              >
                 {card.title}
               </h4>
             </div>
             {card.desc && (
               <div className="w-full flex flex-col justify-start items-start">
-                <p className="text-zinc-500 text-xs sm:text-sm font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-4 sm:leading-5 break-words">
+                <p
+                  className="text-xs sm:text-sm font-normal leading-4 sm:leading-5 break-words"
+                  style={{ color: 'var(--cs-card-text, #a1a1aa)' }}
+                >
                   {card.desc}
                 </p>
               </div>
@@ -58,9 +64,10 @@ export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block }) => {
                 {card.items.map((item, itemIdx) => (
                   <div
                     key={itemIdx}
-                    className="flex items-start gap-2 text-zinc-500 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-5 break-words"
+                    className="flex items-start gap-2 text-sm sm:text-base font-normal leading-5 break-words"
+                    style={{ color: 'var(--cs-card-text, #a1a1aa)' }}
                   >
-                    <span className="text-white/40 select-none text-sm leading-none mt-1 shrink-0">•</span>
+                    <span className="opacity-40 select-none text-sm leading-none mt-1 shrink-0">•</span>
                     <span className="min-w-0 flex-1">{item}</span>
                   </div>
                 ))}

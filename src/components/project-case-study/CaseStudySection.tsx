@@ -84,14 +84,25 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
       {/* Section Header matching Figma: text-5xl font-bold uppercase leading-[57.20px] with right indicator */}
       <div className="w-full flex justify-between items-center gap-4">
         <div className="flex-1 flex flex-col justify-start items-start min-w-0">
-          <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-bold font-['Plus_Jakarta_Sans',sans-serif] leading-tight md:leading-[57.20px] uppercase tracking-tight break-words">
+          <h2
+            className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight break-words"
+            style={{ color: 'var(--cs-heading, #ffffff)' }}
+          >
             {section.heading}
           </h2>
         </div>
         {/* Subtle indicator from Figma */}
-        <div className="flex h-6 items-center justify-end opacity-65 hover:opacity-100 transition-opacity select-none font-mono text-xs text-white shrink-0">
-          <div className="w-16 h-px relative bg-[#8be28b]/45 flex items-center justify-center">
-            <span className="text-[10px] text-[#8be28b] bg-black px-1 font-semibold">{formattedIndex}</span>
+        <div className="flex h-6 items-center justify-end opacity-75 hover:opacity-100 transition-opacity select-none font-mono text-xs shrink-0">
+          <div className="w-16 h-px relative flex items-center justify-center" style={{ backgroundColor: 'var(--cs-accent, #8be28b)', opacity: 0.45 }}>
+            <span
+              className="text-[10px] px-1 font-semibold"
+              style={{
+                color: 'var(--cs-accent-text, #8be28b)',
+                backgroundColor: 'var(--cs-bg, #000000)'
+              }}
+            >
+              {formattedIndex}
+            </span>
           </div>
         </div>
       </div>
@@ -99,7 +110,10 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
       {/* Intro narrative if specified matching Figma text-xl leading-6 */}
       {section.intro && (
         <div className="w-full flex flex-col justify-start items-start">
-          <p className="text-white text-lg sm:text-xl font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed sm:leading-7 break-words [text-wrap:pretty]">
+          <p
+            className="text-lg sm:text-xl font-normal leading-relaxed sm:leading-7 break-words [text-wrap:pretty]"
+            style={{ color: 'var(--cs-body, #ffffff)' }}
+          >
             {section.intro}
           </p>
         </div>

@@ -63,7 +63,15 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                   }`}
                 >
                   <span>{item.label}</span>
-                  {isActive && <div className="w-2 h-2 rounded-full bg-[#8be28b] shadow-[0_0_8px_rgba(139,226,139,0.55)]" />}
+                  {isActive && (
+                    <div
+                      className="w-2 h-2 rounded-full shadow-xs"
+                      style={{
+                        backgroundColor: 'var(--cs-accent, #8be28b)',
+                        boxShadow: '0 0 8px var(--cs-accent, #8be28b)'
+                      }}
+                    />
+                  )}
                 </button>
               );
             })}
@@ -88,19 +96,23 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
               <button
                 key={item.id}
                 onClick={() => onSelectSection(item.id)}
-                className={`w-full text-left py-1.5 px-0 relative flex items-center justify-between text-lg font-['Plus_Jakarta_Sans',sans-serif] leading-6 transition-all duration-200 cursor-pointer group ${
+                className={`w-full text-left py-1.5 px-0 relative flex items-center justify-between text-lg leading-6 transition-all duration-200 cursor-pointer group ${
                   isActive
-                    ? 'text-[#8be28b] font-medium translate-x-1'
+                    ? 'font-medium translate-x-1'
                     : 'text-zinc-400 hover:text-white hover:translate-x-0.5'
                 }`}
+                style={{
+                  color: isActive ? 'var(--cs-accent, #8be28b)' : 'var(--cs-muted, #a1a1aa)'
+                }}
               >
                 <span className="relative inline-block min-w-0 truncate pr-2 pb-1">
                   {item.label}
                   <span
                     aria-hidden="true"
-                    className={`absolute left-0 -bottom-px h-0.5 rounded-full bg-[#8be28b] transition-[width,opacity] duration-300 ease-out motion-reduce:transition-none ${
+                    className={`absolute left-0 -bottom-px h-0.5 rounded-full transition-[width,opacity] duration-300 ease-out motion-reduce:transition-none ${
                       isActive ? 'w-full opacity-100' : 'w-0 opacity-0'
                     }`}
+                    style={{ backgroundColor: 'var(--cs-accent, #8be28b)' }}
                   />
                 </span>
                 {!isActive && (

@@ -785,42 +785,102 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                       )}
 
                       {block.type === 'twoColumnComparison' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                          <div>
-                            <label className="text-zinc-400 font-mono block mb-1">First Attempt</label>
-                            <BufferedTextarea
-                              rows={2}
-                              value={block.firstAttempt}
-                              onCommit={(value) => handleUpdateBlock(block.id, { firstAttempt: value })}
-                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-white/10 text-white"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-zinc-400 font-mono block mb-1">Problem</label>
-                            <BufferedTextarea
-                              rows={2}
-                              value={block.problem}
-                              onCommit={(value) => handleUpdateBlock(block.id, { problem: value })}
-                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-white/10 text-white"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-zinc-400 font-mono block mb-1">Fix</label>
-                            <BufferedTextarea
-                              rows={2}
-                              value={block.fix}
-                              onCommit={(value) => handleUpdateBlock(block.id, { fix: value })}
-                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-white/10 text-white"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-zinc-400 font-mono block mb-1">Learning</label>
-                            <BufferedTextarea
-                              rows={2}
-                              value={block.learning}
-                              onCommit={(value) => handleUpdateBlock(block.id, { learning: value })}
-                              className="w-full px-2 py-1 rounded bg-zinc-900 border border-white/10 text-white"
-                            />
+                        <div className="flex flex-col gap-3 text-xs">
+                          <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                            Card Headings &amp; Descriptions (Customize any title or leave blank for defaults)
+                          </span>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="p-3 rounded bg-zinc-900/80 border border-white/5 flex flex-col gap-2">
+                              <div>
+                                <label className="text-zinc-400 font-mono text-[11px] block mb-1">Card 1 Title</label>
+                                <BufferedTextInput
+                                  type="text"
+                                  value={block.firstAttemptTitle || ''}
+                                  onCommit={(value) => handleUpdateBlock(block.id, { firstAttemptTitle: value })}
+                                  placeholder="First Attempt:"
+                                  className="w-full px-2 py-1.5 rounded bg-zinc-950 border border-white/10 text-white font-medium"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-zinc-400 font-mono text-[11px] block mb-1">Content</label>
+                                <BufferedTextarea
+                                  rows={2}
+                                  value={block.firstAttempt}
+                                  onCommit={(value) => handleUpdateBlock(block.id, { firstAttempt: value })}
+                                  className="w-full px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white"
+                                  placeholder="What was tried first..."
+                                />
+                              </div>
+                            </div>
+
+                            <div className="p-3 rounded bg-zinc-900/80 border border-white/5 flex flex-col gap-2">
+                              <div>
+                                <label className="text-zinc-400 font-mono text-[11px] block mb-1">Card 2 Title</label>
+                                <BufferedTextInput
+                                  type="text"
+                                  value={block.problemTitle || ''}
+                                  onCommit={(value) => handleUpdateBlock(block.id, { problemTitle: value })}
+                                  placeholder="Problem"
+                                  className="w-full px-2 py-1.5 rounded bg-zinc-950 border border-white/10 text-white font-medium"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-zinc-400 font-mono text-[11px] block mb-1">Content</label>
+                                <BufferedTextarea
+                                  rows={2}
+                                  value={block.problem}
+                                  onCommit={(value) => handleUpdateBlock(block.id, { problem: value })}
+                                  className="w-full px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white"
+                                  placeholder="What failed or was confusing..."
+                                />
+                              </div>
+                            </div>
+
+                            <div className="p-3 rounded bg-zinc-900/80 border border-white/5 flex flex-col gap-2">
+                              <div>
+                                <label className="text-zinc-400 font-mono text-[11px] block mb-1">Card 3 Title</label>
+                                <BufferedTextInput
+                                  type="text"
+                                  value={block.fixTitle || ''}
+                                  onCommit={(value) => handleUpdateBlock(block.id, { fixTitle: value })}
+                                  placeholder="Fix:"
+                                  className="w-full px-2 py-1.5 rounded bg-zinc-950 border border-white/10 text-white font-medium"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-zinc-400 font-mono text-[11px] block mb-1">Content</label>
+                                <BufferedTextarea
+                                  rows={2}
+                                  value={block.fix}
+                                  onCommit={(value) => handleUpdateBlock(block.id, { fix: value })}
+                                  className="w-full px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white"
+                                  placeholder="How it was resolved..."
+                                />
+                              </div>
+                            </div>
+
+                            <div className="p-3 rounded bg-zinc-900/80 border border-white/5 flex flex-col gap-2">
+                              <div>
+                                <label className="text-zinc-400 font-mono text-[11px] block mb-1">Card 4 Title</label>
+                                <BufferedTextInput
+                                  type="text"
+                                  value={block.learningTitle || ''}
+                                  onCommit={(value) => handleUpdateBlock(block.id, { learningTitle: value })}
+                                  placeholder="Learning:"
+                                  className="w-full px-2 py-1.5 rounded bg-zinc-950 border border-white/10 text-white font-medium"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-zinc-400 font-mono text-[11px] block mb-1">Content</label>
+                                <BufferedTextarea
+                                  rows={2}
+                                  value={block.learning}
+                                  onCommit={(value) => handleUpdateBlock(block.id, { learning: value })}
+                                  className="w-full px-2 py-1 rounded bg-zinc-950 border border-white/10 text-white"
+                                  placeholder="Key architectural takeaway..."
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -1031,6 +1091,22 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
 
                       {block.type === 'productShowcase' && (
                         <div className="flex flex-col gap-3">
+                          <div>
+                            <label className="text-zinc-400 font-mono text-[11px] block mb-1">
+                              Showcase Header / Subtitle (Optional)
+                            </label>
+                            <BufferedTextInput
+                              type="text"
+                              value={block.subtitle || ''}
+                              onCommit={(value) => handleUpdateBlock(block.id, { subtitle: value })}
+                              placeholder="Desktop (1440px) &amp; Mobile (428px) Workflows"
+                              className="w-full px-3 py-1.5 rounded bg-zinc-900 border border-white/10 text-white text-xs"
+                            />
+                            <span className="text-[10px] text-zinc-500 mt-0.5 block">
+                              Displayed above the screen track alongside screen count.
+                            </span>
+                          </div>
+
                           <div className="flex justify-between items-center">
                             <span className="text-xs text-zinc-400">
                               Product Screens ({block.screens?.length || 0})

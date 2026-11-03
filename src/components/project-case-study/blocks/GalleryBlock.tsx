@@ -27,7 +27,12 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({ block }) => {
             />
           </div>
           {img.caption && (
-            <span className="text-zinc-500 text-xs font-mono transition-colors group-hover:text-zinc-400">{img.caption}</span>
+            <span
+              className="text-xs font-mono transition-colors cs-muted"
+              style={{ color: 'var(--cs-muted, #71717a)' }}
+            >
+              {img.caption}
+            </span>
           )}
         </div>
       ))}

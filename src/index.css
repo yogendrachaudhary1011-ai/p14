@@ -350,3 +350,105 @@
     animation-duration: 1ms;
   }
 }
+
+/* ==========================================================================
+   Dynamic Case Study Theming System
+   Allows individual project detail pages to have custom palettes & text styles
+   ========================================================================== */
+.dynamic-case-themed {
+  background-color: var(--cs-bg, #000000) !important;
+  color: var(--cs-body, #ffffff) !important;
+}
+
+/* Headings: H1, H2, H3, H4 */
+.dynamic-case-themed h1,
+.dynamic-case-themed h2,
+.dynamic-case-themed h3,
+.dynamic-case-themed .cs-heading,
+.dynamic-case-themed [class*="text-5xl"][class*="font-bold"],
+.dynamic-case-themed [class*="text-4xl"][class*="font-bold"],
+.dynamic-case-themed [class*="text-3xl"][class*="font-bold"] {
+  color: var(--cs-heading, #ffffff) !important;
+}
+
+/* Body & Narrative Paragraphs */
+.dynamic-case-themed p:not(.cs-card-text):not(.cs-meta-text),
+.dynamic-case-themed .cs-body {
+  color: var(--cs-body, #ffffff) !important;
+}
+
+/* Metadata Labels & Headers (e.g. "My Role:", "Duration:", "Deliverables") */
+.dynamic-case-themed .cs-meta-label,
+.dynamic-case-themed [class*="w-48"][class*="text-white"],
+.dynamic-case-themed [class*="w-60"][class*="text-white"] {
+  color: var(--cs-heading, #ffffff) !important;
+}
+
+/* Metadata Values & Descriptions (e.g. role value, duration value, deliverable items) */
+.dynamic-case-themed .cs-muted,
+.dynamic-case-themed .cs-meta-value,
+.dynamic-case-themed [class*="text-zinc-400"]:not(.admin-panel *),
+.dynamic-case-themed [class*="text-zinc-500"]:not(.admin-panel *),
+.dynamic-case-themed [class*="text-zinc-600"]:not(.admin-panel *),
+.dynamic-case-themed [class*="text-neutral-400"]:not(.admin-panel *),
+.dynamic-case-themed [class*="text-neutral-500"]:not(.admin-panel *) {
+  color: var(--cs-muted, #a1a1aa) !important;
+}
+
+/* Cards & Surfaces */
+.dynamic-case-themed .cs-interactive-card,
+.dynamic-case-themed div[class*="bg-zinc-900"]:not(.admin-panel *),
+.dynamic-case-themed div[class*="bg-zinc-950"]:not(.admin-panel *),
+.dynamic-case-themed div[class*="bg-neutral-900"]:not(.admin-panel *) {
+  background-color: var(--cs-card-bg, #18181b) !important;
+  border-color: var(--cs-card-border, rgba(255, 255, 255, 0.08)) !important;
+  border-radius: var(--cs-card-radius, 6px) !important;
+}
+
+.dynamic-case-themed .cs-interactive-card:hover {
+  filter: brightness(1.12);
+  border-color: var(--cs-accent, #8be28b) !important;
+}
+
+/* Card Titles */
+.dynamic-case-themed .cs-interactive-card h4,
+.dynamic-case-themed .cs-interactive-card [class*="text-lg"][class*="font-normal"],
+.dynamic-case-themed .cs-card-title {
+  color: var(--cs-card-title, var(--cs-heading, #ffffff)) !important;
+}
+
+/* Card Content / Descriptions / Bullets */
+.dynamic-case-themed .cs-interactive-card p,
+.dynamic-case-themed .cs-interactive-card .cs-card-text,
+.dynamic-case-themed .cs-interactive-card div[class*="text-zinc-500"],
+.dynamic-case-themed .cs-interactive-card div[class*="text-zinc-400"] {
+  color: var(--cs-card-text, var(--cs-muted, #a1a1aa)) !important;
+}
+
+/* Accent Numbers, Badges & Highlights */
+.dynamic-case-themed [class*="text-[#8be28b]"]:not(.admin-panel *),
+.dynamic-case-themed .cs-accent-text {
+  color: var(--cs-accent-text, var(--cs-accent, #8be28b)) !important;
+}
+
+.dynamic-case-themed [class*="bg-[#8be28b]"]:not(.admin-panel *),
+.dynamic-case-themed .cs-accent-bg {
+  background-color: var(--cs-accent, #8be28b) !important;
+}
+
+/* Sticky Navigation Table of Contents */
+.dynamic-case-themed nav[aria-label="Case Study Table of Contents"] button {
+  color: var(--cs-nav-text, var(--cs-muted, #a1a1aa)) !important;
+}
+
+.dynamic-case-themed nav[aria-label="Case Study Table of Contents"] button:hover {
+  color: var(--cs-heading, #ffffff) !important;
+}
+
+/* Dividers */
+.dynamic-case-themed .cs-divider,
+.dynamic-case-themed div[class*="h-0.5"][class*="animate-cs-expand-line"],
+.dynamic-case-themed div[class*="h-0.5"][class*="bg-white"] {
+  background-color: var(--cs-divider, rgba(255, 255, 255, 0.2)) !important;
+}
+

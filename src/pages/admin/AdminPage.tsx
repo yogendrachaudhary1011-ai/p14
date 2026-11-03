@@ -30,6 +30,7 @@ import {
   LayoutDashboard,
   LockKeyhole,
   Menu,
+  Palette,
   Plus,
   RefreshCw,
   Upload,
@@ -41,6 +42,7 @@ import {
   Trash2,
   X
 } from 'lucide-react';
+import { TabType } from '../../components/admin/ProjectEditor';
 import './admin.css';
 
 interface AdminPageProps {
@@ -147,6 +149,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   // Project edit state
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [projectEditorTab, setProjectEditorTab] = useState<TabType>('basic');
 
   // Experience edit state
   const [editingExp, setEditingExp] = useState<ExperienceItem | null>(null);
@@ -879,6 +882,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 initialProject={editingProject}
                 existingProjects={projects}
                 mediaLibrary={media}
+                initialTab={projectEditorTab}
                 onUploadMedia={async (file) => {
                   if (!isAdmin) throw new Error('Sign in to Supabase Auth before uploading project media.');
                   const result = await uploadMediaToSupabase(file);
@@ -1184,6 +1188,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                                   <button
                                     onClick={() => {
                                       setEditingProject(proj);
+                                      setProjectEditorTab('theme');
+                                      setIsCreatingProject(false);
+                                    }}
+                                    className="p-1.5 rounded bg-[#181923] hover:bg-[#202230] border border-white/10 text-zinc-300 hover:text-[#8be28b] cursor-pointer"
+                                    title="Customize Theme & Styling"
+                                  >
+                                    <Palette size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEditingProject(proj);
+                                      setProjectEditorTab('basic');
                                       setIsCreatingProject(false);
                                     }}
                                     className="px-2.5 py-1 rounded bg-[#f37021]/15 hover:bg-[#f37021]/25 border border-[#f37021]/30 text-[#f37021] text-xs font-semibold cursor-pointer"

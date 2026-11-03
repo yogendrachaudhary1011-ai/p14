@@ -7,7 +7,7 @@ export function stackProductSectionImages(sections: CaseStudySection[]): CaseStu
 
     return {
       ...section,
-      blocks: (section.blocks || []).flatMap((block) => {
+      blocks: (section.blocks || []).flatMap((block): CaseStudyBlock[] => {
         if (block.type !== 'productShowcase') return [block];
 
         return block.screens

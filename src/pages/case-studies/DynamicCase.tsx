@@ -13,7 +13,11 @@ export const DynamicCase: React.FC<DynamicCaseProps> = ({ project, onNavigate, i
     <div
       className="page-view route-entered"
       data-page="dynamic-case"
-      style={{ backgroundColor: '#000000', minHeight: '100vh', width: '100%' }}
+      style={{
+        backgroundColor: project.theme?.backgroundColor || '#000000',
+        minHeight: '100vh',
+        width: '100%'
+      }}
     >
       <ProjectCaseStudyTemplate
         project={project}

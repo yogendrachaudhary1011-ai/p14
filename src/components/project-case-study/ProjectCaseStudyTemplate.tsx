@@ -7,6 +7,7 @@ import { SectionNavigation } from './SectionNavigation';
 import { CaseStudySection } from './CaseStudySection';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { initialSiteSettings } from '../../data/initialData';
+import { resolveProjectTheme, FONT_MAP, CARD_RADIUS_MAP } from '../../utils/themePresets';
 
 interface ProjectCaseStudyTemplateProps {
   project: Project;
@@ -117,15 +118,49 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
     );
   }
 
+  const resolvedTheme = useMemo(() => resolveProjectTheme(project.theme), [project.theme]);
+
+  const themeStyles = useMemo(() => {
+    return {
+      backgroundColor: resolvedTheme.backgroundColor,
+      color: resolvedTheme.bodyTextColor,
+      '--cs-bg': resolvedTheme.backgroundColor,
+      '--cs-heading': resolvedTheme.headingColor,
+      '--cs-body': resolvedTheme.bodyTextColor,
+      '--cs-muted': resolvedTheme.mutedTextColor,
+      '--cs-card-title': resolvedTheme.cardTitleColor,
+      '--cs-card-text': resolvedTheme.cardTextColor,
+      '--cs-accent-text': resolvedTheme.accentTextColor,
+      '--cs-nav-text': resolvedTheme.navTextColor,
+      '--cs-btn-text': resolvedTheme.buttonTextColor,
+      '--cs-text': resolvedTheme.bodyTextColor,
+      '--cs-accent': resolvedTheme.accentColor,
+      '--cs-card-bg': resolvedTheme.cardBackground,
+      '--cs-card-border': resolvedTheme.cardBorderColor,
+      '--cs-divider': resolvedTheme.dividerColor,
+      '--cs-card-radius': CARD_RADIUS_MAP[resolvedTheme.cardRadius],
+      fontFamily: FONT_MAP[resolvedTheme.fontFamily]
+    } as React.CSSProperties;
+  }, [resolvedTheme]);
+
   return (
-    <div className="w-full bg-black text-white font-sans flex flex-col items-center selection:bg-[#8be28b] selection:text-black">
+    <div
+      className="w-full flex flex-col items-center dynamic-case-themed"
+      style={themeStyles}
+    >
       {/* Sleek Top Reading Scroll Progress Bar */}
-      <div className="fixed top-0 left-0 w-full h-[2.5px] z-50 pointer-events-none bg-white/5">
-        <div
-          className="h-full bg-gradient-to-r from-transparent via-[#8be28b] to-transparent transition-all duration-150 ease-out shadow-[0_0_10px_rgba(139,226,139,0.65)]"
-          style={{ width: `${scrollProgress}%` }}
-        />
-      </div>
+      {resolvedTheme.showProgressBar && (
+        <div className="fixed top-0 left-0 w-full h-[2.5px] z-50 pointer-events-none bg-white/5">
+          <div
+            className="h-full transition-all duration-150 ease-out"
+            style={{
+              width: `${scrollProgress}%`,
+              backgroundColor: resolvedTheme.accentColor,
+              boxShadow: `0 0 10px ${resolvedTheme.accentColor}80`
+            }}
+          />
+        </div>
+      )}
 
       {/* Admin preview banner */}
       {isAdminPreview && (
@@ -135,30 +170,53 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
       )}
 
       {/* Main Container */}
-      <div className="w-full max-w-full mx-auto relative bg-black flex flex-col justify-start items-center box-border animate-cs-fade-in">
-        {/* Decorative Grid Lines matching Figma spec */}
-        <div className="w-full h-[735.20px] left-0 top-[1px] absolute opacity-5 pointer-events-none select-none overflow-hidden">
-          <div className="w-px h-[735.20px] left-[7%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
-          <div className="w-px h-[735.20px] left-[21%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
-          <div className="w-px h-[735.20px] left-[35%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
-          <div className="w-px h-[735.20px] left-[50%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
-          <div className="w-px h-[735.20px] left-[64%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
-          <div className="w-px h-[735.20px] left-[78%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
-          <div className="w-px h-[735.20px] left-[92%] top-0 absolute bg-gradient-to-b from-white/0 via-white via 23% to-black/0" />
-          <div className="w-full h-px left-0 top-[52px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
-          <div className="w-full h-px left-0 top-[157px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
-          <div className="w-full h-px left-0 top-[262px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
-          <div className="w-full h-px left-0 top-[367px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
-          <div className="w-full h-px left-0 top-[472px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
-          <div className="w-full h-px left-0 top-[577px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
-          <div className="w-full h-px left-0 top-[682px] absolute bg-gradient-to-r from-white/0 via-white via 23% to-black/0" />
-        </div>
+      <div
+        className="w-full max-w-full mx-auto relative flex flex-col justify-start items-center box-border animate-cs-fade-in"
+        style={{ backgroundColor: resolvedTheme.backgroundColor }}
+      >
+        {/* Atmospheric Background Patterns */}
+        {resolvedTheme.backgroundPattern === 'grid' && (
+          <div className="w-full h-[735.20px] left-0 top-[1px] absolute opacity-10 pointer-events-none select-none overflow-hidden">
+            <div className="w-px h-[735.20px] left-[7%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
+            <div className="w-px h-[735.20px] left-[21%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
+            <div className="w-px h-[735.20px] left-[35%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
+            <div className="w-px h-[735.20px] left-[50%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
+            <div className="w-px h-[735.20px] left-[64%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
+            <div className="w-px h-[735.20px] left-[78%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
+            <div className="w-px h-[735.20px] left-[92%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
+            <div className="w-full h-px left-0 top-[52px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
+            <div className="w-full h-px left-0 top-[157px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
+            <div className="w-full h-px left-0 top-[262px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
+            <div className="w-full h-px left-0 top-[367px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
+            <div className="w-full h-px left-0 top-[472px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
+            <div className="w-full h-px left-0 top-[577px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
+            <div className="w-full h-px left-0 top-[682px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
+          </div>
+        )}
+
+        {resolvedTheme.backgroundPattern === 'dots' && (
+          <div
+            className="w-full h-[735.20px] left-0 top-0 absolute opacity-15 pointer-events-none select-none"
+            style={{
+              backgroundImage: `radial-gradient(${resolvedTheme.accentColor} 1px, transparent 1px)`,
+              backgroundSize: '24px 24px'
+            }}
+          />
+        )}
+
+        {resolvedTheme.backgroundPattern === 'glow' && (
+          <div
+            className="w-[600px] h-[600px] max-w-full rounded-full blur-[140px] opacity-20 pointer-events-none select-none absolute -top-40 right-10"
+            style={{ backgroundColor: resolvedTheme.accentColor }}
+          />
+        )}
 
         {/* Hero Section */}
         <CaseStudyHero
           title={project.title}
           subtitle={subtitle}
           year={project.year}
+          titleSize={resolvedTheme.titleSize}
           copy={copy}
         />
 

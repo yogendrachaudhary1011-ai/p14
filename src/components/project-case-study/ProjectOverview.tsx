@@ -47,7 +47,10 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
         {/* Intro Paragraph */}
         {introduction && (
           <div className="w-full max-w-full animate-cs-slide-up-delay-1">
-            <p className="w-full text-white text-lg sm:text-xl font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed sm:leading-7 break-words [text-wrap:pretty]">
+            <p
+              className="w-full text-lg sm:text-xl font-normal leading-relaxed sm:leading-7 break-words [text-wrap:pretty]"
+              style={{ color: 'var(--cs-body, #ffffff)' }}
+            >
               {introduction}
             </p>
           </div>
@@ -59,10 +62,16 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             {/* My Role */}
             {role && (
               <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
-                <div className="w-48 sm:w-60 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
+                <div
+                  className="w-48 sm:w-60 shrink-0 text-lg font-normal leading-6 transition-colors"
+                  style={{ color: 'var(--cs-heading, #ffffff)' }}
+                >
                   {copy.roleLabel}
                 </div>
-                <div className="w-full flex-1 text-zinc-400 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed">
+                <div
+                  className="w-full flex-1 text-base font-normal leading-relaxed"
+                  style={{ color: 'var(--cs-muted, #a1a1aa)' }}
+                >
                   {role}
                 </div>
               </div>
@@ -71,10 +80,16 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             {/* Duration */}
             {duration && (
               <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
-                <div className="w-48 sm:w-60 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 group-hover:text-zinc-200 transition-colors">
+                <div
+                  className="w-48 sm:w-60 shrink-0 text-lg font-normal leading-6 transition-colors"
+                  style={{ color: 'var(--cs-heading, #ffffff)' }}
+                >
                   {copy.durationLabel}
                 </div>
-                <div className="w-full flex-1 text-zinc-400 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed">
+                <div
+                  className="w-full flex-1 text-base font-normal leading-relaxed"
+                  style={{ color: 'var(--cs-muted, #a1a1aa)' }}
+                >
                   {duration}
                 </div>
               </div>
@@ -85,10 +100,21 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               .filter((group) => group.items.length > 0)
               .map((group) => (
                 <div key={group.id} className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
-                  <div className="w-48 sm:w-60 shrink-0 text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6">{group.label}</div>
+                  <div
+                    className="w-48 sm:w-60 shrink-0 text-lg font-normal leading-6"
+                    style={{ color: 'var(--cs-heading, #ffffff)' }}
+                  >
+                    {group.label}
+                  </div>
                   <div className="w-full flex-1 flex flex-col gap-2.5">
                     {group.items.map((item, index) => (
-                      <div key={index} className="w-full text-zinc-400 text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed break-words">{item}</div>
+                      <div
+                        key={index}
+                        className="w-full text-base font-normal leading-relaxed break-words"
+                        style={{ color: 'var(--cs-muted, #a1a1aa)' }}
+                      >
+                        {item}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -103,7 +129,11 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 href={figmaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-4 rounded-sm border-[1.60px] border-white text-white text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group"
+                className="inline-flex items-center justify-center px-6 py-4 rounded-sm border-[1.60px] text-lg font-normal leading-6 hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group"
+                style={{
+                  borderColor: 'var(--cs-divider, rgba(255, 255, 255, 0.5))',
+                  color: 'var(--cs-heading, #ffffff)'
+                }}
               >
                 <span>{figmaButtonText || copy.figmaButton}</span>
                 <span className="material-symbols-rounded text-sm ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">open_in_new</span>
@@ -115,7 +145,11 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 href={externalProjectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-4 rounded-sm bg-white text-black text-lg font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-6 hover:bg-zinc-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group shadow-md hover:shadow-white/10"
+                className="inline-flex items-center justify-center px-6 py-4 rounded-sm text-lg font-normal leading-6 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group shadow-md"
+                style={{
+                  backgroundColor: 'var(--cs-accent, #ffffff)',
+                  color: 'var(--cs-btn-text, #000000)'
+                }}
               >
                 <span>{copy.liveProjectButton}</span>
                 <span className="material-symbols-rounded text-sm ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">arrow_outward</span>

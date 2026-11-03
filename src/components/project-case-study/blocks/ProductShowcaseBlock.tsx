@@ -28,7 +28,10 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
     <div className="w-full flex flex-col gap-4 my-2">
       {/* Scroll navigation arrows for desktop */}
       <div className="flex justify-between items-center px-1">
-        <span className="text-zinc-500 text-xs font-mono tracking-wider uppercase">
+        <span
+          className="text-xs font-mono tracking-wider uppercase cs-muted"
+          style={{ color: 'var(--cs-muted, #71717a)' }}
+        >
           {block.subtitle || 'Desktop (1440px) & Mobile (428px) Workflows'} · {screens.length} Screens
         </span>
         <div className="flex items-center gap-2">
@@ -62,11 +65,32 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
               className={`shrink-0 ${
                 isMobile ? 'w-[76vw] sm:w-[300px] md:w-[320px]' : 'w-[84vw] sm:w-[380px] md:w-[440px]'
               } max-w-[440px] h-[480px] sm:h-[540px] md:h-[580px] rounded-[10px] overflow-hidden border border-white/10 bg-zinc-950 flex flex-col shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-[0_24px_48px_rgba(0,0,0,0.85)]`}
+              style={{
+                backgroundColor: 'var(--cs-card-bg, #09090b)',
+                borderColor: 'var(--cs-card-border, rgba(255, 255, 255, 0.1))'
+              }}
             >
               {/* Device Frame Top Bar */}
-              <div className="px-4 py-2.5 bg-zinc-900/90 border-b border-white/10 flex items-center justify-between text-xs text-zinc-400 font-mono select-none">
-                <span className="truncate pr-2 font-medium text-white">{screen.label || `Screen #${idx + 1}`}</span>
-                <span className="shrink-0 text-[10px] px-2 py-0.5 rounded bg-[#8be28b]/10 text-[#8be28b] border border-[#8be28b]/20">
+              <div
+                className="px-4 py-2.5 bg-zinc-900/90 border-b border-white/10 flex items-center justify-between text-xs font-mono select-none"
+                style={{
+                  borderBottomColor: 'var(--cs-card-border, rgba(255, 255, 255, 0.1))'
+                }}
+              >
+                <span
+                  className="truncate pr-2 font-medium"
+                  style={{ color: 'var(--cs-heading, #ffffff)' }}
+                >
+                  {screen.label || `Screen #${idx + 1}`}
+                </span>
+                <span
+                  className="shrink-0 text-[10px] px-2 py-0.5 rounded font-mono font-medium border"
+                  style={{
+                    color: 'var(--cs-accent-text, #8be28b)',
+                    backgroundColor: 'color-mix(in srgb, var(--cs-accent, #8be28b) 12%, transparent)',
+                    borderColor: 'color-mix(in srgb, var(--cs-accent, #8be28b) 25%, transparent)'
+                  }}
+                >
                   {isMobile ? '428 px' : '1440 px'}
                 </span>
               </div>
