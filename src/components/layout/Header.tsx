@@ -47,6 +47,10 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
     onNavigate(path);
   };
 
+  const isLandingPage = currentPath === '/' || currentPath === '' || currentPath === '/index.html';
+  const shouldShrink = isScrolled && !isLandingPage;
+  const currentHeight = shouldShrink ? '52px' : '72px';
+
   return (
     <>
       <div
@@ -65,7 +69,8 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
         className={`header ${isScrolled ? 'is-scrolled' : ''}`}
         id="siteHeader"
         style={{
-          height: isScrolled ? '52px' : '72px',
+          height: currentHeight,
+          minHeight: isLandingPage ? '72px' : undefined,
           ...(resolvedHeaderTheme
             ? {
                 backgroundColor: isScrolled
@@ -89,6 +94,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
         className="shell nav"
         style={{
           height: '100%',
+          minHeight: isLandingPage ? '72px' : undefined,
           transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
       >
@@ -227,7 +233,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
           className={`mobile-nav ${mobileMenuOpen ? 'is-open' : ''}`}
           id="mobileNav"
           style={{
-            top: isScrolled ? '52px' : '72px',
+            top: currentHeight,
             transition: 'top 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             ...(resolvedHeaderTheme
               ? {
