@@ -131,7 +131,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="portfolio-app">
-      {!isAdminView && <Header currentPath={normalized} onNavigate={navigate} />}
+      {!isAdminView && <Header currentPath={normalized} onNavigate={navigate} projectTheme={matchedProject?.theme} />}
       <div id="siteContent">
         {renderRoute()}
       </div>

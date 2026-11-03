@@ -58,17 +58,20 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                   }}
                   className={`w-full text-left py-2 px-3 rounded flex items-center justify-between text-sm transition-all cursor-pointer ${
                     isActive
-                      ? 'text-white font-semibold bg-white/10'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                      ? 'font-semibold bg-white/10'
+                      : 'hover:bg-white/5'
                   }`}
+                  style={{
+                    color: isActive ? 'var(--cs-nav-active-text, var(--cs-accent-text, #8be28b))' : 'var(--cs-nav-text, var(--cs-muted, #a1a1aa))'
+                  }}
                 >
                   <span>{item.label}</span>
                   {isActive && (
                     <div
                       className="w-2 h-2 rounded-full shadow-xs"
                       style={{
-                        backgroundColor: 'var(--cs-accent, #8be28b)',
-                        boxShadow: '0 0 8px var(--cs-accent, #8be28b)'
+                        backgroundColor: 'var(--cs-nav-active-indicator, var(--cs-accent, #8be28b))',
+                        boxShadow: '0 0 8px var(--cs-nav-active-indicator, var(--cs-accent, #8be28b))'
                       }}
                     />
                   )}
@@ -99,10 +102,10 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                 className={`w-full text-left py-1.5 px-0 relative flex items-center justify-between text-lg leading-6 transition-all duration-200 cursor-pointer group ${
                   isActive
                     ? 'font-medium translate-x-1'
-                    : 'text-zinc-400 hover:text-white hover:translate-x-0.5'
+                    : 'hover:translate-x-0.5'
                 }`}
                 style={{
-                  color: isActive ? 'var(--cs-accent, #8be28b)' : 'var(--cs-muted, #a1a1aa)'
+                  color: isActive ? 'var(--cs-nav-active-text, var(--cs-accent-text, #8be28b))' : 'var(--cs-nav-text, var(--cs-muted, #a1a1aa))'
                 }}
               >
                 <span className="relative inline-block min-w-0 truncate pr-2 pb-1">
@@ -112,7 +115,7 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
                     className={`absolute left-0 -bottom-px h-0.5 rounded-full transition-[width,opacity] duration-300 ease-out motion-reduce:transition-none ${
                       isActive ? 'w-full opacity-100' : 'w-0 opacity-0'
                     }`}
-                    style={{ backgroundColor: 'var(--cs-accent, #8be28b)' }}
+                    style={{ backgroundColor: 'var(--cs-nav-active-indicator, var(--cs-accent, #8be28b))' }}
                   />
                 </span>
                 {!isActive && (

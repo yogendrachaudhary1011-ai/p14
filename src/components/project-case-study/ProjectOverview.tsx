@@ -64,13 +64,13 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
                 <div
                   className="w-48 sm:w-60 shrink-0 text-lg font-normal leading-6 transition-colors"
-                  style={{ color: 'var(--cs-heading, #ffffff)' }}
+                  style={{ color: 'var(--cs-meta-label, var(--cs-heading, #ffffff))' }}
                 >
                   {copy.roleLabel}
                 </div>
                 <div
                   className="w-full flex-1 text-base font-normal leading-relaxed"
-                  style={{ color: 'var(--cs-muted, #a1a1aa)' }}
+                  style={{ color: 'var(--cs-meta-val, var(--cs-muted, #a1a1aa))' }}
                 >
                   {role}
                 </div>
@@ -82,13 +82,13 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
                 <div
                   className="w-48 sm:w-60 shrink-0 text-lg font-normal leading-6 transition-colors"
-                  style={{ color: 'var(--cs-heading, #ffffff)' }}
+                  style={{ color: 'var(--cs-meta-label, var(--cs-heading, #ffffff))' }}
                 >
                   {copy.durationLabel}
                 </div>
                 <div
                   className="w-full flex-1 text-base font-normal leading-relaxed"
-                  style={{ color: 'var(--cs-muted, #a1a1aa)' }}
+                  style={{ color: 'var(--cs-meta-val, var(--cs-muted, #a1a1aa))' }}
                 >
                   {duration}
                 </div>
@@ -102,7 +102,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 <div key={group.id} className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
                   <div
                     className="w-48 sm:w-60 shrink-0 text-lg font-normal leading-6"
-                    style={{ color: 'var(--cs-heading, #ffffff)' }}
+                    style={{ color: 'var(--cs-meta-label, var(--cs-heading, #ffffff))' }}
                   >
                     {group.label}
                   </div>
@@ -111,7 +111,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                       <div
                         key={index}
                         className="w-full text-base font-normal leading-relaxed break-words"
-                        style={{ color: 'var(--cs-muted, #a1a1aa)' }}
+                        style={{ color: 'var(--cs-meta-val, var(--cs-muted, #a1a1aa))' }}
                       >
                         {item}
                       </div>
@@ -129,10 +129,12 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 href={figmaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-4 rounded-sm border-[1.60px] text-lg font-normal leading-6 hover:bg-white hover:text-black hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group"
+                className="inline-flex items-center justify-center px-6 py-4 border-[1.60px] text-lg font-normal leading-6 hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group"
                 style={{
-                  borderColor: 'var(--cs-divider, rgba(255, 255, 255, 0.5))',
-                  color: 'var(--cs-heading, #ffffff)'
+                  backgroundColor: 'var(--cs-btn-secondary-bg, transparent)',
+                  borderColor: 'var(--cs-btn-secondary-border, var(--cs-divider, rgba(255, 255, 255, 0.4)))',
+                  color: 'var(--cs-btn-secondary-text, var(--cs-heading, #ffffff))',
+                  borderRadius: 'var(--cs-card-radius, 4px)'
                 }}
               >
                 <span>{figmaButtonText || copy.figmaButton}</span>
@@ -145,10 +147,12 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 href={externalProjectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-4 rounded-sm text-lg font-normal leading-6 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group shadow-md"
+                className="inline-flex items-center justify-center px-6 py-4 border text-lg font-normal leading-6 hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group shadow-md"
                 style={{
-                  backgroundColor: 'var(--cs-accent, #ffffff)',
-                  color: 'var(--cs-btn-text, #000000)'
+                  backgroundColor: 'var(--cs-btn-primary-bg, var(--cs-accent, #ffffff))',
+                  color: 'var(--cs-btn-primary-text, var(--cs-btn-text, #000000))',
+                  borderColor: 'var(--cs-btn-primary-border, transparent)',
+                  borderRadius: 'var(--cs-card-radius, 4px)'
                 }}
               >
                 <span>{copy.liveProjectButton}</span>
@@ -159,8 +163,11 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
         </div>
       </div>
 
-      {/* Thin white divider before content sections matching Figma with expand animation */}
-      <div className="w-full h-0.5 bg-white my-4 animate-cs-expand-line" />
+      {/* Thin divider before content sections matching theme */}
+      <div
+        className="w-full h-0.5 my-4 animate-cs-expand-line"
+        style={{ backgroundColor: 'var(--cs-divider, rgba(255, 255, 255, 0.2))' }}
+      />
     </div>
   );
 };

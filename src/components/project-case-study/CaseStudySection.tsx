@@ -86,7 +86,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
         <div className="flex-1 flex flex-col justify-start items-start min-w-0">
           <h2
             className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight break-words"
-            style={{ color: 'var(--cs-heading, #ffffff)' }}
+            style={{ color: 'var(--cs-section-heading, var(--cs-heading, #ffffff))' }}
           >
             {section.heading}
           </h2>
@@ -95,10 +95,10 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
         <div className="flex h-6 items-center justify-end opacity-75 hover:opacity-100 transition-opacity select-none font-mono text-xs shrink-0">
           <div className="w-16 h-px relative flex items-center justify-center" style={{ backgroundColor: 'var(--cs-accent, #8be28b)', opacity: 0.45 }}>
             <span
-              className="text-[10px] px-1 font-semibold"
+              className="text-[10px] px-1 font-semibold rounded"
               style={{
-                color: 'var(--cs-accent-text, #8be28b)',
-                backgroundColor: 'var(--cs-bg, #000000)'
+                color: 'var(--cs-chapter-num, var(--cs-accent-text, #8be28b))',
+                backgroundColor: 'var(--cs-chapter-bg, var(--cs-bg, #000000))'
               }}
             >
               {formattedIndex}
@@ -124,11 +124,12 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
         {visibleBlocks.map((block) => renderBlock(block))}
       </div>
 
-      {/* Crisp white divider under section matching Figma */}
+      {/* Crisp divider under section matching theme */}
       <div
-        className={`w-full h-0.5 bg-white my-6 origin-left transition-transform duration-700 ease-out ${
+        className={`w-full h-0.5 my-6 origin-left transition-transform duration-700 ease-out ${
           isInView ? 'scale-x-100' : 'scale-x-0'
         }`}
+        style={{ backgroundColor: 'var(--cs-divider, rgba(255, 255, 255, 0.2))' }}
       />
     </section>
   );

@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { getGmailComposeUrl } from '../../utils/emailUtils';
 import { initialSiteSettings } from '../../data/initialData';
+import { ProjectTheme } from '../../types';
+import { resolveProjectTheme } from '../../utils/themePresets';
 
 interface HeaderProps {
   currentPath: string;
   onNavigate: (path: string) => void;
+  projectTheme?: ProjectTheme;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
+export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, projectTheme }) => {
   const { settings } = usePortfolio();
   const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
   const resumeUrl = settings.resumeUrl || '/assets/Yogendra_Chaudhary_CV.pdf';
 
   const isCaseStudy = currentPath !== '/' && currentPath !== '/projects' && currentPath !== '/about' && currentPath !== '/admin';
+  const resolvedHeaderTheme = isCaseStudy && projectTheme ? resolveProjectTheme(projectTheme) : null;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,13 +53,32 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
       <div
         className="progress"
         id="progress"
-        style={{ width: `${progressWidth}%` }}
+        style={{
+          width: `${progressWidth}%`,
+          backgroundColor: resolvedHeaderTheme?.progressBarColor || undefined
+        }}
         role="progressbar"
         aria-valuenow={Math.round(progressWidth)}
         aria-valuemin={0}
         aria-valuemax={100}
       />
-      <header className={`header ${isScrolled ? 'is-scrolled' : ''}`} id="siteHeader">
+      <header
+        className={`header ${isScrolled ? 'is-scrolled' : ''}`}
+        id="siteHeader"
+        style={
+          resolvedHeaderTheme
+            ? {
+                backgroundColor: isScrolled
+                  ? resolvedHeaderTheme.headerBg
+                  : resolvedHeaderTheme.headerBg
+                  ? `${resolvedHeaderTheme.headerBg}f0`
+                  : undefined,
+                borderColor: resolvedHeaderTheme.headerBorderColor,
+                backdropFilter: 'blur(16px)'
+              }
+            : undefined
+        }
+      >
       <nav aria-label="Main navigation" className="shell nav">
 
         <div className="nav-links">
@@ -63,18 +86,41 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             href="/"
             className={currentPath === '/' ? 'is-active' : ''}
             onClick={(e) => handleNavClick(e, '/')}
+            style={
+              resolvedHeaderTheme
+                ? {
+                    color: currentPath === '/'
+                      ? resolvedHeaderTheme.headerNavActiveColor
+                      : resolvedHeaderTheme.headerNavTextColor
+                  }
+                : undefined
+            }
           >
             {copy.navHome}
           </a>
           <a
             href="/#work"
             onClick={(e) => handleNavClick(e, '/#work')}
+            style={
+              resolvedHeaderTheme
+                ? {
+                    color: resolvedHeaderTheme.headerNavTextColor
+                  }
+                : undefined
+            }
           >
             {copy.navWork}
           </a>
           <a
             href="/#about"
             onClick={(e) => handleNavClick(e, '/#about')}
+            style={
+              resolvedHeaderTheme
+                ? {
+                    color: resolvedHeaderTheme.headerNavTextColor
+                  }
+                : undefined
+            }
           >
             {copy.navAbout}
           </a>
@@ -82,6 +128,13 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             href={resumeUrl}
             target="_blank"
             rel="noopener noreferrer"
+            style={
+              resolvedHeaderTheme
+                ? {
+                    color: resolvedHeaderTheme.headerNavTextColor
+                  }
+                : undefined
+            }
           >
             {copy.navResume}
           </a>
@@ -89,7 +142,20 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
         </div>
 
         <div className="nav-actions">
-          <div aria-label="Availability status" className="nav-availability">
+          <div
+            aria-label="Availability status"
+            className="nav-availability"
+            style={
+              resolvedHeaderTheme
+                ? {
+                    backgroundColor: resolvedHeaderTheme.headerAvailabilityBg !== 'transparent'
+                      ? resolvedHeaderTheme.headerAvailabilityBg
+                      : undefined,
+                    color: resolvedHeaderTheme.headerAvailabilityText
+                  }
+                : undefined
+            }
+          >
             <i aria-hidden="true"></i>
             <span>
               {settings.availabilityText.split('\n').map((line, i) => (
@@ -108,6 +174,15 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             href={emailUrl}
             target="_blank"
             rel="noopener noreferrer"
+            style={
+              resolvedHeaderTheme
+                ? {
+                    backgroundColor: resolvedHeaderTheme.headerContactBtnBg,
+                    color: resolvedHeaderTheme.headerContactBtnText,
+                    borderColor: resolvedHeaderTheme.headerContactBtnBorder
+                  }
+                : undefined
+            }
           >
             {copy.navContact}
             <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
@@ -125,16 +200,41 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
           type="button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          <span></span>
-          <span></span>
+          <span style={resolvedHeaderTheme ? { backgroundColor: resolvedHeaderTheme.headerNavTextColor } : undefined}></span>
+          <span style={resolvedHeaderTheme ? { backgroundColor: resolvedHeaderTheme.headerNavTextColor } : undefined}></span>
         </button>
 
-        <div className={`mobile-nav ${mobileMenuOpen ? 'is-open' : ''}`} id="mobileNav">
-          <a href="/" onClick={(e) => handleNavClick(e, '/')}>{copy.navHome}</a>
-          <a href="/#work" onClick={(e) => handleNavClick(e, '/#work')}>
+        <div
+          className={`mobile-nav ${mobileMenuOpen ? 'is-open' : ''}`}
+          id="mobileNav"
+          style={
+            resolvedHeaderTheme
+              ? {
+                  backgroundColor: resolvedHeaderTheme.headerBg,
+                  borderColor: resolvedHeaderTheme.headerBorderColor
+                }
+              : undefined
+          }
+        >
+          <a
+            href="/"
+            onClick={(e) => handleNavClick(e, '/')}
+            style={resolvedHeaderTheme ? { color: resolvedHeaderTheme.headerNavActiveColor, borderColor: resolvedHeaderTheme.headerBorderColor } : undefined}
+          >
+            {copy.navHome}
+          </a>
+          <a
+            href="/#work"
+            onClick={(e) => handleNavClick(e, '/#work')}
+            style={resolvedHeaderTheme ? { color: resolvedHeaderTheme.headerNavTextColor, borderColor: resolvedHeaderTheme.headerBorderColor } : undefined}
+          >
             {copy.navWork}
           </a>
-          <a href="/#about" onClick={(e) => handleNavClick(e, '/#about')}>
+          <a
+            href="/#about"
+            onClick={(e) => handleNavClick(e, '/#about')}
+            style={resolvedHeaderTheme ? { color: resolvedHeaderTheme.headerNavTextColor, borderColor: resolvedHeaderTheme.headerBorderColor } : undefined}
+          >
             {copy.navAbout}
           </a>
           <a
@@ -143,10 +243,14 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             rel="noopener noreferrer"
             className="mobile-resume"
             onClick={() => setMobileMenuOpen(false)}
+            style={resolvedHeaderTheme ? { color: resolvedHeaderTheme.headerNavTextColor, borderColor: resolvedHeaderTheme.headerBorderColor } : undefined}
           >
             {copy.navResume}
           </a>
-          <span className="mobile-availability">
+          <span
+            className="mobile-availability"
+            style={resolvedHeaderTheme ? { color: resolvedHeaderTheme.headerAvailabilityText } : undefined}
+          >
             <i aria-hidden="true"></i>
             {settings.availabilityText.replace('\n', ' ')}
           </span>
@@ -154,13 +258,22 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
             aria-label="Email Yogendra"
             className="mobile-talk"
             href={emailUrl}
+            style={
+              resolvedHeaderTheme
+                ? {
+                    backgroundColor: resolvedHeaderTheme.headerContactBtnBg,
+                    color: resolvedHeaderTheme.headerContactBtnText,
+                    borderColor: resolvedHeaderTheme.headerContactBtnBorder
+                  }
+                : undefined
+            }
           >
             {copy.navContact}
             <span aria-hidden="true" className="material-symbols-rounded material-arrow-icon">
               arrow_outward
             </span>
           </a>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${resolvedHeaderTheme ? resolvedHeaderTheme.headerBorderColor : 'rgba(255,255,255,0.08)'}` }}>
             <a
               href={(settings.behanceUrl && settings.behanceUrl.includes('yogendrachaudhary1')) ? settings.behanceUrl : 'https://www.behance.net/yogendrachaudhary1'}
               target="_blank"
@@ -184,4 +297,3 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate }) => {
     </>
   );
 };
-

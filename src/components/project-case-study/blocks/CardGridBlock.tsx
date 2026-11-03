@@ -32,9 +32,14 @@ export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block }) => {
         return (
           <div
             key={idx}
-            className={`w-full h-full min-w-0 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 flex flex-col justify-start items-start gap-2.5 cs-interactive-card self-stretch ${
+            className={`w-full h-full min-w-0 p-5 border flex flex-col justify-start items-start gap-2.5 cs-interactive-card self-stretch transition-all ${
               isLastOddInTwoCols ? 'md:col-span-2' : ''
             }`}
+            style={{
+              backgroundColor: 'var(--cs-card-bg, #18181b)',
+              borderColor: 'var(--cs-card-border, rgba(255, 255, 255, 0.08))',
+              borderRadius: 'var(--cs-card-radius, 6px)'
+            }}
           >
             {card.badge && (
               <span className="text-[11px] font-mono uppercase tracking-wider text-white/70 px-2 py-0.5 rounded bg-zinc-800">

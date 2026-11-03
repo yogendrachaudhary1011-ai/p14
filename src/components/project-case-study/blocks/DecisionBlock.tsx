@@ -30,7 +30,12 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
           return (
           <div
             key={idx}
-            className="w-full h-full min-w-0 flex flex-col justify-start items-start gap-4 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 cs-interactive-card"
+            className="w-full h-full min-w-0 flex flex-col justify-start items-start gap-4 p-5 border cs-interactive-card transition-all"
+            style={{
+              backgroundColor: 'var(--cs-card-bg, #18181b)',
+              borderColor: 'var(--cs-card-border, rgba(255, 255, 255, 0.08))',
+              borderRadius: 'var(--cs-card-radius, 6px)'
+            }}
           >
             <h4
               className="text-lg font-normal leading-6 border-b border-white/10 pb-3 w-full break-words"
@@ -44,8 +49,8 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
                 <div key={detailIndex} className="flex flex-col gap-1">
                   {detail.label?.trim() && (
                     <span
-                      className="text-xs font-normal leading-4"
-                      style={{ color: 'var(--cs-heading, #ffffff)' }}
+                      className="text-xs font-normal leading-4 font-mono uppercase tracking-wider"
+                      style={{ color: 'var(--cs-meta-label, var(--cs-heading, #ffffff))' }}
                     >
                       {detail.label}
                     </span>

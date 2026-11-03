@@ -20,14 +20,14 @@ export const BulletListBlock: React.FC<BulletListBlockProps> = ({ block }) => {
         {block.items.map((item, idx) => (
           <div
             key={idx}
-            className="flex items-start gap-3 text-sm sm:text-base font-normal font-['Plus_Jakarta_Sans',sans-serif] leading-relaxed break-words group cs-body"
-            style={{ color: 'var(--cs-body, #ffffff)' }}
+            className="flex items-start gap-3 text-sm sm:text-base font-normal leading-relaxed break-words group"
+            style={{ color: 'var(--cs-bullet-text, var(--cs-body, #ffffff))' }}
           >
             <span
               className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mt-2 shrink-0 transition-transform duration-200 group-hover:scale-125"
               style={{
-                backgroundColor: 'var(--cs-accent, #8be28b)',
-                boxShadow: '0 0 8px var(--cs-accent, rgba(139,226,139,0.5))'
+                backgroundColor: 'var(--cs-bullet-dot, var(--cs-accent, #8be28b))',
+                boxShadow: '0 0 8px var(--cs-bullet-dot, rgba(139,226,139,0.5))'
               }}
               aria-hidden="true"
             />

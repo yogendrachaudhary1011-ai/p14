@@ -328,21 +328,65 @@ export interface ProjectTheme {
   backgroundColor?: string;
 
   // Comprehensive Text Colors
-  textColor?: string;         // Master fallback text color
-  headingColor?: string;      // Hero title, chapter and section headings (H1, H2, H3, H4)
-  bodyTextColor?: string;     // Narrative paragraphs, overview intro, block text
-  mutedTextColor?: string;    // Subtitles, metadata labels, footnotes, image captions
-  cardTitleColor?: string;    // Card titles, decision titles, comparison headers
-  cardTextColor?: string;     // Card descriptions, bullet points, detail text
-  accentTextColor?: string;   // Chapter index numbers (01, 02), tags, active nav indicator
-  navTextColor?: string;      // Table of contents inactive links
-  buttonTextColor?: string;   // Action button text
+  textColor?: string;           // Master fallback text color
+  headingColor?: string;        // Fallback headings (H1, H2, H3, H4)
+  heroTitleColor?: string;      // Hero H1 Project Title
+  heroSubtitleColor?: string;   // Hero Subtitle / Lead narrative
+  sectionHeadingColor?: string; // Chapter & Section titles (01. The Problem, etc.)
+  bodyTextColor?: string;       // Narrative paragraphs, overview intro, block copy
+  mutedTextColor?: string;      // Subtitles, footnotes, image captions
+  metadataLabelColor?: string;  // Metadata column labels (Role, Duration, Deliverables)
+  metadataValueColor?: string;  // Metadata values & detail list items
+  cardTitleColor?: string;      // Card titles, decision titles, comparison headers
+  cardTextColor?: string;       // Card descriptions, bullet points, detail text
+  bulletTextColor?: string;     // Bullet list text
+  bulletDotColor?: string;      // Bullet dot / indicator accent
+  quoteTextColor?: string;      // Blockquote text
+  quoteAuthorColor?: string;    // Blockquote author & role
+  quoteBorderColor?: string;    // Blockquote decorative left border
+
+  // Navigation, Badges & Numbers
+  navTextColor?: string;            // Table of contents inactive links
+  navActiveTextColor?: string;      // Table of contents active link
+  navActiveIndicatorColor?: string; // Table of contents active indicator bar/glow
+  accentTextColor?: string;         // Chapter index numbers (01, 02), tags, active nav indicator
+  chapterNumberColor?: string;      // Section index number text (e.g. 01, 02)
+  chapterNumberBg?: string;         // Section index number background pill
+  badgeTextColor?: string;          // Top Case Study / Year pill text
+  badgeBgColor?: string;            // Top Case Study / Year pill background
+  badgeBorderColor?: string;        // Top Case Study / Year pill border
+  backButtonTextColor?: string;     // Top & bottom "Back to Projects" button text & icon
+
+  // Buttons & Interactive Elements
+  accentColor?: string;             // Main primary accent & scroll progress
+  buttonTextColor?: string;         // Action button text
+  primaryButtonBg?: string;         // Primary button background (e.g. Live Project CTA)
+  primaryButtonText?: string;       // Primary button text
+  primaryButtonBorder?: string;     // Primary button border
+  secondaryButtonBg?: string;       // Secondary / Outline button background (e.g. Figma file)
+  secondaryButtonText?: string;     // Secondary / Outline button text
+  secondaryButtonBorder?: string;   // Secondary / Outline button border
+  nextProjectCardBg?: string;       // "Next Project" teaser card background
+  nextProjectCardBorder?: string;   // "Next Project" teaser card border
+  nextProjectTextColor?: string;    // "Next Project" title text color
+  nextProjectAccentColor?: string;  // "Next Project" action label & arrow color
+
+  // Top Site Header Customization (for this specific project)
+  headerBg?: string;                // Header background color
+  headerBorderColor?: string;       // Header bottom border stroke
+  headerNavTextColor?: string;      // Header navigation links text color
+  headerNavActiveColor?: string;    // Header active navigation link highlight
+  headerAvailabilityBg?: string;    // Availability status badge background
+  headerAvailabilityText?: string;  // Availability status badge text color
+  headerContactBtnBg?: string;      // "Get in touch" / contact button background
+  headerContactBtnText?: string;    // "Get in touch" / contact button text
+  headerContactBtnBorder?: string;  // "Get in touch" / contact button border
 
   // Surfaces, Accents & Dividers
-  accentColor?: string;
   cardBackground?: string;
   cardBorderColor?: string;
   dividerColor?: string;
+  progressBarColor?: string;
 
   // Typography & Layout Options
   fontFamily?: 'plus-jakarta' | 'dm-sans' | 'inter' | 'serif' | 'mono';

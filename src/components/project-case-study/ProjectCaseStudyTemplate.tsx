@@ -126,18 +126,47 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
       color: resolvedTheme.bodyTextColor,
       '--cs-bg': resolvedTheme.backgroundColor,
       '--cs-heading': resolvedTheme.headingColor,
+      '--cs-hero-title': resolvedTheme.heroTitleColor,
+      '--cs-hero-subtitle': resolvedTheme.heroSubtitleColor,
+      '--cs-section-heading': resolvedTheme.sectionHeadingColor,
       '--cs-body': resolvedTheme.bodyTextColor,
       '--cs-muted': resolvedTheme.mutedTextColor,
+      '--cs-meta-label': resolvedTheme.metadataLabelColor,
+      '--cs-meta-val': resolvedTheme.metadataValueColor,
       '--cs-card-title': resolvedTheme.cardTitleColor,
       '--cs-card-text': resolvedTheme.cardTextColor,
-      '--cs-accent-text': resolvedTheme.accentTextColor,
+      '--cs-bullet-text': resolvedTheme.bulletTextColor,
+      '--cs-bullet-dot': resolvedTheme.bulletDotColor,
+      '--cs-quote-text': resolvedTheme.quoteTextColor,
+      '--cs-quote-author': resolvedTheme.quoteAuthorColor,
+      '--cs-quote-border': resolvedTheme.quoteBorderColor,
       '--cs-nav-text': resolvedTheme.navTextColor,
+      '--cs-nav-active-text': resolvedTheme.navActiveTextColor,
+      '--cs-nav-active-indicator': resolvedTheme.navActiveIndicatorColor,
+      '--cs-accent-text': resolvedTheme.accentTextColor,
+      '--cs-chapter-num': resolvedTheme.chapterNumberColor,
+      '--cs-chapter-bg': resolvedTheme.chapterNumberBg,
+      '--cs-badge-text': resolvedTheme.badgeTextColor,
+      '--cs-badge-bg': resolvedTheme.badgeBgColor,
+      '--cs-badge-border': resolvedTheme.badgeBorderColor,
+      '--cs-back-btn': resolvedTheme.backButtonTextColor,
       '--cs-btn-text': resolvedTheme.buttonTextColor,
+      '--cs-btn-primary-bg': resolvedTheme.primaryButtonBg,
+      '--cs-btn-primary-text': resolvedTheme.primaryButtonText,
+      '--cs-btn-primary-border': resolvedTheme.primaryButtonBorder,
+      '--cs-btn-secondary-bg': resolvedTheme.secondaryButtonBg,
+      '--cs-btn-secondary-text': resolvedTheme.secondaryButtonText,
+      '--cs-btn-secondary-border': resolvedTheme.secondaryButtonBorder,
+      '--cs-next-card-bg': resolvedTheme.nextProjectCardBg,
+      '--cs-next-card-border': resolvedTheme.nextProjectCardBorder,
+      '--cs-next-text': resolvedTheme.nextProjectTextColor,
+      '--cs-next-accent': resolvedTheme.nextProjectAccentColor,
       '--cs-text': resolvedTheme.bodyTextColor,
       '--cs-accent': resolvedTheme.accentColor,
       '--cs-card-bg': resolvedTheme.cardBackground,
       '--cs-card-border': resolvedTheme.cardBorderColor,
       '--cs-divider': resolvedTheme.dividerColor,
+      '--cs-progress-bar': resolvedTheme.progressBarColor,
       '--cs-card-radius': CARD_RADIUS_MAP[resolvedTheme.cardRadius],
       fontFamily: FONT_MAP[resolvedTheme.fontFamily]
     } as React.CSSProperties;
@@ -155,8 +184,8 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
             className="h-full transition-all duration-150 ease-out"
             style={{
               width: `${scrollProgress}%`,
-              backgroundColor: resolvedTheme.accentColor,
-              boxShadow: `0 0 10px ${resolvedTheme.accentColor}80`
+              backgroundColor: resolvedTheme.progressBarColor,
+              boxShadow: `0 0 10px ${resolvedTheme.progressBarColor}80`
             }}
           />
         </div>
@@ -175,24 +204,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
         style={{ backgroundColor: resolvedTheme.backgroundColor }}
       >
         {/* Atmospheric Background Patterns */}
-        {resolvedTheme.backgroundPattern === 'grid' && (
-          <div className="w-full h-[735.20px] left-0 top-[1px] absolute opacity-10 pointer-events-none select-none overflow-hidden">
-            <div className="w-px h-[735.20px] left-[7%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
-            <div className="w-px h-[735.20px] left-[21%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
-            <div className="w-px h-[735.20px] left-[35%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
-            <div className="w-px h-[735.20px] left-[50%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
-            <div className="w-px h-[735.20px] left-[64%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
-            <div className="w-px h-[735.20px] left-[78%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
-            <div className="w-px h-[735.20px] left-[92%] top-0 absolute bg-gradient-to-b from-white/0 via-current to-transparent" />
-            <div className="w-full h-px left-0 top-[52px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
-            <div className="w-full h-px left-0 top-[157px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
-            <div className="w-full h-px left-0 top-[262px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
-            <div className="w-full h-px left-0 top-[367px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
-            <div className="w-full h-px left-0 top-[472px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
-            <div className="w-full h-px left-0 top-[577px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
-            <div className="w-full h-px left-0 top-[682px] absolute bg-gradient-to-r from-white/0 via-current to-transparent" />
-          </div>
-        )}
+
 
         {resolvedTheme.backgroundPattern === 'dots' && (
           <div
@@ -252,10 +264,14 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
             ))}
 
             {/* Bottom Footer Navigation Bar inside Case Study */}
-            <div className="pt-12 pb-16 border-t border-white/20 flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div
+              className="pt-12 pb-16 border-t flex flex-col sm:flex-row justify-between items-center gap-6"
+              style={{ borderColor: 'var(--cs-divider, rgba(255, 255, 255, 0.2))' }}
+            >
               <button
                 onClick={() => window.location.assign('/#work')}
-                className="inline-flex items-center gap-2 text-white hover:text-[#8be28b] transition-all duration-200 hover:-translate-x-1.5 text-base font-medium cursor-pointer group"
+                className="inline-flex items-center gap-2 transition-all duration-200 hover:-translate-x-1.5 text-base font-medium cursor-pointer group"
+                style={{ color: 'var(--cs-back-btn, #ffffff)' }}
               >
                 <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-x-1">arrow_back</span>
                 <span>{copy.backToProjects}</span>
@@ -263,7 +279,8 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
               <div className="flex flex-col-reverse sm:flex-row items-center gap-5">
                 <button
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-all duration-200 hover:-translate-y-1 text-sm cursor-pointer group"
+                  className="inline-flex items-center gap-2 transition-all duration-200 hover:-translate-y-1 text-sm cursor-pointer group"
+                  style={{ color: 'var(--cs-muted, #a1a1aa)' }}
                 >
                   <span>{copy.backToTop}</span>
                   <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-y-1">arrow_upward</span>
@@ -277,13 +294,26 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
                       if (onNavigate) onNavigate(nextProject.route);
                       else window.location.assign(nextProject.route);
                     }}
-                    className="group inline-flex flex-col items-end gap-1 rounded-lg border border-[#8be28b]/35 bg-[#8be28b]/[0.06] px-5 py-3 text-right transition-colors hover:bg-[#8be28b]/[0.12]"
+                    className="group inline-flex flex-col items-end gap-1 px-5 py-3 text-right transition-all border"
+                    style={{
+                      backgroundColor: 'var(--cs-next-card-bg, rgba(139, 226, 139, 0.06))',
+                      borderColor: 'var(--cs-next-card-border, rgba(139, 226, 139, 0.35))',
+                      borderRadius: 'var(--cs-card-radius, 8px)'
+                    }}
                   >
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#8be28b]">
+                    <span
+                      className="inline-flex items-center gap-2 text-sm font-semibold"
+                      style={{ color: 'var(--cs-next-accent, #8be28b)' }}
+                    >
                       {copy.viewNextProject}
                       <span className="material-symbols-rounded transition-transform duration-200 group-hover:translate-x-1">arrow_forward</span>
                     </span>
-                    <span className="max-w-64 truncate text-xs text-zinc-400">{nextProject.title}</span>
+                    <span
+                      className="max-w-64 truncate text-xs"
+                      style={{ color: 'var(--cs-next-text, #a1a1aa)' }}
+                    >
+                      {nextProject.title}
+                    </span>
                   </a>
                 )}
               </div>

@@ -12,7 +12,14 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
       {/* 4 Cards matching Figma: First Attempt, Problem, Fix, Learning */}
       <div data-cols="2" className="w-full case-study-card-grid grid grid-cols-1 md:grid-cols-2 gap-2.5">
         {/* First Attempt */}
-        <div className="w-full h-full min-w-0 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 flex flex-col justify-start items-start gap-2.5 cs-interactive-card">
+        <div
+          className="w-full h-full min-w-0 p-5 border flex flex-col justify-start items-start gap-2.5 cs-interactive-card transition-all"
+          style={{
+            backgroundColor: 'var(--cs-card-bg, #18181b)',
+            borderColor: 'var(--cs-card-border, rgba(255, 255, 255, 0.08))',
+            borderRadius: 'var(--cs-card-radius, 6px)'
+          }}
+        >
           <div
             className="text-lg font-normal leading-6"
             style={{ color: 'var(--cs-card-title, #ffffff)' }}
@@ -28,7 +35,14 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
         </div>
 
         {/* Problem */}
-        <div className="w-full h-full min-w-0 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 flex flex-col justify-start items-start gap-2.5 cs-interactive-card">
+        <div
+          className="w-full h-full min-w-0 p-5 border flex flex-col justify-start items-start gap-2.5 cs-interactive-card transition-all"
+          style={{
+            backgroundColor: 'var(--cs-card-bg, #18181b)',
+            borderColor: 'var(--cs-card-border, rgba(255, 255, 255, 0.08))',
+            borderRadius: 'var(--cs-card-radius, 6px)'
+          }}
+        >
           <div
             className="text-lg font-normal leading-6"
             style={{ color: 'var(--cs-card-title, #ffffff)' }}
@@ -46,7 +60,14 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
 
       <div data-cols="2" className="w-full case-study-card-grid grid grid-cols-1 md:grid-cols-2 gap-2.5">
         {/* Fix */}
-        <div className="w-full h-full min-w-0 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 flex flex-col justify-start items-start gap-2.5 cs-interactive-card">
+        <div
+          className="w-full h-full min-w-0 p-5 border flex flex-col justify-start items-start gap-2.5 cs-interactive-card transition-all"
+          style={{
+            backgroundColor: 'var(--cs-card-bg, #18181b)',
+            borderColor: 'var(--cs-card-border, rgba(255, 255, 255, 0.08))',
+            borderRadius: 'var(--cs-card-radius, 6px)'
+          }}
+        >
           <div
             className="text-lg font-normal leading-6"
             style={{ color: 'var(--cs-card-title, #ffffff)' }}
@@ -62,7 +83,14 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
         </div>
 
         {/* Learning */}
-        <div className="w-full h-full min-w-0 p-5 bg-zinc-900 rounded-[5px] border border-transparent hover:border-white/20 flex flex-col justify-start items-start gap-2.5 cs-interactive-card">
+        <div
+          className="w-full h-full min-w-0 p-5 border flex flex-col justify-start items-start gap-2.5 cs-interactive-card transition-all"
+          style={{
+            backgroundColor: 'var(--cs-card-bg, #18181b)',
+            borderColor: 'var(--cs-card-border, rgba(255, 255, 255, 0.08))',
+            borderRadius: 'var(--cs-card-radius, 6px)'
+          }}
+        >
           <div
             className="text-lg font-normal leading-6"
             style={{ color: 'var(--cs-card-title, #ffffff)' }}
