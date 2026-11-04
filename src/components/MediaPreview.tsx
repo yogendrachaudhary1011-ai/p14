@@ -32,26 +32,42 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
   const retryCountRef = useRef<number>(0);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   // Clean fallback: never hit slow external placehold.co services
   const resolvedFallback =
     !fallbackSrc || fallbackSrc.includes('placehold.co')
       ? getInstantFallbackSvg(alt || 'Image asset')
-      : fallbackSrc;
+    : fallbackSrc;
 
+  // Immediate check for cached images that already resolved complete
   useEffect(() => {
     retryCountRef.current = 0;
     setHasError(false);
-    setIsLoaded(false);
 
     if (!src || !src.trim()) {
       setCurrentSrc(resolvedFallback);
       setHasError(true);
       setIsLoaded(true);
+      return;
+    }
+
+    setCurrentSrc(src);
+
+    // If the browser already has the image decoded from memory or disk cache
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      setIsLoaded(true);
     } else {
-      setCurrentSrc(src);
+      setIsLoaded(false);
     }
   }, [src, resolvedFallback]);
+
+  // Secondary check in next frame for fast network/cache hits
+  useEffect(() => {
+    if (!isLoaded && imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      setIsLoaded(true);
+    }
+  }, [isLoaded, currentSrc]);
 
   if (isVideoMedia(src, mimeType)) {
     return (
@@ -92,18 +108,19 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full min-w-0 min-h-0 flex items-center justify-center overflow-hidden">
+    <div className="relative w-full min-w-0 flex items-center justify-center overflow-hidden">
       {/* Sleek loading shimmer skeleton while image is fetching */}
       {!isLoaded && !hasError && (
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-white/[0.03] animate-pulse pointer-events-none rounded-[inherit] flex items-center justify-center"
+          className="absolute inset-0 min-h-[160px] bg-white/[0.03] animate-pulse pointer-events-none rounded-[inherit] flex items-center justify-center z-10"
         >
           <div className="w-6 h-6 border-2 border-white/10 border-t-[#f37021]/60 rounded-full animate-spin" />
         </div>
       )}
 
       <img
+        ref={imgRef}
         src={currentSrc}
         alt={alt}
         className={`${className} transition-opacity duration-300 ${

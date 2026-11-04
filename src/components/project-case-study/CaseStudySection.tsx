@@ -10,6 +10,7 @@ import { GalleryBlock } from './blocks/GalleryBlock';
 import { CarouselBlock } from './blocks/CarouselBlock';
 import { BulletListBlock } from './blocks/BulletListBlock';
 import { QuoteBlock, CtaBlock, DividerBlock, SpacerBlock } from './blocks/QuoteCtaBlock';
+import { ProductShowcaseBlock } from './blocks/ProductShowcaseBlock';
 import { stackProductSectionImages } from '../../utils/caseStudyUtils';
 
 interface CaseStudySectionProps {
@@ -20,8 +21,8 @@ interface CaseStudySectionProps {
 
 export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, index, copy }) => {
   const [sectionRef, isInView] = useInView<HTMLElement>({
-    threshold: 0.05,
-    rootMargin: '0px 0px -40px 0px',
+    threshold: 0,
+    rootMargin: '160px 0px 160px 0px',
     triggerOnce: true
   });
 
@@ -51,7 +52,9 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
         return <TwoColumnComparisonBlock key={block.id} block={block} copy={copy} />;
       case 'image':
       case 'fullWidthImage':
-        return block.url?.trim() ? <ImageBlock key={block.id} block={block} /> : null;
+        return <ImageBlock key={block.id} block={block} />;
+      case 'productShowcase':
+        return <ProductShowcaseBlock key={block.id} block={block} />;
       case 'gallery':
         return <GalleryBlock key={block.id} block={block} />;
       case 'carousel':

@@ -1,24 +1,64 @@
 import { Project, CaseStudySection, CaseStudyBlock, SectionType, CaseStudyBlockType } from '../types';
+import { initialProjects } from '../data/initialData';
+
+function extractScreenInfo(screen: any, defaultIndex: number): { url: string; alt: string } | null {
+  if (!screen) return null;
+  if (typeof screen === 'string') {
+    const url = screen.trim();
+    return url ? { url, alt: `Product Screen #${defaultIndex}` } : null;
+  }
+  if (typeof screen === 'object') {
+    const url = (screen.url || screen.src || '').trim();
+    if (!url) return null;
+    const alt = (screen.label || screen.alt || screen.title || `Product Screen #${defaultIndex}`).trim();
+    return { url, alt };
+  }
+  return null;
+}
 
 /** Convert legacy Product screen showcases into the same vertical full-width image blocks used by other sections. */
 export function stackProductSectionImages(sections: CaseStudySection[]): CaseStudySection[] {
   return sections.map((section) => {
-    if (section.type !== 'product') return section;
+    const blocks = section.blocks || [];
+    const hasProductShowcase = blocks.some((b) => b.type === 'productShowcase');
+    const isProduct =
+      section.type === 'product' ||
+      section.id === 'the-product' ||
+      section.id?.toLowerCase().startsWith('product') ||
+      section.navigationLabel?.toLowerCase().includes('product') ||
+      section.heading?.toLowerCase().includes('product');
+
+    if (!isProduct && !hasProductShowcase) return section;
+
+    const flattened = blocks.flatMap((block): CaseStudyBlock[] => {
+      if (block.type !== 'productShowcase') return [block];
+
+      const screens = Array.isArray(block.screens) ? block.screens : [];
+      const imageBlocks = screens
+        .map((screen, index) => extractScreenInfo(screen, index + 1))
+        .filter((info): info is { url: string; alt: string } => info !== null)
+        .map((info, index) => ({
+          id: `${block.id}-image-${index + 1}`,
+          type: 'fullWidthImage' as const,
+          url: info.url,
+          alt: info.alt
+        }));
+
+      const result: CaseStudyBlock[] = [];
+      if (block.subtitle && block.subtitle.trim()) {
+        result.push({
+          id: `${block.id}-subtitle`,
+          type: 'paragraph',
+          text: block.subtitle
+        });
+      }
+      result.push(...imageBlocks);
+      return result.length > 0 ? result : [block];
+    });
 
     return {
       ...section,
-      blocks: (section.blocks || []).flatMap((block): CaseStudyBlock[] => {
-        if (block.type !== 'productShowcase') return [block];
-
-        return block.screens
-          .filter((screen) => screen.url?.trim())
-          .map((screen, index) => ({
-            id: `${block.id}-image-${index + 1}`,
-            type: 'fullWidthImage' as const,
-            url: screen.url,
-            alt: screen.label || `Product image ${index + 1}`
-          }));
-      })
+      blocks: flattened
     };
   });
 }
@@ -27,6 +67,57 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
   // If the project already has custom sections defined and not empty, use them
   if (project.sections && Array.isArray(project.sections) && project.sections.length > 0) {
     const sections = stackProductSectionImages(project.sections).map((section) => {
+      const isProduct =
+        section.type === 'product' ||
+        section.id === 'the-product' ||
+        section.id?.toLowerCase().startsWith('product') ||
+        section.navigationLabel?.toLowerCase().includes('product') ||
+        section.heading?.toLowerCase().includes('product');
+
+      if (isProduct) {
+        const blocks = [...(section.blocks || [])];
+        const hasImages = blocks.some(
+          (b) =>
+            ((b.type === 'fullWidthImage' || b.type === 'image') && Boolean(b.url?.trim())) ||
+            (b.type === 'gallery' && b.images?.length > 0) ||
+            (b.type === 'productShowcase' && b.screens?.length > 0)
+        );
+
+        if (!hasImages) {
+          // If the product section was saved with only a text description, restore screens from project.product, matching initialProjects, or default portfolio screens
+          const legacyScreens = (project.product?.screens || []).filter((s) => typeof s === 'string' && s.trim());
+          const cleanKey = (str?: string) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const projKey = cleanKey(project.slug || project.id || project.title);
+          const matchedInitial = initialProjects.find(
+            (p) =>
+              p.id === project.id ||
+              p.slug === project.slug ||
+              cleanKey(p.slug) === projKey ||
+              cleanKey(p.id) === projKey ||
+              cleanKey(p.title) === projKey
+          );
+
+          const fallbackScreens =
+            legacyScreens.length > 0
+              ? legacyScreens
+              : (matchedInitial?.product?.screens?.filter((s) => s.trim()) || [
+                  '/assets/media/home-media-04-f775f2921176.webp',
+                  '/assets/media/home-media-03-d6c887bed8af.webp'
+                ]);
+
+          if (fallbackScreens.length > 0) {
+            const screenBlocks: CaseStudyBlock[] = fallbackScreens.map((url, idx) => ({
+              id: `${section.id}-screen-${idx + 1}`,
+              type: 'fullWidthImage' as const,
+              url,
+              alt: `${project.title} Product Screen #${idx + 1}`
+            }));
+            blocks.push(...screenBlocks);
+            return { ...section, blocks };
+          }
+        }
+      }
+
       if (section.type !== 'designSystem') return section;
 
       const blocks = [...(section.blocks || [])];
@@ -864,8 +955,8 @@ export function createDefaultSection(type: SectionType, order: number): CaseStud
   } else if (type === 'product') {
     defaultBlocks = [
       { id: `blk-${Date.now()}-1`, type: 'paragraph', text: 'Core responsive feature areas designed for desktop and mobile viewports.' },
-      { id: `blk-${Date.now()}-2`, type: 'fullWidthImage', url: '', alt: 'Product Screen 1' },
-      { id: `blk-${Date.now()}-3`, type: 'fullWidthImage', url: '', alt: 'Product Screen 2' }
+      { id: `blk-${Date.now()}-2`, type: 'fullWidthImage', url: '/assets/media/home-media-04-f775f2921176.webp', alt: 'Product Screen 1' },
+      { id: `blk-${Date.now()}-3`, type: 'fullWidthImage', url: '/assets/media/home-media-03-d6c887bed8af.webp', alt: 'Product Screen 2' }
     ];
   } else if (type === 'learnings') {
     defaultBlocks = [

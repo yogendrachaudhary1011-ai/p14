@@ -8,7 +8,19 @@ interface ProductShowcaseBlockProps {
 
 export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ block }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const screens = (block.screens || []).filter((screen) => screen.url?.trim());
+  const screens = (block.screens || [])
+    .map((screen, idx) => {
+      if (typeof screen === 'string') {
+        const url = (screen as string).trim();
+        return url ? { url, label: `Screen #${idx + 1}`, device: 'desktop' as const } : null;
+      }
+      if (screen && typeof screen === 'object') {
+        const url = (screen.url || (screen as any).src || '').trim();
+        return url ? { url, label: screen.label || `Screen #${idx + 1}`, device: screen.device || 'desktop' } : null;
+      }
+      return null;
+    })
+    .filter((s): s is { url: string; label: string; device: 'desktop' | 'mobile' } => s !== null);
 
   if (screens.length === 0) return null;
 
