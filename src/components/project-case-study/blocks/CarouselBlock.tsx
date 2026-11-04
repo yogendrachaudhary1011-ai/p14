@@ -37,7 +37,10 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
     const image = new Image();
     image.src = nextSlide.url;
     try {
-      await image.decode();
+      await Promise.race([
+        image.decode(),
+        new Promise((resolve) => setTimeout(resolve, 400))
+      ]);
     } catch {
       // Let the normal image fallback handle failed assets.
     }
@@ -100,7 +103,6 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
               : 'translate3d(0, 0, 0)'
           }}
           loading={outgoingSlide ? 'eager' : 'lazy'}
-          fallbackSrc="https://placehold.co/884x660/161922/ffffff?text=Design+System+Component"
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/45 to-transparent" />
         {slides.length > 1 && (

@@ -34,11 +34,11 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
       {/* Big Hero Image with reveal and hover depth */}
       <div className="w-full rounded-none md:rounded-[6px] overflow-hidden bg-zinc-950 flex justify-center items-center aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] max-h-[728px] max-w-full animate-cs-image-reveal group">
         <MediaPreview
-          src={heroImage || 'https://placehold.co/1539x728/111317/ffffff?text=Case+Study+Hero'}
+          src={heroImage}
           alt={heroImageAlt || 'Hero visual'}
           className="w-full h-full object-cover"
           loading="eager"
-          fallbackSrc="https://placehold.co/1539x728/111317/ffffff?text=Case+Study+Hero"
+          priority={true}
         />
       </div>
 

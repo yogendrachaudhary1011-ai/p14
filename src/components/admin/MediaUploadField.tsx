@@ -3,6 +3,7 @@ import { ImagePlus, Upload, Crop, Sparkles } from 'lucide-react';
 import { MediaAsset } from '../../types';
 import { MediaPreview } from '../MediaPreview';
 import { ImageCropPanZoomModal } from './ImageCropPanZoomModal';
+import { compressAndOptimizeImage } from '../../utils/media';
 
 interface MediaUploadFieldProps {
   value: string;
@@ -36,12 +37,29 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
 
   // Handler for direct file upload (skipping crop modal)
   const handleDirectUpload = async (file?: File) => {
-    if (!file || !onUploadMedia) return;
+    if (!file) return;
     setUploading(true);
     setError(null);
     try {
-      const asset = await onUploadMedia(file);
-      onChange(asset.url);
+      // Compress and optimize large images on client to prevent slow loads
+      const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file);
+
+      if (onUploadMedia) {
+        try {
+          const asset = await onUploadMedia(optimizedFile);
+          onChange(asset.url);
+          return;
+        } catch (uploadErr) {
+          console.warn('Cloud upload failed, falling back to optimized local data URI:', uploadErr);
+          if (dataUrl) {
+            onChange(dataUrl);
+            return;
+          }
+          throw uploadErr;
+        }
+      } else if (dataUrl) {
+        onChange(dataUrl);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Image upload failed.');
     } finally {

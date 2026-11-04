@@ -23,7 +23,6 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({ block }) => {
               alt={img.alt || `Gallery item ${idx + 1}`}
               className="w-full h-auto object-cover max-h-[500px]"
               loading="lazy"
-              fallbackSrc="https://placehold.co/800x600/181c26/ffffff?text=Gallery+Asset"
             />
           </div>
           {img.caption && (

@@ -102,7 +102,6 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
                   alt={screen.label || `Product Screen ${idx + 1}`}
                   className="w-full h-auto object-contain rounded-sm"
                   loading="lazy"
-                  fallbackSrc="https://placehold.co/554x1200/181c25/ffffff?text=Product+Screen"
                 />
               </div>
             </div>

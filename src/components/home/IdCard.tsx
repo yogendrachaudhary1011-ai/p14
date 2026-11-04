@@ -370,6 +370,9 @@ export const IdCard: React.FC = () => {
                   loading="eager"
                   src={settings.profileImage || initialSiteSettings.profileImage}
                   width="720"
+                  onError={(e) => {
+                    e.currentTarget.src = '/assets/media/hero-id-portrait.jpeg';
+                  }}
                 />
               </div>
               <div className="id-card-body">

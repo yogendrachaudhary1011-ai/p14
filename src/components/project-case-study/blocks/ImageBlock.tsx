@@ -14,11 +14,10 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
     <div className={`w-full flex flex-col gap-2 my-2 ${isFull ? 'max-w-none' : 'max-w-4xl mx-auto'}`}>
       <div className="w-full rounded-[5px] overflow-hidden bg-neutral-900/40 flex justify-center items-center group">
         <MediaPreview
-          src={block.url || 'https://placehold.co/1079x660/111418/ffffff?text=Image+Unavailable'}
+          src={block.url}
           alt={block.alt || 'Case study illustration'}
           className="w-full h-auto max-w-full object-contain block rounded-[5px]"
           loading="lazy"
-          fallbackSrc="https://placehold.co/1079x660/111418/ffffff?text=Image+Asset"
         />
       </div>
       {block.caption && (

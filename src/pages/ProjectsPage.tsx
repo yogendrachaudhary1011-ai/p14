@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { initialSiteSettings } from '../data/initialData';
+import { getInstantFallbackSvg } from '../utils/media';
 
 interface ProjectsPageProps {
   onNavigate: (path: string) => void;
@@ -135,7 +136,10 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onNavigate }) => {
                         className={`project-cover ${project.coverClass || ''}`}
                         decoding="async"
                         loading="lazy"
-                        src={project.coverImage}
+                        src={project.coverImage || getInstantFallbackSvg(project.title)}
+                        onError={(e) => {
+                          e.currentTarget.src = getInstantFallbackSvg(project.title);
+                        }}
                       />
                     </div>
                     <div className="project-copy">

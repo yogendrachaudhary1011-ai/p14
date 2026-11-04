@@ -1,5 +1,6 @@
 import React from 'react';
 import { DecisionListBlock } from '../../../types';
+import { MediaPreview } from '../../MediaPreview';
 
 interface DecisionBlockProps {
   block: DecisionListBlock;
@@ -10,11 +11,11 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
   return (
     <div className="w-full flex flex-col gap-6 my-2">
       {block.image && (
-        <div className="w-full rounded-[5px] overflow-hidden bg-neutral-900 group">
-          <img
+        <div className="w-full rounded-[5px] overflow-hidden bg-neutral-900/40 group">
+          <MediaPreview
             src={block.image}
             alt={block.imageAlt || 'Key architecture decision diagram'}
-            className="w-full h-auto object-cover max-h-[660px]"
+            className="w-full h-auto object-contain max-h-[660px]"
             loading="lazy"
           />
         </div>

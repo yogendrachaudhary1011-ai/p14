@@ -9,7 +9,7 @@ import { MediaUploadField } from '../../components/admin/MediaUploadField';
 import { MediaPreview } from '../../components/MediaPreview';
 import { SUPABASE_SQL_SCHEMA } from '../../supabase';
 import { uploadMediaToSupabase } from '../../utils/supabaseService';
-import { inferMediaMimeType } from '../../utils/media';
+import { inferMediaMimeType, compressAndOptimizeImage } from '../../utils/media';
 import {
   ArrowUpRight,
   BriefcaseBusiness,
@@ -884,11 +884,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 mediaLibrary={media}
                 initialTab={projectEditorTab}
                 onUploadMedia={async (file) => {
-                  if (!isAdmin) throw new Error('Sign in to Supabase Auth before uploading project media.');
-                  const result = await uploadMediaToSupabase(file);
-                  if (!result.url) throw new Error(result.error || 'Upload failed.');
-                  const asset = addMedia(file.name.replace(/\.[^.]+$/, ''), result.url, file.type || inferMediaMimeType(file.name), file.size);
-                  return asset;
+                  const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file);
+                  if (isAdmin) {
+                    try {
+                      const result = await uploadMediaToSupabase(optimizedFile);
+                      if (result.url) {
+                        return addMedia(file.name.replace(/\.[^.]+$/, ''), result.url, optimizedFile.type || inferMediaMimeType(file.name), optimizedFile.size);
+                      }
+                    } catch (e) {
+                      console.warn('Supabase media upload failed, fallback to optimized local data URI:', e);
+                    }
+                  }
+                  if (dataUrl) {
+                    return addMedia(file.name.replace(/\.[^.]+$/, ''), dataUrl, optimizedFile.type || inferMediaMimeType(file.name), optimizedFile.size);
+                  }
+                  throw new Error('Image upload failed.');
                 }}
                 onSave={async (data) => {
                   let nextProjects: Project[];
@@ -2403,10 +2413,15 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   let uploaded = 0;
                   const failures: string[] = [];
                   for (const file of files) {
-                    const result = await uploadMediaToSupabase(file);
+                    const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file);
+                    const result = await uploadMediaToSupabase(optimizedFile);
                     if (result.url) {
                       const displayName = file.name.replace(/\.[^.]+$/, '') || file.name;
-                      addMedia(displayName, result.url, file.type, file.size);
+                      addMedia(displayName, result.url, optimizedFile.type, optimizedFile.size);
+                      uploaded += 1;
+                    } else if (dataUrl) {
+                      const displayName = file.name.replace(/\.[^.]+$/, '') || file.name;
+                      addMedia(displayName, dataUrl, optimizedFile.type, optimizedFile.size);
                       uploaded += 1;
                     } else {
                       failures.push(`${file.name}: ${result.error || 'upload failed'}`);

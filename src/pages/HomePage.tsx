@@ -3,6 +3,7 @@ import { usePortfolio } from '../context/PortfolioContext';
 import { initialSiteSettings } from '../data/initialData';
 import { IdCard } from '../components/home/IdCard';
 import { getGmailComposeUrl } from '../utils/emailUtils';
+import { getInstantFallbackSvg } from '../utils/media';
 
 interface HomePageProps {
   onNavigate: (path: string) => void;
@@ -355,7 +356,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                           className={`project-cover ${project.coverClass || ''}`}
                           decoding="async"
                           loading="lazy"
-                          src={project.coverImage}
+                          src={project.coverImage || getInstantFallbackSvg(project.title)}
+                          onError={(e) => {
+                            e.currentTarget.src = getInstantFallbackSvg(project.title);
+                          }}
                         />
                       </div>
                       <div className="project-copy">
