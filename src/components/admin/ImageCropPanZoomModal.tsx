@@ -21,7 +21,7 @@ interface ImageCropPanZoomModalProps {
   onClose: () => void;
   imageUrl: string;
   imageTitle?: string;
-  defaultAspectRatio?: '21:9' | '16:9' | '16:10' | '4:3' | '1:1';
+  defaultAspectRatio?: 'original' | '21:9' | '16:9' | '16:10' | '4:3' | '1:1';
   onApplyCrop: (croppedDataUrl: string, blob: Blob) => Promise<void> | void;
 }
 
@@ -30,10 +30,10 @@ export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
   onClose,
   imageUrl,
   imageTitle = 'Adjust Image Framing',
-  defaultAspectRatio = '16:9',
+  defaultAspectRatio = 'original',
   onApplyCrop
 }) => {
-  const [aspectRatio, setAspectRatio] = useState<'21:9' | '16:9' | '16:10' | '4:3' | '1:1'>(defaultAspectRatio);
+  const [aspectRatio, setAspectRatio] = useState<'original' | '21:9' | '16:9' | '16:10' | '4:3' | '1:1'>(defaultAspectRatio);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -69,6 +69,9 @@ export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
 
   // Compute aspect ratio value
   const getAspectNumeric = useCallback(() => {
+    if (aspectRatio === 'original' && naturalDimensions && naturalDimensions.height > 0) {
+      return naturalDimensions.width / naturalDimensions.height;
+    }
     switch (aspectRatio) {
       case '21:9':
         return 21 / 9;
@@ -82,7 +85,7 @@ export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
       default:
         return 16 / 9;
     }
-  }, [aspectRatio]);
+  }, [aspectRatio, naturalDimensions]);
 
   // Calculate crop coverage percentage
   const cropStats = useMemo(() => {
@@ -285,7 +288,7 @@ export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
           {/* Aspect Ratios */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-zinc-400 font-mono text-[11px] mr-1">FRAME RATIO:</span>
-            {(['21:9', '16:9', '16:10', '4:3', '1:1'] as const).map((ratio) => (
+            {(['original', '16:9', '16:10', '4:3', '1:1', '21:9'] as const).map((ratio) => (
               <button
                 key={ratio}
                 type="button"
@@ -299,7 +302,7 @@ export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
                     : 'bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/5'
                 }`}
               >
-                {ratio}
+                {ratio === 'original' ? 'Original (Full)' : ratio}
               </button>
             ))}
           </div>

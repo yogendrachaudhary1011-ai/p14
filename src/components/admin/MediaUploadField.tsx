@@ -109,26 +109,27 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
               onChange={(event) => void handleDirectUpload(event.currentTarget.files?.[0])}
             />
 
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex flex-wrap items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 disabled={uploading}
-                onClick={() => inputRef.current?.click()}
-                title="Choose an image, adjust size, pan & zoom to preview what gets cropped before uploading"
-                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#ff853a]/40 bg-[#ff853a]/15 hover:bg-[#ff853a]/25 px-3 py-2 text-xs font-semibold text-[#ffb17d] hover:text-white transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                onClick={() => directInputRef.current?.click()}
+                title="Upload original image with any height without cropping"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 px-3 py-2 text-xs font-semibold text-emerald-400 hover:text-white transition-all cursor-pointer shadow-xs disabled:opacity-50"
               >
-                {uploading ? <Upload size={14} className="animate-pulse" /> : <Crop size={14} />}
-                <span>{uploading ? 'Uploading…' : `Adjust & Upload ${label}`}</span>
+                {uploading ? <Upload size={14} className="animate-pulse" /> : <Upload size={14} />}
+                <span>{uploading ? 'Uploading…' : `Upload ${label} (Original / Any Height)`}</span>
               </button>
 
               <button
                 type="button"
                 disabled={uploading}
-                onClick={() => directInputRef.current?.click()}
-                title="Upload as-is without cropping"
-                className="inline-flex items-center justify-center p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white text-xs cursor-pointer transition-colors disabled:opacity-50"
+                onClick={() => inputRef.current?.click()}
+                title="Optional: Crop, pan or zoom before uploading"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 px-2.5 py-2 text-xs text-zinc-300 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
               >
-                <ImagePlus size={14} />
+                <Crop size={14} />
+                <span>Crop / Frame</span>
               </button>
             </div>
           </>
@@ -154,8 +155,8 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
       {/* Selected Image Preview with Pan/Zoom & Crop Action */}
       {value ? (
         <div className="relative w-full max-w-md overflow-hidden rounded-lg border border-white/15 bg-zinc-950 group">
-          <div className="aspect-video bg-black flex items-center justify-center">
-            <MediaPreview src={value} alt={label} className="h-full w-full object-cover" />
+          <div className="min-h-[140px] max-h-[320px] bg-black/70 flex items-center justify-center p-2">
+            <MediaPreview src={value} alt={label} className="max-h-[300px] w-auto max-w-full object-contain rounded" />
           </div>
 
           {/* Action overlay buttons */}
