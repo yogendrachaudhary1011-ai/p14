@@ -6,6 +6,7 @@ interface MediaPreviewProps {
   alt?: string;
   mimeType?: string;
   className?: string;
+  containerClassName?: string;
   style?: React.CSSProperties;
   onLoad?: React.ReactEventHandler<HTMLImageElement>;
   onError?: React.ReactEventHandler<HTMLImageElement>;
@@ -15,21 +16,33 @@ interface MediaPreviewProps {
   controls?: boolean;
 }
 
+// Global cache of URLs that have already successfully loaded in this session
+const loadedMediaCache = new Set<string>();
+
 export const MediaPreview: React.FC<MediaPreviewProps> = ({
   src,
   alt = '',
   mimeType,
   className = '',
+  containerClassName,
   style,
   onLoad,
   onError,
-  loading = 'lazy',
+  loading = 'eager',
   priority = false,
   fallbackSrc,
   controls = true
 }) => {
+  const isPrecached = Boolean(
+    src && (
+      loadedMediaCache.has(src) ||
+      src.startsWith('data:') ||
+      src.startsWith('blob:')
+    )
+  );
+
   const [currentSrc, setCurrentSrc] = useState<string>(src || '');
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [isLoaded, setIsLoaded] = useState<boolean>(isPrecached);
   const [hasError, setHasError] = useState<boolean>(false);
   const retryCountRef = useRef<number>(0);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -38,9 +51,9 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   const resolvedFallback =
     !fallbackSrc || fallbackSrc.includes('placehold.co')
       ? getInstantFallbackSvg(alt || 'Image asset')
-    : fallbackSrc;
+      : fallbackSrc;
 
-  // Immediate check for cached images that already resolved complete
+  // Immediate synchronous cache check and warm probe
   useEffect(() => {
     retryCountRef.current = 0;
     setHasError(false);
@@ -54,20 +67,17 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
 
     setCurrentSrc(src);
 
-    // If the browser already has the image decoded from memory or disk cache
-    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+    if (loadedMediaCache.has(src)) {
       setIsLoaded(true);
-    } else {
-      setIsLoaded(false);
+      return;
+    }
+
+    // Check DOM img element status directly
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      loadedMediaCache.add(src);
+      setIsLoaded(true);
     }
   }, [src, resolvedFallback]);
-
-  // Secondary check in next frame for fast network/cache hits
-  useEffect(() => {
-    if (!isLoaded && imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
-      setIsLoaded(true);
-    }
-  }, [isLoaded, currentSrc]);
 
   if (isVideoMedia(src, mimeType)) {
     return (
@@ -84,6 +94,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   }
 
   const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    if (currentSrc) loadedMediaCache.add(currentSrc);
     setIsLoaded(true);
     onLoad?.(event);
   };
@@ -95,7 +106,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
       setTimeout(() => {
         const separator = currentSrc.includes('?') ? '&' : '?';
         setCurrentSrc(`${currentSrc}${separator}retry=${Date.now()}`);
-      }, 350);
+      }, 200);
       return;
     }
 
@@ -108,30 +119,30 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   };
 
   return (
-    <div className="relative w-full min-w-0 flex items-center justify-center overflow-hidden">
-      {/* Sleek loading shimmer skeleton while image is fetching */}
+    <div
+      className={`relative w-full min-w-0 ${
+        containerClassName || 'flex items-center justify-center overflow-hidden'
+      }`}
+    >
+      {/* Subtle non-blocking background skeleton while image streams in */}
       {!isLoaded && !hasError && (
         <div
           aria-hidden="true"
-          className="absolute inset-0 min-h-[160px] bg-white/[0.03] animate-pulse pointer-events-none rounded-[inherit] flex items-center justify-center z-10"
-        >
-          <div className="w-6 h-6 border-2 border-white/10 border-t-[#f37021]/60 rounded-full animate-spin" />
-        </div>
+          className="absolute inset-0 bg-white/[0.02] pointer-events-none rounded-none"
+        />
       )}
 
       <img
         ref={imgRef}
         src={currentSrc}
         alt={alt}
-        className={`${className} transition-opacity duration-300 ${
-          isLoaded ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={className}
         style={style}
         onLoad={handleImageLoad}
         onError={handleImageError}
         loading={priority ? 'eager' : loading}
-        decoding="async"
-        {...(priority ? { fetchPriority: 'high' } : {})}
+        decoding={priority ? 'sync' : 'auto'}
+        fetchPriority={priority ? 'high' : 'auto'}
       />
     </div>
   );

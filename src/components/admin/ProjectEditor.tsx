@@ -130,15 +130,21 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
     if (!files?.length) return;
     setUploadingFiles(true);
     setUploadMessage(null);
+    const fileArray = Array.from(files);
+    const results = await Promise.allSettled(
+      fileArray.map((file) => uploadProjectMedia(file))
+    );
     const uploaded: MediaAsset[] = [];
     const failures: string[] = [];
-    for (const file of Array.from(files)) {
-      try {
-        uploaded.push(await uploadProjectMedia(file));
-      } catch (error) {
-        failures.push(`${file.name}: ${error instanceof Error ? error.message : 'Upload failed'}`);
+    results.forEach((res, index) => {
+      const file = fileArray[index];
+      if (res.status === 'fulfilled') {
+        uploaded.push(res.value);
+      } else {
+        failures.push(`${file.name}: ${res.reason instanceof Error ? res.reason.message : 'Upload failed'}`);
       }
-    }
+    });
+
     if (uploaded.length) {
       const firstImage = uploaded.find((asset) => !isVideoMedia(asset.url, asset.mimeType));
       if (firstImage) {

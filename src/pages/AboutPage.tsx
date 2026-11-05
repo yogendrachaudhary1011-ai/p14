@@ -37,6 +37,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                   loop
                   muted
                   playsInline
+                  preload="metadata"
                   poster="/assets/media/about-profile-poster.png"
                   src={aboutVideo}
                 >

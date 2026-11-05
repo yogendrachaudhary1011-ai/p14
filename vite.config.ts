@@ -7,6 +7,27 @@ export default defineConfig({
     tailwindcss(),
     react()
   ],
+  build: {
+    target: 'es2022',
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+          }
+        }
+      }
+    }
+  },
   server: {
     host: '0.0.0.0',
     port: 3000,

@@ -32,11 +32,12 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   return (
     <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col justify-center items-center gap-8 sm:gap-12 md:gap-16 relative z-10 box-border">
       {/* Big Hero Image with reveal and hover depth */}
-      <div className="w-full rounded-none md:rounded-[6px] overflow-hidden bg-zinc-950 flex justify-center items-center aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] max-h-[728px] max-w-full animate-cs-image-reveal group">
+      <div className="w-full rounded-none overflow-hidden bg-zinc-950 flex justify-center items-center aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] max-h-[728px] max-w-full animate-cs-image-reveal group">
         <MediaPreview
           src={heroImage}
           alt={heroImageAlt || 'Hero visual'}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded-none"
+          containerClassName="w-full h-full flex items-center justify-center rounded-none overflow-hidden"
           loading="eager"
           priority={true}
         />

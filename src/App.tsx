@@ -1,12 +1,20 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, lazy, Suspense } from 'react';
 import { usePortfolio } from './context/PortfolioContext';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { HomePage } from './pages/HomePage';
-import { ProjectsPage } from './pages/ProjectsPage';
-import { AboutPage } from './pages/AboutPage';
-import { DynamicCase } from './pages/case-studies/DynamicCase';
-import { AdminPage } from './pages/admin/AdminPage';
+
+// Code-split secondary routes so the initial landing page bundle is minimal and renders instantly
+const ProjectsPage = lazy(() => import('./pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage })));
+const AboutPage = lazy(() => import('./pages/AboutPage').then((m) => ({ default: m.AboutPage })));
+const DynamicCase = lazy(() => import('./pages/case-studies/DynamicCase').then((m) => ({ default: m.DynamicCase })));
+const AdminPage = lazy(() => import('./pages/admin/AdminPage').then((m) => ({ default: m.AdminPage })));
+
+const PageFallback = () => (
+  <div className="min-h-[40vh] flex items-center justify-center py-16" aria-busy="true" aria-label="Loading page">
+    <div className="w-5 h-5 border-2 border-white/10 border-t-[#f37021] rounded-full animate-spin" />
+  </div>
+);
 
 export const App: React.FC = () => {
   const { projects } = usePortfolio();
@@ -114,16 +122,32 @@ export const App: React.FC = () => {
 
   const renderRoute = () => {
     if (isAdminView) {
-      return <AdminPage onNavigate={navigate} />;
+      return (
+        <Suspense fallback={<PageFallback />}>
+          <AdminPage onNavigate={navigate} />
+        </Suspense>
+      );
     }
     if (matchedProject) {
-      return <DynamicCase project={matchedProject} onNavigate={navigate} />;
+      return (
+        <Suspense fallback={<PageFallback />}>
+          <DynamicCase project={matchedProject} onNavigate={navigate} />
+        </Suspense>
+      );
     }
     if (normalized === '/projects' || normalized === '/work') {
-      return <ProjectsPage onNavigate={navigate} />;
+      return (
+        <Suspense fallback={<PageFallback />}>
+          <ProjectsPage onNavigate={navigate} />
+        </Suspense>
+      );
     }
     if (normalized === '/about') {
-      return <AboutPage onNavigate={navigate} />;
+      return (
+        <Suspense fallback={<PageFallback />}>
+          <AboutPage onNavigate={navigate} />
+        </Suspense>
+      );
     }
 
     return <HomePage onNavigate={navigate} />;

@@ -17,12 +17,13 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({ block }) => {
     <div data-cols={columns} className={`w-full case-study-card-grid grid ${colClass} gap-4 my-2`}>
       {images.map((img, idx) => (
         <div key={idx} className="flex flex-col gap-1.5 group">
-          <div className="rounded-[5px] overflow-hidden border border-white/10 bg-zinc-950 flex justify-center items-center transition-all duration-300 group-hover:border-white/30 group-hover:-translate-y-1 group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)]">
+          <div className="rounded-none overflow-hidden border border-white/10 bg-zinc-950 flex justify-center items-center transition-all duration-300 group-hover:border-white/30 group-hover:-translate-y-1 group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)]">
             <MediaPreview
               src={img.url}
               alt={img.alt || `Gallery item ${idx + 1}`}
-              className="w-full h-auto object-cover max-h-[500px]"
-              loading="lazy"
+              className="w-full h-auto object-contain rounded-none max-h-[700px]"
+              containerClassName="w-full flex items-center justify-center rounded-none"
+              loading="eager"
             />
           </div>
           {img.caption && (

@@ -241,6 +241,31 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return () => window.clearTimeout(timer);
   }, [media]);
 
+  // Proactive background image preloader for instant navigation (deferred to idle time to avoid bandwidth contention)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const preloadImages = () => {
+      const preloadList = [
+        settings.profileImage || '/assets/media/hero-id-portrait.jpeg',
+        ...projects.slice(0, 4).flatMap((p) => [p.coverImage, p.heroImage?.url]).filter(Boolean)
+      ];
+      preloadList.forEach((url) => {
+        if (url && typeof url === 'string' && !url.startsWith('data:') && !url.startsWith('blob:')) {
+          const img = new Image();
+          img.src = url;
+        }
+      });
+    };
+
+    if ('requestIdleCallback' in window) {
+      const handle = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(preloadImages, { timeout: 3000 });
+      return () => (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(handle);
+    } else {
+      const timer = window.setTimeout(preloadImages, 1500);
+      return () => window.clearTimeout(timer);
+    }
+  }, [settings.profileImage, projects]);
+
   // Supabase session, initial cloud load, and live snapshot subscription.
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;

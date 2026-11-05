@@ -1,5 +1,6 @@
 import { getSupabase } from '../supabase';
 import { Project, SiteSettings, ExperienceItem, EducationItem, MediaAsset } from '../types';
+import { compressAndOptimizeImage } from './media';
 
 export interface PortfolioSnapshot {
   settings: SiteSettings;
@@ -328,16 +329,28 @@ export async function uploadMediaToSupabase(file: File): Promise<{ url: string |
     return { url: null, error: 'Files must be 50 MB or smaller.' };
   }
 
+  let targetFile = file;
+  if (file.type.startsWith('image/') && file.type !== 'image/svg+xml' && file.type !== 'image/gif') {
+    try {
+      const optimized = await compressAndOptimizeImage(file);
+      if (optimized.file && optimized.file.size > 0) {
+        targetFile = optimized.file;
+      }
+    } catch {
+      targetFile = file;
+    }
+  }
+
   try {
-    const fileExt = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';
+    const fileExt = targetFile.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const filePath = `uploads/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('portfolio-media')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        contentType,
+      .upload(filePath, targetFile, {
+        cacheControl: '31536000, public, immutable',
+        contentType: targetFile.type || contentType,
         upsert: false
       });
 

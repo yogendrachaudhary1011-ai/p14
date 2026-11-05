@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { initialSiteSettings } from '../data/initialData';
 import { IdCard } from '../components/home/IdCard';
@@ -20,28 +20,32 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const [filter, setFilter] = useState<'all' | 'product' | 'archive'>('all');
   const [activeAboutTab, setActiveAboutTab] = useState<'about-profile' | 'about-experience' | 'about-education'>('about-profile');
 
-  const filteredProjects = projects
-    .filter(p => p.status === 'published')
-    .filter(p => filter === 'all' || p.category === filter)
-    .sort((a, b) => a.order - b.order);
+  const filteredProjects = useMemo(() => {
+    return projects
+      .filter((p) => p.status === 'published')
+      .filter((p) => filter === 'all' || p.category === filter)
+      .sort((a, b) => a.order - b.order);
+  }, [projects, filter]);
 
   const phraseGroups = [copy.heroDescription];
 
-  // Calculate cumulative words and delays
-  let currentDelay = 0.34;
-  const renderedPhrases = phraseGroups.map((phrase, groupIdx) => {
-    const words = phrase.split(/\s+/).filter(Boolean);
-    const wordsWithDelay = words.map((word) => {
-      const delay = currentDelay;
-      currentDelay += 0.055;
-      return { word, delay };
+  // Calculate cumulative words and delays (memoized)
+  const renderedPhrases = useMemo(() => {
+    let currentDelay = 0.34;
+    return phraseGroups.map((phrase, groupIdx) => {
+      const words = phrase.split(/\s+/).filter(Boolean);
+      const wordsWithDelay = words.map((word) => {
+        const delay = currentDelay;
+        currentDelay += 0.055;
+        return { word, delay };
+      });
+      return {
+        id: groupIdx + 1,
+        phrase,
+        words: wordsWithDelay
+      };
     });
-    return {
-      id: groupIdx + 1,
-      phrase,
-      words: wordsWithDelay
-    };
-  });
+  }, [copy.heroDescription]);
 
   const handleScrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -68,44 +72,50 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     window.addEventListener('resize', runSync, { passive: true });
     window.addEventListener('orientationchange', runSync, { passive: true });
 
-    // 2. Scroll effects: hero scroll parallax, timeline progress
+    // 2. Scroll effects: hero scroll parallax, timeline progress (throttled with rAF)
+    let scrollTicking = false;
     const handleScroll = () => {
-      // Hero scroll parallax
-      const hero = document.getElementById('home');
-      if (hero) {
-        const progress = Math.max(0, Math.min(1, window.scrollY / (hero.offsetHeight * 0.9)));
-        hero.style.setProperty('--hero-scroll', progress.toFixed(3));
-      }
+      if (scrollTicking) return;
+      scrollTicking = true;
+      requestAnimationFrame(() => {
+        scrollTicking = false;
+        // Hero scroll parallax
+        const hero = document.getElementById('home');
+        if (hero) {
+          const progress = Math.max(0, Math.min(1, window.scrollY / (hero.offsetHeight * 0.9)));
+          hero.style.setProperty('--hero-scroll', progress.toFixed(3));
+        }
 
-      // Experience timeline dynamic line
-      const aboutTimeline = document.querySelector('.about-timeline') as HTMLElement | null;
-      if (aboutTimeline) {
-        const rect = aboutTimeline.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const trackTop = 11;
-        const trackBottom = 0;
-        const trackHeight = Math.max(0, rect.height - trackTop - trackBottom);
-        const headerHeight = 72;
-        const shrinkEndLine = Math.max(headerHeight + 24, viewportHeight * 0.12);
-        const fullHoldLine = Math.max(headerHeight + 132, Math.min(viewportHeight * 0.27, 220));
-        const presentPoint = rect.top + trackTop;
-        const fillRatio =
-          presentPoint >= fullHoldLine
-            ? 1
-            : Math.max(0, Math.min(1, (presentPoint - shrinkEndLine) / (fullHoldLine - shrinkEndLine)));
-        const scrollProgress = trackHeight * fillRatio;
-        aboutTimeline.style.setProperty('--timeline-progress', `${scrollProgress.toFixed(1)}px`);
+        // Experience timeline dynamic line
+        const aboutTimeline = document.querySelector('.about-timeline') as HTMLElement | null;
+        if (aboutTimeline) {
+          const rect = aboutTimeline.getBoundingClientRect();
+          const viewportHeight = window.innerHeight;
+          const trackTop = 11;
+          const trackBottom = 0;
+          const trackHeight = Math.max(0, rect.height - trackTop - trackBottom);
+          const headerHeight = 72;
+          const shrinkEndLine = Math.max(headerHeight + 24, viewportHeight * 0.12);
+          const fullHoldLine = Math.max(headerHeight + 132, Math.min(viewportHeight * 0.27, 220));
+          const presentPoint = rect.top + trackTop;
+          const fillRatio =
+            presentPoint >= fullHoldLine
+              ? 1
+              : Math.max(0, Math.min(1, (presentPoint - shrinkEndLine) / (fullHoldLine - shrinkEndLine)));
+          const scrollProgress = trackHeight * fillRatio;
+          aboutTimeline.style.setProperty('--timeline-progress', `${scrollProgress.toFixed(1)}px`);
 
-        const items = document.querySelectorAll('.about-timeline > .timeline-item');
-        let activeIndex = -1;
-        items.forEach((item, index) => {
-          const itemRect = item.getBoundingClientRect();
-          const hasPassed = itemRect.top < viewportHeight * 0.9;
-          item.classList.toggle('is-revealed', hasPassed);
-          if (hasPassed) activeIndex = index;
-        });
-        items.forEach((item, index) => item.classList.toggle('is-active', index === activeIndex));
-      }
+          const items = document.querySelectorAll('.about-timeline > .timeline-item');
+          let activeIndex = -1;
+          items.forEach((item, index) => {
+            const itemRect = item.getBoundingClientRect();
+            const hasPassed = itemRect.top < viewportHeight * 0.9;
+            item.classList.toggle('is-revealed', hasPassed);
+            if (hasPassed) activeIndex = index;
+          });
+          items.forEach((item, index) => item.classList.toggle('is-active', index === activeIndex));
+        }
+      });
     };
 
     handleScroll();
@@ -335,7 +345,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               </div>
             ) : (
               <div aria-live="polite" className="projects-grid" id="projectsGrid" data-active-filter={filter}>
-                {filteredProjects.map((project) => (
+                {filteredProjects.map((project, index) => (
                   <article key={project.id} className="project" data-category={project.category}>
                     <a
                       aria-label={`Open ${project.title} case study`}
@@ -354,8 +364,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                         <img
                           alt={project.title}
                           className={`project-cover ${project.coverClass || ''}`}
-                          decoding="async"
-                          loading="lazy"
+                          decoding="auto"
+                          loading={index < 3 ? 'eager' : 'lazy'}
+                          fetchPriority={index < 2 ? 'high' : 'auto'}
                           src={project.coverImage || getInstantFallbackSvg(project.title)}
                           onError={(e) => {
                             e.currentTarget.src = getInstantFallbackSvg(project.title);
@@ -397,6 +408,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                     loop
                     muted
                     playsInline
+                    preload="metadata"
                     poster="/assets/media/about-profile-poster.png"
                     src={aboutVideo}
                   >

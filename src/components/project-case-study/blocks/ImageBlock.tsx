@@ -13,12 +13,14 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
 
   return (
     <div className={`w-full flex flex-col gap-2 my-2 ${isFull ? 'max-w-none' : 'max-w-4xl mx-auto'}`}>
-      <div className="w-full min-h-[220px] sm:min-h-[340px] rounded-[5px] overflow-hidden bg-neutral-900/40 flex justify-center items-center group">
+      <div className="w-full rounded-none overflow-visible bg-neutral-900/20 block group">
         <MediaPreview
           src={imageUrl}
           alt={block.alt || 'Case study illustration'}
-          className="w-full h-auto max-w-full object-contain block rounded-[5px]"
-          loading="lazy"
+          className="w-full h-auto max-w-full block rounded-none"
+          containerClassName="w-full block rounded-none overflow-visible"
+          loading="eager"
+          priority={true}
         />
       </div>
       {block.caption && (

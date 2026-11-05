@@ -43,6 +43,13 @@
     max-width: 100% !important;
   }
 
+  /* Ensure case study images never crop out and have zero corner radius */
+  .dynamic-case-page img,
+  [data-page="dynamic-case"] img,
+  .case-study-section img {
+    border-radius: 0 !important;
+  }
+
   /* Protect modern grid layouts from legacy 12-column site.css .grid contamination */
   .case-study-card-grid,
   [class*="grid-cols-"] {

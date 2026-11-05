@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { initialSiteSettings } from '../data/initialData';
 import { getInstantFallbackSvg } from '../utils/media';
@@ -12,10 +12,16 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onNavigate }) => {
   const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
   const [filter, setFilter] = useState<'all' | 'product' | 'archive'>('all');
 
-  const filteredProjects = projects
-    .filter(p => p.status === 'published')
-    .filter(p => filter === 'all' || p.category === filter)
-    .sort((a, b) => a.order - b.order);
+  const publishedProjects = useMemo(
+    () => projects.filter((p) => p.status === 'published'),
+    [projects]
+  );
+
+  const filteredProjects = useMemo(() => {
+    return publishedProjects
+      .filter((p) => filter === 'all' || p.category === filter)
+      .sort((a, b) => a.order - b.order);
+  }, [publishedProjects, filter]);
 
   return (
     <div className="page-view route-entered" data-page="projects" id="projectsView">
@@ -56,7 +62,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onNavigate }) => {
                     onClick={() => setFilter('all')}
                     type="button"
                   >
-                    {copy.filterAll} ({projects.filter(p => p.status === 'published').length})
+                    {copy.filterAll} ({publishedProjects.length})
                   </button>
                   <button
                     aria-pressed={filter === 'product'}
@@ -115,7 +121,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onNavigate }) => {
             </div>
           ) : (
             <div aria-live="polite" className="projects-grid" id="projectsGrid" style={{ marginTop: '40px' }}>
-              {filteredProjects.map((project) => (
+              {filteredProjects.map((project, index) => (
                 <article key={project.id} className="project" data-category={project.category}>
                   <a
                     aria-label={`Open ${project.title} case study`}
@@ -134,8 +140,9 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onNavigate }) => {
                       <img
                         alt={project.title}
                         className={`project-cover ${project.coverClass || ''}`}
-                        decoding="async"
-                        loading="lazy"
+                        decoding="auto"
+                        loading={index < 4 ? 'eager' : 'lazy'}
+                        fetchPriority={index < 2 ? 'high' : 'auto'}
                         src={project.coverImage || getInstantFallbackSvg(project.title)}
                         onError={(e) => {
                           e.currentTarget.src = getInstantFallbackSvg(project.title);

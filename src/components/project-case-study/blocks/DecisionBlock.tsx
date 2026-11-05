@@ -11,12 +11,13 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
   return (
     <div className="w-full flex flex-col gap-6 my-2">
       {block.image && (
-        <div className="w-full rounded-[5px] overflow-hidden bg-neutral-900/40 group">
+        <div className="w-full rounded-none overflow-visible bg-neutral-900/20 group">
           <MediaPreview
             src={block.image}
             alt={block.imageAlt || 'Key architecture decision diagram'}
-            className="w-full h-auto object-contain max-h-[660px]"
-            loading="lazy"
+            className="w-full h-auto object-contain rounded-none max-h-[800px]"
+            containerClassName="w-full block rounded-none overflow-visible"
+            loading="eager"
           />
         </div>
       )}

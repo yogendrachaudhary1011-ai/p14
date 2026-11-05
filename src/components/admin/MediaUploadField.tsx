@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { ImagePlus, Upload, Crop, Sparkles } from 'lucide-react';
 import { MediaAsset } from '../../types';
 import { MediaPreview } from '../MediaPreview';
@@ -33,7 +33,7 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
   const [cropImageSource, setCropImageSource] = useState<string>('');
   const [pendingFileName, setPendingFileName] = useState<string>('cropped-image.webp');
 
-  const images = mediaLibrary.filter((asset) => (asset.mimeType || '').startsWith('image/'));
+  const images = useMemo(() => mediaLibrary.filter((asset) => (asset.mimeType || '').startsWith('image/')), [mediaLibrary]);
 
   // Handler for direct file upload (skipping crop modal)
   const handleDirectUpload = async (file?: File) => {

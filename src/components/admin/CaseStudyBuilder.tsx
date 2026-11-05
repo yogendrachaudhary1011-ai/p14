@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   CaseStudySection,
   CaseStudyBlock,
@@ -33,26 +33,33 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
   const [sectionUploadMessage, setSectionUploadMessage] = useState<string | null>(null);
   const sectionMediaInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedSection = sections.find((s) => s.id === selectedSectionId) || sections[0];
-  const sectionImageLabel = selectedSection?.type === 'problem'
-    ? 'Problem image'
-    : selectedSection?.type === 'keyDecisions'
-      ? 'Key Decisions image'
-      : selectedSection?.type === 'solution'
-        ? 'Solution image'
-        : selectedSection?.type === 'designSystem'
-          ? 'Design System images'
-          : selectedSection?.type === 'product'
-            ? 'Product images'
-            : `${selectedSection?.navigationLabel || 'Section'} images`;
-  const selectedSectionImageCount = (selectedSection?.blocks || []).reduce((count, block) => {
-    if (block.type === 'image' || block.type === 'fullWidthImage') return count + (block.url ? 1 : 0);
-    if (block.type === 'gallery') return count + block.images.length;
-    if (block.type === 'carousel') return count + block.slides.filter((slide) => !slide.url.includes('placehold.co')).length;
-    if (block.type === 'productShowcase') return count + block.screens.filter((screen) => !screen.url.includes('placehold.co')).length;
-    if (block.type === 'decisionList') return count + (block.image ? 1 : 0);
-    return count;
-  }, 0);
+  const selectedSection = useMemo(
+    () => sections.find((s) => s.id === selectedSectionId) || sections[0],
+    [sections, selectedSectionId]
+  );
+
+  const sectionImageLabel = useMemo(() => {
+    if (!selectedSection) return 'Section images';
+    switch (selectedSection.type) {
+      case 'problem': return 'Problem image';
+      case 'keyDecisions': return 'Key Decisions image';
+      case 'solution': return 'Solution image';
+      case 'designSystem': return 'Design System images';
+      case 'product': return 'Product images';
+      default: return `${selectedSection.navigationLabel || 'Section'} images`;
+    }
+  }, [selectedSection]);
+
+  const selectedSectionImageCount = useMemo(() => {
+    return (selectedSection?.blocks || []).reduce((count, block) => {
+      if (block.type === 'image' || block.type === 'fullWidthImage') return count + (block.url ? 1 : 0);
+      if (block.type === 'gallery') return count + block.images.length;
+      if (block.type === 'carousel') return count + block.slides.filter((slide) => !slide.url.includes('placehold.co')).length;
+      if (block.type === 'productShowcase') return count + block.screens.filter((screen) => !screen.url.includes('placehold.co')).length;
+      if (block.type === 'decisionList') return count + (block.image ? 1 : 0);
+      return count;
+    }, 0);
+  }, [selectedSection?.blocks]);
 
   const handleUpdateSection = (sectionId: string, updates: Partial<CaseStudySection>) => {
     const updated = sections.map((s) => (s.id === sectionId ? { ...s, ...updates } : s));
@@ -154,15 +161,21 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
     if (!selectedSection || !files?.length || !onUploadMedia) return;
     setUploadingSectionMedia(true);
     setSectionUploadMessage(null);
+    const fileList = Array.from(files);
+    const results = await Promise.allSettled(
+      fileList.map((file) => onUploadMedia(file).then((asset) => ({ asset, fileName: file.name })))
+    );
+
     const uploaded: MediaAsset[] = [];
     const failures: string[] = [];
-    for (const file of Array.from(files)) {
-      try {
-        uploaded.push(await onUploadMedia(file));
-      } catch (error) {
-        failures.push(`${file.name}: ${error instanceof Error ? error.message : 'Upload failed'}`);
+    results.forEach((res, idx) => {
+      if (res.status === 'fulfilled') {
+        uploaded.push(res.value.asset);
+      } else {
+        const fileName = fileList[idx]?.name || `File ${idx + 1}`;
+        failures.push(`${fileName}: ${res.reason instanceof Error ? res.reason.message : 'Upload failed'}`);
       }
-    }
+    });
     if (uploaded.length) {
       const imageAssets = uploaded.filter((asset) =>
         asset.mimeType?.toLowerCase().startsWith('image/') ||

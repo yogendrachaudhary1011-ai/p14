@@ -33,6 +33,12 @@ const BufferedTextInputField: React.FC<BufferedInputProps> = ({ value, onCommit,
         draftRef.current = event.currentTarget.value;
         props.onFocus?.(event);
       }}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          event.currentTarget.blur();
+        }
+        props.onKeyDown?.(event);
+      }}
       onChange={(event) => {
         draftRef.current = event.target.value;
         setDraft(event.target.value);

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { Project, ExperienceItem, EducationItem, AboutCertificate } from '../../types';
 import { initialSiteSettings } from '../../data/initialData';
@@ -44,6 +44,17 @@ import {
 } from 'lucide-react';
 import { TabType } from '../../components/admin/ProjectEditor';
 import './admin.css';
+
+// Hoisted navigation specification to prevent re-allocating on every render
+const NAV_TABS = [
+  { id: 'overview', label: 'Overview', detail: 'Portfolio dashboard', icon: LayoutDashboard },
+  { id: 'projects', label: 'Projects', detail: 'Case studies & stories', icon: FolderKanban },
+  { id: 'settings', label: 'Profile & Site', detail: 'Bio, contact & credentials', icon: Settings2 },
+  { id: 'experience', label: 'Experience', detail: 'Work history & positions', icon: BriefcaseBusiness },
+  { id: 'education', label: 'Education', detail: 'Degrees & qualifications', icon: GraduationCap },
+  { id: 'media', label: 'Media Library', detail: 'Assets, mockups & CDN', icon: ImageIcon },
+  { id: 'seo', label: 'SEO & Metadata', detail: 'Search cards & social', icon: FileText }
+] as const;
 
 interface AdminPageProps {
   onNavigate: (path: string) => void;
@@ -232,17 +243,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     updateExperience(itemId, { certificates });
   };
 
-  const cloudStatusLabel = cloudSaveStatus === 'saving'
-    ? 'Saving to Supabase…'
-    : cloudSaveStatus === 'unsaved'
-      ? 'Unsaved changes'
-    : cloudSaveStatus === 'error'
-      ? 'Cloud save failed'
-      : cloudSaveStatus === 'saved'
-        ? 'Saved to Supabase'
-        : isSupabaseConnected
-          ? (isAdmin ? 'Supabase connected' : 'Supabase read-only')
-          : 'Local persistence active';
+  const cloudStatusLabel = useMemo(() => {
+    if (cloudSaveStatus === 'saving') return 'Saving to Supabase…';
+    if (cloudSaveStatus === 'unsaved') return 'Unsaved changes';
+    if (cloudSaveStatus === 'error') return 'Cloud save failed';
+    if (cloudSaveStatus === 'saved') return 'Saved to Supabase';
+    if (isSupabaseConnected) {
+      return isAdmin ? 'Supabase connected' : 'Supabase read-only';
+    }
+    return 'Local persistence active';
+  }, [cloudSaveStatus, isSupabaseConnected, isAdmin]);
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard?.writeText(text);
@@ -289,28 +299,36 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     }
   };
 
-  // Filter projects
-  const filteredProjects = projects.filter((p) => {
-    const matchesSearch =
-      projectSearchQuery === '' ||
-      p.title.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-      p.slug.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-      (p.categoryLabel && p.categoryLabel.toLowerCase().includes(projectSearchQuery.toLowerCase()));
+  // Filter projects (memoized to avoid re-running string searches across all projects on keystrokes)
+  const filteredProjects = useMemo(() => {
+    const query = projectSearchQuery.trim().toLowerCase();
+    return projects.filter((p) => {
+      const matchesSearch =
+        !query ||
+        p.title.toLowerCase().includes(query) ||
+        p.slug.toLowerCase().includes(query) ||
+        (p.categoryLabel && p.categoryLabel.toLowerCase().includes(query));
 
-    const matchesCategory = projectCategoryFilter === 'all' || p.category === projectCategoryFilter;
-    const matchesStatus = projectStatusFilter === 'all' || p.status === projectStatusFilter;
+      const matchesCategory = projectCategoryFilter === 'all' || p.category === projectCategoryFilter;
+      const matchesStatus = projectStatusFilter === 'all' || p.status === projectStatusFilter;
 
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+  }, [projects, projectSearchQuery, projectCategoryFilter, projectStatusFilter]);
 
-  // Filter media
-  const filteredMedia = media.filter((m) => {
-    if (!mediaSearchQuery) return true;
-    return (
-      m.name.toLowerCase().includes(mediaSearchQuery.toLowerCase()) ||
-      m.url.toLowerCase().includes(mediaSearchQuery.toLowerCase())
+  // Filter media (memoized to prevent expensive lowerCase conversions during typing)
+  const filteredMedia = useMemo(() => {
+    const query = mediaSearchQuery.trim().toLowerCase();
+    if (!query) return media;
+    return media.filter((m) =>
+      m.name.toLowerCase().includes(query) ||
+      m.url.toLowerCase().includes(query)
     );
-  });
+  }, [media, mediaSearchQuery]);
+
+  // Navigation tab spec and active tab resolution (must run before any early return)
+  const navTabs = NAV_TABS;
+  const currentTab = useMemo(() => NAV_TABS.find((tab) => tab.id === activeTab) || NAV_TABS[0], [activeTab]);
 
   // ==========================================
   // LOGIN VIEW (IF NOT AUTHENTICATED)
@@ -435,19 +453,6 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       </div>
     );
   }
-
-  // ==========================================
-  // NAVIGATION TABS SPECIFICATION
-  // ==========================================
-  const navTabs = [
-    { id: 'overview', label: 'Overview', detail: 'Portfolio dashboard', icon: LayoutDashboard },
-    { id: 'projects', label: 'Projects', detail: 'Case studies & stories', icon: FolderKanban },
-    { id: 'settings', label: 'Profile & Site', detail: 'Bio, contact & credentials', icon: Settings2 },
-    { id: 'experience', label: 'Experience', detail: 'Work history & positions', icon: BriefcaseBusiness },
-    { id: 'education', label: 'Education', detail: 'Degrees & qualifications', icon: GraduationCap },
-    { id: 'media', label: 'Media Library', detail: 'Assets, mockups & CDN', icon: ImageIcon },
-    { id: 'seo', label: 'SEO & Metadata', detail: 'Search cards & social', icon: FileText }
-  ];
 
   return (
     <div id="adminApp">
@@ -596,7 +601,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           <div className="admin-breadcrumb">
             <span className="text-zinc-500">Studio</span>
             <ChevronRight size={14} className="text-zinc-600" />
-            <strong className="text-white">{navTabs.find((tab) => tab.id === activeTab)?.label}</strong>
+            <strong className="text-white">{currentTab.label}</strong>
           </div>
           <div className="admin-topbar-actions">
             <span
@@ -632,10 +637,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             <h1>
               {activeTab === 'overview'
                 ? `Good to see you${adminUser ? `, ${adminUser.split(' ')[0]}` : ''}.`
-                : navTabs.find((tab) => tab.id === activeTab)?.label}
+                : currentTab.label}
             </h1>
             <p>
-              {navTabs.find((tab) => tab.id === activeTab)?.detail} <span>·</span> Shape your portfolio, one detail at a
+              {currentTab.detail} <span>·</span> Shape your portfolio, one detail at a
               time.
             </p>
           </div>
@@ -2040,20 +2045,36 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                               const added: AboutCertificate[] = [];
                               const failures: string[] = [];
                               try {
-                                for (const file of files) {
-                                  if (!(file.type === 'application/pdf' || file.type.startsWith('image/'))) {
-                                    failures.push(`${file.name}: choose an image or PDF`);
-                                    continue;
+                                const uploadResults = await Promise.allSettled(
+                                  files.map(async (file) => {
+                                    if (!(file.type === 'application/pdf' || file.type.startsWith('image/'))) {
+                                      throw new Error('choose an image or PDF');
+                                    }
+                                    const result = await uploadMediaToSupabase(file);
+                                    if (!result.url) {
+                                      throw new Error(result.error || 'upload failed');
+                                    }
+                                    const title = file.name.replace(/\.[^.]+$/, '') || file.name;
+                                    const asset = addMedia(title, result.url, file.type, file.size);
+                                    return {
+                                      id: asset.id,
+                                      title,
+                                      url: asset.url,
+                                      mimeType: asset.mimeType,
+                                      size: asset.size,
+                                      uploadedAt: asset.uploadedAt
+                                    } as AboutCertificate;
+                                  })
+                                );
+
+                                uploadResults.forEach((res, idx) => {
+                                  const file = files[idx];
+                                  if (res.status === 'fulfilled') {
+                                    added.push(res.value);
+                                  } else {
+                                    failures.push(`${file.name}: ${res.reason instanceof Error ? res.reason.message : 'upload failed'}`);
                                   }
-                                  const result = await uploadMediaToSupabase(file);
-                                  if (!result.url) {
-                                    failures.push(`${file.name}: ${result.error || 'upload failed'}`);
-                                    continue;
-                                  }
-                                  const title = file.name.replace(/\.[^.]+$/, '') || file.name;
-                                  const asset = addMedia(title, result.url, file.type, file.size);
-                                  added.push({ id: asset.id, title, url: asset.url, mimeType: asset.mimeType, size: asset.size, uploadedAt: asset.uploadedAt });
-                                }
+                                });
                                 if (added.length) {
                                   saveExperienceCertificates(item.id, [...existing, ...added]);
                                   showNotice(`${added.length} certificate${added.length === 1 ? '' : 's'} uploaded for ${item.role}.${failures.length ? ` ${failures.length} failed.` : ''}`);
@@ -2412,21 +2433,30 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   setUploadingMedia(true);
                   let uploaded = 0;
                   const failures: string[] = [];
-                  for (const file of files) {
-                    const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file);
-                    const result = await uploadMediaToSupabase(optimizedFile);
-                    if (result.url) {
+                  const results = await Promise.allSettled(
+                    files.map(async (file) => {
+                      const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file);
+                      const result = await uploadMediaToSupabase(optimizedFile);
                       const displayName = file.name.replace(/\.[^.]+$/, '') || file.name;
-                      addMedia(displayName, result.url, optimizedFile.type, optimizedFile.size);
-                      uploaded += 1;
-                    } else if (dataUrl) {
-                      const displayName = file.name.replace(/\.[^.]+$/, '') || file.name;
-                      addMedia(displayName, dataUrl, optimizedFile.type, optimizedFile.size);
+                      if (result.url) {
+                        return { displayName, url: result.url, mimeType: optimizedFile.type, size: optimizedFile.size };
+                      } else if (dataUrl) {
+                        return { displayName, url: dataUrl, mimeType: optimizedFile.type, size: optimizedFile.size };
+                      } else {
+                        throw new Error(result.error || 'upload failed');
+                      }
+                    })
+                  );
+
+                  results.forEach((res, idx) => {
+                    const file = files[idx];
+                    if (res.status === 'fulfilled') {
+                      addMedia(res.value.displayName, res.value.url, res.value.mimeType, res.value.size);
                       uploaded += 1;
                     } else {
-                      failures.push(`${file.name}: ${result.error || 'upload failed'}`);
+                      failures.push(`${file.name}: ${res.reason instanceof Error ? res.reason.message : 'upload failed'}`);
                     }
-                  }
+                  });
                   setUploadingMedia(false);
                   if (uploaded && !failures.length) {
                     showNotice(`Uploaded ${uploaded} ${uploaded === 1 ? 'file' : 'files'} to Supabase.`);

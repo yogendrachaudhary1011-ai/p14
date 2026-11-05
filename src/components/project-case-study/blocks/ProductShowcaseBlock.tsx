@@ -76,7 +76,7 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
               key={idx}
               className={`shrink-0 ${
                 isMobile ? 'w-[76vw] sm:w-[300px] md:w-[320px]' : 'w-[84vw] sm:w-[380px] md:w-[440px]'
-              } max-w-[440px] h-[480px] sm:h-[540px] md:h-[580px] rounded-[10px] overflow-hidden border border-white/10 bg-zinc-950 flex flex-col shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-[0_24px_48px_rgba(0,0,0,0.85)]`}
+              } max-w-[440px] h-[480px] sm:h-[540px] md:h-[580px] rounded-none overflow-hidden border border-white/10 bg-zinc-950 flex flex-col shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-[0_24px_48px_rgba(0,0,0,0.85)]`}
               style={{
                 backgroundColor: 'var(--cs-card-bg, #09090b)',
                 borderColor: 'var(--cs-card-border, rgba(255, 255, 255, 0.1))'
@@ -96,7 +96,7 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
                   {screen.label || `Screen #${idx + 1}`}
                 </span>
                 <span
-                  className="shrink-0 text-[10px] px-2 py-0.5 rounded font-mono font-medium border"
+                  className="shrink-0 text-[10px] px-2 py-0.5 rounded-none font-mono font-medium border"
                   style={{
                     color: 'var(--cs-accent-text, #8be28b)',
                     backgroundColor: 'color-mix(in srgb, var(--cs-accent, #8be28b) 12%, transparent)',
@@ -112,8 +112,10 @@ export const ProductShowcaseBlock: React.FC<ProductShowcaseBlockProps> = ({ bloc
                 <MediaPreview
                   src={screen.url}
                   alt={screen.label || `Product Screen ${idx + 1}`}
-                  className="w-full h-auto object-contain rounded-sm"
-                  loading="lazy"
+                  className="w-full h-auto block object-top rounded-none"
+                  containerClassName="w-full block rounded-none min-h-0"
+                  loading={idx < 2 ? 'eager' : 'lazy'}
+                  priority={idx < 2}
                 />
               </div>
             </div>

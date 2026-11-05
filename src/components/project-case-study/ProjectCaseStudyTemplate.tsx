@@ -52,33 +52,38 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
   });
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  // Track active section and reading scroll progress
+  // Track active section and reading scroll progress (throttled with rAF)
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalScroll > 0) {
-        const currentProgress = (window.scrollY / totalScroll) * 100;
-        setScrollProgress(Math.min(100, Math.max(0, currentProgress)));
-      }
-
-      if (navSections.length === 0) return;
-      // Change the active item only once a section reaches the content reading line.
-      // Using offsetTop + a fixed scroll offset switched the nav before the section appeared.
-      const readingLine = 140;
-      let currentSection = navSections[0]?.id || '';
-      for (const section of navSections) {
-        const element = document.getElementById(section.id);
-        if (!element) continue;
-        const bounds = element.getBoundingClientRect();
-        if (bounds.top <= readingLine) currentSection = section.id;
-        if (bounds.top <= readingLine && bounds.bottom > readingLine) {
-          currentSection = section.id;
-          break;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+        if (totalScroll > 0) {
+          const currentProgress = (window.scrollY / totalScroll) * 100;
+          setScrollProgress(Math.min(100, Math.max(0, currentProgress)));
         }
-      }
-      setActiveSection((previous) => previous === currentSection ? previous : currentSection);
+
+        if (navSections.length === 0) return;
+        const readingLine = 140;
+        let currentSection = navSections[0]?.id || '';
+        for (const section of navSections) {
+          const element = document.getElementById(section.id);
+          if (!element) continue;
+          const bounds = element.getBoundingClientRect();
+          if (bounds.top <= readingLine) currentSection = section.id;
+          if (bounds.top <= readingLine && bounds.bottom > readingLine) {
+            currentSection = section.id;
+            break;
+          }
+        }
+        setActiveSection((previous) => (previous === currentSection ? previous : currentSection));
+      });
     };
 
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [navSections]);
