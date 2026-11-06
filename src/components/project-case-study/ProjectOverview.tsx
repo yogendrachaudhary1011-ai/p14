@@ -97,8 +97,8 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             )}
 
             {/* Editable overview lists */}
-            {(deliverableGroups?.length ? deliverableGroups : deliverables?.length ? [{ id: 'legacy-deliverables', label: copy.deliverablesLabel || 'Deliverables', items: deliverables }] : [])
-              .filter((group) => group.items.length > 0)
+            {(deliverableGroups?.length ? deliverableGroups : deliverables?.length ? [{ id: 'legacy-deliverables', label: copy.deliverablesLabel || 'Deliverables', items: deliverables, visible: true }] : [])
+              .filter((group) => group.visible !== false && group.items.length > 0)
               .map((group) => (
                 <div key={group.id} className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
                   <div

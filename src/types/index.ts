@@ -321,6 +321,7 @@ export interface DeliverableGroup {
   id: string;
   label: string;
   items: string[];
+  visible?: boolean;
 }
 
 export interface ProjectTheme {

@@ -165,9 +165,10 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
     const cleanDeliverableGroups = deliverableGroups.map((group) => ({
       ...group,
       label: group.label.trim() || 'Untitled section',
-      items: group.items.map((item) => item.trim()).filter(Boolean)
+      items: group.items.map((item) => item.trim()).filter(Boolean),
+      visible: group.visible !== false
     }));
-    const deliverables = cleanDeliverableGroups.flatMap((group) => group.items);
+    const deliverables = cleanDeliverableGroups.filter((g) => g.visible !== false).flatMap((group) => group.items);
 
     const cleanSlug = slug
       .trim()
@@ -577,16 +578,89 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                 + Add overview list
               </button>
             </div>
-            {deliverableGroups.map((group, index) => (
-              <section key={group.id} className="rounded-lg border border-white/10 bg-zinc-950/70 p-3 sm:p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <BufferedTextInput aria-label={`Overview list ${index + 1} heading`} type="text" value={group.label} onCommit={(value) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, label: value } : item))} className="min-w-0 flex-1 rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="e.g. Web Experience" />
-                  <button type="button" disabled={deliverableGroups.length <= 1} onClick={() => setDeliverableGroups((groups) => groups.filter((item) => item.id !== group.id))} className="rounded px-3 py-2 text-xs text-zinc-400 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-40" aria-label={`Remove ${group.label || `list ${index + 1}`}`}>Remove</button>
-                </div>
-                <BufferedTextarea rows={Math.min(8, Math.max(3, group.items.length))} value={group.items.join('\\n')} onCommit={(value) => setDeliverableGroups((groups) => groups.map((item) => item.id === group.id ? { ...item, items: value.split('\\n') } : item))} className="w-full rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white" placeholder="Add one line per item" />
-                <p className="text-[11px] text-zinc-500">Each list is displayed in two columns on the project page.</p>
-              </section>
-            ))}
+            {deliverableGroups.map((group, index) => {
+              const isGroupVisible = group.visible !== false;
+              return (
+                <section
+                  key={group.id}
+                  className={`rounded-lg border p-3 sm:p-4 space-y-3 transition-all ${
+                    isGroupVisible
+                      ? 'border-white/10 bg-zinc-950/70'
+                      : 'border-dashed border-amber-500/30 bg-zinc-950/40 opacity-75'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <BufferedTextInput
+                      aria-label={`Overview list ${index + 1} heading`}
+                      type="text"
+                      value={group.label}
+                      onCommit={(value) =>
+                        setDeliverableGroups((groups) =>
+                          groups.map((item) => (item.id === group.id ? { ...item, label: value } : item))
+                        )
+                      }
+                      className="min-w-0 flex-1 rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white"
+                      placeholder="e.g. Web Experience"
+                    />
+
+                    {/* Enable / Disable Toggle Button */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDeliverableGroups((groups) =>
+                          groups.map((item) =>
+                            item.id === group.id ? { ...item, visible: !isGroupVisible } : item
+                          )
+                        )
+                      }
+                      title={isGroupVisible ? 'Disable list (hide from project overview without deleting)' : 'Enable list (show on project overview)'}
+                      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded text-xs font-medium cursor-pointer transition-colors border ${
+                        isGroupVisible
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20'
+                          : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700'
+                      }`}
+                      aria-label={isGroupVisible ? `Disable ${group.label || 'list'}` : `Enable ${group.label || 'list'}`}
+                    >
+                      <span className="material-symbols-rounded text-sm">
+                        {isGroupVisible ? 'visibility' : 'visibility_off'}
+                      </span>
+                      <span>{isGroupVisible ? 'Enabled' : 'Disabled'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={deliverableGroups.length <= 1}
+                      onClick={() => setDeliverableGroups((groups) => groups.filter((item) => item.id !== group.id))}
+                      className="rounded px-3 py-2 text-xs text-zinc-400 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-40 cursor-pointer"
+                      aria-label={`Remove ${group.label || `list ${index + 1}`}`}
+                      title="Permanently remove list"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <BufferedTextarea
+                    rows={Math.min(8, Math.max(3, group.items.length))}
+                    value={group.items.join('\\n')}
+                    onCommit={(value) =>
+                      setDeliverableGroups((groups) =>
+                        groups.map((item) => (item.id === group.id ? { ...item, items: value.split('\\n') } : item))
+                      )
+                    }
+                    className="w-full rounded border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white"
+                    placeholder="Add one line per item"
+                  />
+                  <div className="flex items-center justify-between text-[11px] text-zinc-500">
+                    <span>Each list is displayed in two columns on the project page.</span>
+                    {!isGroupVisible && (
+                      <span className="text-amber-400 font-medium flex items-center gap-1">
+                        <span className="material-symbols-rounded text-xs">visibility_off</span>
+                        Hidden on live project
+                      </span>
+                    )}
+                  </div>
+                </section>
+              );
+            })}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-white/5">

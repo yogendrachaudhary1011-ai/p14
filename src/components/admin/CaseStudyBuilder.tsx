@@ -33,6 +33,13 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
   const [sectionUploadMessage, setSectionUploadMessage] = useState<string | null>(null);
   const sectionMediaInputRef = useRef<HTMLInputElement>(null);
 
+  // Section visibility filtering & delete confirmation safety
+  const [sectionFilter, setSectionFilter] = useState<'all' | 'visible' | 'hidden'>('all');
+  const [sectionToDelete, setSectionToDelete] = useState<CaseStudySection | null>(null);
+
+  const visibleCount = useMemo(() => sections.filter((s) => s.visible).length, [sections]);
+  const hiddenCount = useMemo(() => sections.filter((s) => !s.visible).length, [sections]);
+
   const selectedSection = useMemo(
     () => sections.find((s) => s.id === selectedSectionId) || sections[0],
     [sections, selectedSectionId]
@@ -66,6 +73,20 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
     onChange(updated);
   };
 
+  const handleToggleSectionVisibility = (sectionId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const target = sections.find((s) => s.id === sectionId);
+    if (!target) return;
+    const nextVisible = !target.visible;
+    const updated = sections.map((s) => (s.id === sectionId ? { ...s, visible: nextVisible } : s));
+    onChange(updated);
+  };
+
+  const handleSetAllVisibility = (visible: boolean) => {
+    const updated = sections.map((s) => ({ ...s, visible }));
+    onChange(updated);
+  };
+
   const handleAddSection = () => {
     const newSec = createDefaultSection(newSectionType, sections.length + 1);
     const updated = [...sections, newSec];
@@ -73,14 +94,30 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
     setSelectedSectionId(newSec.id);
   };
 
-  const handleDeleteSection = (sectionId: string) => {
+  const promptDeleteSection = (section: CaseStudySection, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setSectionToDelete(section);
+  };
+
+  const executeDeleteSection = (sectionId: string) => {
     if (sections.length <= 1) {
+      setSectionToDelete(null);
       return;
     }
     const updated = sections.filter((s) => s.id !== sectionId);
     onChange(updated);
     if (selectedSectionId === sectionId) {
       setSelectedSectionId(updated[0]?.id || '');
+    }
+    setSectionToDelete(null);
+  };
+
+  const handleDeleteSection = (sectionId: string) => {
+    const target = sections.find((s) => s.id === sectionId);
+    if (target) {
+      promptDeleteSection(target);
+    } else {
+      executeDeleteSection(sectionId);
     }
   };
 
@@ -288,40 +325,134 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
       {/* Main 2-Column builder: Left Section list, Right Block editor */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* LEFT COLUMN: Ordered Sections List (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-2 bg-zinc-900/60 p-3 rounded-[8px] border border-white/10 max-h-[720px] overflow-y-auto">
-          <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 px-2 py-1">
-            Sections ({sections.length})
+        <div className="lg:col-span-4 flex flex-col gap-2.5 bg-zinc-900/60 p-3 rounded-[8px] border border-white/10 max-h-[760px] overflow-y-auto">
+          {/* Header with Title, Count and Quick Bulk Actions */}
+          <div className="flex items-center justify-between px-1 pt-1">
+            <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold flex items-center gap-1.5">
+              <span>Sections</span>
+              <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px]">
+                {visibleCount}/{sections.length} visible
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1 text-[11px]">
+              {hiddenCount > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => handleSetAllVisibility(true)}
+                  className="px-2 py-0.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-medium cursor-pointer transition-colors"
+                  title="Enable all sections"
+                >
+                  Enable all
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleSetAllVisibility(false)}
+                  className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 font-medium cursor-pointer transition-colors"
+                  title="Disable all sections"
+                >
+                  Disable all
+                </button>
+              )}
+            </div>
           </div>
 
+          {/* Filter Tabs: All / Enabled / Disabled */}
+          <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1 rounded-md border border-white/5 text-[11px]">
+            <button
+              type="button"
+              onClick={() => setSectionFilter('all')}
+              className={`py-1 px-1.5 rounded font-medium transition-colors cursor-pointer text-center ${
+                sectionFilter === 'all'
+                  ? 'bg-zinc-800 text-white shadow-xs'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              All ({sections.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSectionFilter('visible')}
+              className={`py-1 px-1.5 rounded font-medium transition-colors cursor-pointer text-center flex items-center justify-center gap-1 ${
+                sectionFilter === 'visible'
+                  ? 'bg-emerald-500/20 text-emerald-300 shadow-xs border border-emerald-500/30'
+                  : 'text-zinc-400 hover:text-emerald-400'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Enabled ({visibleCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSectionFilter('hidden')}
+              className={`py-1 px-1.5 rounded font-medium transition-colors cursor-pointer text-center flex items-center justify-center gap-1 ${
+                sectionFilter === 'hidden'
+                  ? 'bg-amber-500/20 text-amber-300 shadow-xs border border-amber-500/30'
+                  : 'text-zinc-400 hover:text-amber-400'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              Disabled ({hiddenCount})
+            </button>
+          </div>
+
+          {/* Section List */}
           {sections.map((sec, idx) => {
             const isSelected = selectedSection?.id === sec.id;
+            const matchesFilter =
+              sectionFilter === 'all' ||
+              (sectionFilter === 'visible' && sec.visible) ||
+              (sectionFilter === 'hidden' && !sec.visible);
+
+            if (!matchesFilter) return null;
+
             return (
               <div
                 key={sec.id}
                 onClick={() => setSelectedSectionId(sec.id)}
-                className={`p-3 rounded-[6px] border transition-all cursor-pointer flex flex-col gap-2 ${
+                className={`p-3 rounded-[6px] border transition-all cursor-pointer flex flex-col gap-2 relative ${
                   isSelected
-                    ? 'bg-zinc-800 border-[#ff853a]'
-                    : 'bg-zinc-950/60 border-white/5 hover:border-white/20'
+                    ? sec.visible
+                      ? 'bg-zinc-800 border-[#ff853a]'
+                      : 'bg-zinc-800 border-amber-500/70'
+                    : sec.visible
+                      ? 'bg-zinc-950/60 border-white/5 hover:border-white/20'
+                      : 'bg-zinc-950/30 border-dashed border-zinc-700/60 opacity-70 hover:opacity-100 hover:border-zinc-600'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 overflow-hidden min-w-0">
+                    <span
+                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                        sec.visible ? 'bg-zinc-900 text-zinc-400' : 'bg-zinc-900/80 text-zinc-500'
+                      }`}
+                    >
                       {idx + 1}
                     </span>
-                    <span className="text-white text-sm font-medium truncate">
+                    <span
+                      className={`text-sm font-medium truncate ${
+                        sec.visible ? 'text-white' : 'text-zinc-400 line-through decoration-zinc-600'
+                      }`}
+                    >
                       {sec.navigationLabel || sec.heading}
                     </span>
                   </div>
 
-                  <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded ${
-                      sec.visible ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                  {/* Interactive Visibility Pill Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleToggleSectionVisibility(sec.id, e)}
+                    title={sec.visible ? 'Section is enabled · Click to disable' : 'Section is disabled · Click to enable'}
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1 cursor-pointer transition-all shrink-0 ${
+                      sec.visible
+                        ? 'bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 border border-emerald-500/30'
+                        : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200 border border-zinc-700/60'
                     }`}
                   >
-                    {sec.visible ? 'Visible' : 'Hidden'}
-                  </span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${sec.visible ? 'bg-emerald-400' : 'bg-zinc-500'}`} />
+                    <span>{sec.visible ? 'Enabled' : 'Disabled'}</span>
+                  </button>
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-zinc-500 pt-1 border-t border-white/5">
@@ -330,6 +461,23 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                   </span>
 
                   <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    {/* Dedicated Visibility Toggle Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleSectionVisibility(sec.id, e)}
+                      title={sec.visible ? 'Disable section (hide from project detail without deleting)' : 'Enable section (show on project detail)'}
+                      className={`p-1 rounded cursor-pointer transition-colors ${
+                        sec.visible
+                          ? 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/15'
+                          : 'text-zinc-500 hover:text-emerald-400 hover:bg-zinc-800'
+                      }`}
+                      aria-label={sec.visible ? 'Disable Section' : 'Enable Section'}
+                    >
+                      <span className="material-symbols-rounded text-base">
+                        {sec.visible ? 'visibility' : 'visibility_off'}
+                      </span>
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => handleMoveSection(sec.id, 'up')}
@@ -358,8 +506,8 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDeleteSection(sec.id)}
-                      title="Delete Section"
+                      onClick={(e) => promptDeleteSection(sec, e)}
+                      title="Delete Section (or disable instead)"
                       className="p-1 hover:text-red-400 cursor-pointer"
                     >
                       <span className="material-symbols-rounded text-sm">delete</span>
@@ -396,6 +544,67 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                 {sectionUploadMessage && <p role="status" className="mt-3 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-zinc-100">{sectionUploadMessage}</p>}
               </section>
             )}
+
+            {/* Prominent Section Visibility Status Banner */}
+            <div
+              className={`p-3.5 sm:p-4 rounded-[8px] border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-colors ${
+                selectedSection.visible
+                  ? 'bg-emerald-950/20 border-emerald-500/30'
+                  : 'bg-amber-950/25 border-amber-500/40'
+              }`}
+            >
+              <div className="flex items-start gap-3 min-w-0">
+                <span
+                  className={`material-symbols-rounded text-2xl shrink-0 p-1.5 rounded-lg ${
+                    selectedSection.visible
+                      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                  }`}
+                >
+                  {selectedSection.visible ? 'visibility' : 'visibility_off'}
+                </span>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-white text-sm font-bold">
+                      {selectedSection.visible ? 'Section Enabled' : 'Section Disabled'}
+                    </span>
+                    <span
+                      className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                        selectedSection.visible
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      }`}
+                    >
+                      {selectedSection.visible ? 'Visible on Project Page' : 'Hidden from Project Page'}
+                    </span>
+                  </div>
+                  <p className="text-zinc-300 text-xs mt-1">
+                    {selectedSection.visible
+                      ? 'Visitors can see this section and click it in the sidebar table-of-contents navigation.'
+                      : 'This section is hidden from the project detail page and navigation. All blocks, text, and images are safely kept.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Direct Enable / Disable Action Button */}
+              <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => handleUpdateSection(selectedSection.id, { visible: !selectedSection.visible })}
+                  className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all shadow-sm ${
+                    selectedSection.visible
+                      ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-white/10'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                  }`}
+                >
+                  <span className="material-symbols-rounded text-base">
+                    {selectedSection.visible ? 'visibility_off' : 'visibility'}
+                  </span>
+                  <span>{selectedSection.visible ? 'Disable Section' : 'Enable Section'}</span>
+                </button>
+              </div>
+            </div>
+
             {/* Section Header Configuration */}
             <div className="p-3 sm:p-4 rounded-[6px] bg-zinc-950 border border-white/10 flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-white/10 pb-3">
@@ -408,15 +617,17 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                   </span>
                 </div>
 
-                <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={selectedSection.visible}
-                    onChange={(e) => handleUpdateSection(selectedSection.id, { visible: e.target.checked })}
-                    className="accent-[#ff853a]"
-                  />
-                  <span>Show in Case Study</span>
-                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => promptDeleteSection(selectedSection)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded cursor-pointer transition-colors"
+                    title="Delete or disable this section"
+                  >
+                    <span className="material-symbols-rounded text-sm">delete</span>
+                    <span>Delete Section</span>
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1325,6 +1536,64 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
           </div>
         )}
       </div>
+
+      {/* Safe Section Removal Modal: Disable vs Permanently Delete */}
+      {sectionToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-xl bg-zinc-900 border border-white/15 p-6 shadow-2xl flex flex-col gap-4 text-white">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400">
+                <span className="material-symbols-rounded text-2xl">visibility_off</span>
+              </div>
+              <div>
+                <h3 className="text-base font-bold">Remove or Disable Section?</h3>
+                <p className="text-xs text-zinc-400">
+                  {sectionToDelete.navigationLabel || sectionToDelete.heading}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-zinc-300 leading-relaxed">
+              Do you want to <strong className="text-white">disable</strong> this section to hide it from visitors on the live project page, or <strong className="text-red-400">delete it permanently</strong>?
+            </p>
+
+            <div className="rounded-lg bg-black/40 border border-white/10 p-3 text-[11px] text-zinc-400">
+              <span className="text-[#ff9a5b] font-semibold">Tip:</span> Disabling hides this section and its sidebar link without losing any of your {sectionToDelete.blocks?.length || 0} blocks, text, or images. You can re-enable it anytime with one click!
+            </div>
+
+            <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  handleUpdateSection(sectionToDelete.id, { visible: false });
+                  setSectionToDelete(null);
+                }}
+                className="w-full px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+              >
+                <span className="material-symbols-rounded text-sm">visibility_off</span>
+                <span>Disable Instead (Hide without deleting)</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => executeDeleteSection(sectionToDelete.id)}
+                  className="flex-1 px-3 py-2 rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 hover:text-red-200 text-xs font-medium cursor-pointer"
+                >
+                  Delete Permanently
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSectionToDelete(null)}
+                  className="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
