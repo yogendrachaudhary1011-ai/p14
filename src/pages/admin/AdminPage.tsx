@@ -9,7 +9,7 @@ import { MediaUploadField } from '../../components/admin/MediaUploadField';
 import { MediaPreview } from '../../components/MediaPreview';
 import { SUPABASE_SQL_SCHEMA } from '../../supabase';
 import { uploadMediaToSupabase } from '../../utils/supabaseService';
-import { inferMediaMimeType, compressAndOptimizeImage } from '../../utils/media';
+import { inferMediaMimeType, compressAndOptimizeImage, isThumbnailLabelOrName } from '../../utils/media';
 import {
   ArrowUpRight,
   BriefcaseBusiness,
@@ -888,8 +888,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 existingProjects={projects}
                 mediaLibrary={media}
                 initialTab={projectEditorTab}
-                onUploadMedia={async (file) => {
-                  const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file);
+                onUploadMedia={async (file, isThumbnail) => {
+                  const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file, { isThumbnail });
                   if (isAdmin) {
                     try {
                       const result = await uploadMediaToSupabase(optimizedFile);
@@ -2435,7 +2435,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   const failures: string[] = [];
                   const results = await Promise.allSettled(
                     files.map(async (file) => {
-                      const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file);
+                      const isThumbnail = isThumbnailLabelOrName(file.name);
+                      const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file, { isThumbnail });
                       const result = await uploadMediaToSupabase(optimizedFile);
                       const displayName = file.name.replace(/\.[^.]+$/, '') || file.name;
                       if (result.url) {

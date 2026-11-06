@@ -3,15 +3,16 @@ import { ImagePlus, Upload, Crop, Sparkles } from 'lucide-react';
 import { MediaAsset } from '../../types';
 import { MediaPreview } from '../MediaPreview';
 import { ImageCropPanZoomModal } from './ImageCropPanZoomModal';
-import { compressAndOptimizeImage } from '../../utils/media';
+import { compressAndOptimizeImage, isThumbnailLabelOrName } from '../../utils/media';
 
 interface MediaUploadFieldProps {
   value: string;
   onChange: (url: string) => void;
-  onUploadMedia?: (file: File) => Promise<MediaAsset>;
+  onUploadMedia?: (file: File, isThumbnail?: boolean) => Promise<MediaAsset>;
   mediaLibrary?: MediaAsset[];
   label?: string;
   cropAspectRatio?: '21:9' | '16:9' | '16:10' | '4:3' | '1:1';
+  isThumbnail?: boolean;
 }
 
 /** A visual media picker with live pan, zoom, crop-bleed visualization and direct upload. */
@@ -21,17 +22,21 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
   onUploadMedia,
   mediaLibrary = [],
   label = 'Image',
-  cropAspectRatio = '16:9'
+  cropAspectRatio = '16:9',
+  isThumbnail
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const directInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Identify whether this field is a thumbnail (cover / card / listing)
+  const isThumb = isThumbnail ?? isThumbnailLabelOrName(label);
+
   // Crop / Pan / Zoom modal state
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropImageSource, setCropImageSource] = useState<string>('');
-  const [pendingFileName, setPendingFileName] = useState<string>('cropped-image.png');
+  const [pendingFileName, setPendingFileName] = useState<string>(isThumb ? 'cropped-thumb.webp' : 'cropped-image.png');
 
   const images = useMemo(() => mediaLibrary.filter((asset) => (asset.mimeType || '').startsWith('image/')), [mediaLibrary]);
 
@@ -41,12 +46,12 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
     setUploading(true);
     setError(null);
     try {
-      // Compress and optimize large images on client to prevent slow loads
-      const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file);
+      // Compress ONLY thumbnail images; non-thumbnails retain full uncompressed visual fidelity
+      const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file, { isThumbnail: isThumb });
 
       if (onUploadMedia) {
         try {
-          const asset = await onUploadMedia(optimizedFile);
+          const asset = await onUploadMedia(optimizedFile, isThumb);
           onChange(asset.url);
           return;
         } catch (uploadErr) {
@@ -71,7 +76,8 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
   // Handler for file selected for cropping & pan/zoom before upload
   const handleFileForCropping = (file?: File) => {
     if (!file) return;
-    setPendingFileName(file.name.replace(/\.[^/.]+$/, '') + '-framed.png');
+    const ext = isThumb ? '-thumb.webp' : '-framed.png';
+    setPendingFileName(file.name.replace(/\.[^/.]+$/, '') + ext);
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === 'string') {
@@ -88,8 +94,9 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
     if (onUploadMedia) {
       setUploading(true);
       try {
-        const file = new File([blob], pendingFileName, { type: 'image/png' });
-        const asset = await onUploadMedia(file);
+        const fileType = isThumb ? (blob.type || 'image/webp') : 'image/png';
+        const file = new File([blob], pendingFileName, { type: fileType });
+        const asset = await onUploadMedia(file, isThumb);
         onChange(asset.url);
       } catch (err) {
         // Fallback to data URL if upload fails so user's work is not lost
@@ -132,11 +139,21 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
                 type="button"
                 disabled={uploading}
                 onClick={() => directInputRef.current?.click()}
-                title="Upload original image with any height without cropping"
-                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 px-3 py-2 text-xs font-semibold text-emerald-400 hover:text-white transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                title={isThumb ? "Upload and compress thumbnail for fast card grid loading" : "Upload original image with full uncompressed fidelity"}
+                className={`inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-all cursor-pointer shadow-xs disabled:opacity-50 ${
+                  isThumb
+                    ? 'border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 hover:text-white'
+                    : 'border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 hover:text-white'
+                }`}
               >
                 {uploading ? <Upload size={14} className="animate-pulse" /> : <Upload size={14} />}
-                <span>{uploading ? 'Uploading…' : `Upload ${label} (Original / Any Height)`}</span>
+                <span>
+                  {uploading
+                    ? 'Uploading…'
+                    : isThumb
+                    ? `Upload ${label} (Compressed Thumbnail)`
+                    : `Upload ${label} (Original / Any Height)`}
+                </span>
               </button>
 
               <button
@@ -232,6 +249,7 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
         imageTitle={`Frame ${label}`}
         defaultAspectRatio={cropAspectRatio}
         onApplyCrop={handleApplyCropped}
+        isThumbnail={isThumb}
       />
     </div>
   );

@@ -18,7 +18,7 @@ interface ProjectEditorProps {
   mediaLibrary: MediaAsset[];
   initialTab?: TabType;
   onSave: (projectData: Partial<Project>) => Promise<void>;
-  onUploadMedia: (file: File) => Promise<MediaAsset>;
+  onUploadMedia: (file: File, isThumbnail?: boolean) => Promise<MediaAsset>;
   onCancel: () => void;
 }
 
@@ -120,8 +120,8 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
     }
   };
 
-  const uploadProjectMedia = async (file: File): Promise<MediaAsset> => {
-    const asset = await onUploadMedia(file);
+  const uploadProjectMedia = async (file: File, isThumbnail?: boolean): Promise<MediaAsset> => {
+    const asset = await onUploadMedia(file, isThumbnail);
     setProjectMedia((current) => [asset, ...current.filter((item) => item.id !== asset.id)]);
     return asset;
   };
@@ -824,6 +824,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                 mediaLibrary={projectMedia}
                 label="hero image"
                 cropAspectRatio={previewHeroAspect}
+                isThumbnail={false}
               />
 
               <div className="flex flex-col gap-1.5">
@@ -942,6 +943,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                 mediaLibrary={projectMedia}
                 label="cover image"
                 cropAspectRatio={previewCoverAspect}
+                isThumbnail={true}
               />
 
               {/* Fit Mode Selector (Cover vs Contain / No Crop) */}
@@ -1085,12 +1087,16 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                 : 'Adjust Listing Cover Framing (Pan, Zoom & Size)'
             }
             defaultAspectRatio={adjustingCropTarget === 'hero' ? previewHeroAspect : previewCoverAspect}
+            isThumbnail={adjustingCropTarget === 'cover'}
             onApplyCrop={async (dataUrl, blob) => {
               const target = adjustingCropTarget;
-              const fileName = `${target || 'asset'}-${Date.now()}.png`;
-              const file = new File([blob], fileName, { type: 'image/png' });
+              const isThumb = target === 'cover';
+              const fileType = isThumb ? (blob.type || 'image/webp') : 'image/png';
+              const ext = isThumb ? '.webp' : '.png';
+              const fileName = `${target || 'asset'}-${Date.now()}${ext}`;
+              const file = new File([blob], fileName, { type: fileType });
               try {
-                const asset = await uploadProjectMedia(file);
+                const asset = await uploadProjectMedia(file, isThumb);
                 if (target === 'hero') {
                   setHeroImageUrl(asset.url);
                 } else {

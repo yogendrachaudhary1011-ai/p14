@@ -579,5 +579,10 @@
   color: inherit !important;
 }
 
-
-
+/* Optimized thumbnail card image presentation */
+#projectsGrid .project:first-child .project-cover,
+#projectsGrid .project-media > .project-cover {
+  content-visibility: auto;
+  image-rendering: auto;
+  transform: translateZ(0);
+}

@@ -41,19 +41,224 @@ export function getInstantFallbackSvg(label = 'Image preview', width = 1200, hei
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
+const THUMBNAIL_IDENTIFIERS = /\b(thumbnail|thumb|cover|card|preview-card|listing|listing-cover)\b/i;
+
 /**
- * Retains original uncompressed image to guarantee 100% full visual fidelity:
- * - Does NOT downscale, re-encode, or compress image files
- * - Preserves original format, color accuracy, and pixel-crisp quality
- * - Returns original uncompressed File and dataUrl
+ * Checks whether an image name, label, or path represents a thumbnail image.
+ */
+export function isThumbnailLabelOrName(nameOrLabel?: string): boolean {
+  if (!nameOrLabel) return false;
+  return THUMBNAIL_IDENTIFIERS.test(nameOrLabel);
+}
+
+export interface ThumbnailCompressionOptions {
+  maxDimension?: number;
+  quality?: number;
+  targetMimeType?: string;
+}
+
+/**
+ * Compresses thumbnail images to provide optimal card loading performance while
+ * preserving visual sharpness on high-DPI displays.
+ * Scales down to maxDimension (default: 1200px) and applies WebP/JPEG compression.
+ */
+export async function compressThumbnailImage(
+  file: File,
+  options: ThumbnailCompressionOptions = {}
+): Promise<{ file: File; dataUrl: string; wasCompressed: boolean }> {
+  const maxDimension = options.maxDimension ?? 1200;
+  const quality = options.quality ?? 0.8;
+  const targetMimeType = options.targetMimeType ?? 'image/webp';
+
+  // If not in browser environment or file is not an image, return original
+  if (typeof window === 'undefined' || typeof document === 'undefined' || !file.type.startsWith('image/')) {
+    const dataUrl = await fileToDataUrl(file);
+    return { file, dataUrl, wasCompressed: false };
+  }
+
+  // If already a tiny SVG or GIF animation, keep original
+  if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
+    const dataUrl = await fileToDataUrl(file);
+    return { file, dataUrl, wasCompressed: false };
+  }
+
+  return new Promise<{ file: File; dataUrl: string; wasCompressed: boolean }>((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = async () => {
+      URL.revokeObjectURL(objectUrl);
+      try {
+        let width = img.naturalWidth || img.width;
+        let height = img.naturalHeight || img.height;
+
+        // Downscale proportionally if dimensions exceed maxDimension
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d', { alpha: true });
+
+        if (!ctx) {
+          const dataUrl = await fileToDataUrl(file);
+          resolve({ file, dataUrl, wasCompressed: false });
+          return;
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Check if WebP is supported
+        let exportMime = targetMimeType;
+        const testWebp = canvas.toDataURL('image/webp');
+        if (!testWebp.startsWith('data:image/webp')) {
+          exportMime = file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+        }
+
+        canvas.toBlob(
+          async (blob) => {
+            if (!blob) {
+              const dataUrl = await fileToDataUrl(file);
+              resolve({ file, dataUrl, wasCompressed: false });
+              return;
+            }
+
+            // Only use compressed if it actually reduced file size or resized
+            const wasResized = width < (img.naturalWidth || 0) || height < (img.naturalHeight || 0);
+            if (blob.size < file.size || wasResized) {
+              const ext = exportMime === 'image/webp' ? '.webp' : exportMime === 'image/jpeg' ? '.jpg' : '.png';
+              const baseName = file.name.replace(/\.[^/.]+$/, '');
+              const compressedFile = new File([blob], `${baseName}-thumb${ext}`, {
+                type: exportMime,
+                lastModified: Date.now()
+              });
+              const dataUrl = await fileToDataUrl(compressedFile);
+              resolve({ file: compressedFile, dataUrl, wasCompressed: true });
+            } else {
+              const dataUrl = await fileToDataUrl(file);
+              resolve({ file, dataUrl, wasCompressed: false });
+            }
+          },
+          exportMime,
+          quality
+        );
+      } catch (err) {
+        console.warn('Thumbnail compression error, using original file:', err);
+        const dataUrl = await fileToDataUrl(file);
+        resolve({ file, dataUrl, wasCompressed: false });
+      }
+    };
+
+    img.onerror = async () => {
+      URL.revokeObjectURL(objectUrl);
+      const dataUrl = await fileToDataUrl(file);
+      resolve({ file, dataUrl, wasCompressed: false });
+    };
+
+    img.src = objectUrl;
+  });
+}
+
+/**
+ * Helper to compress a thumbnail data URL (e.g. pasted or in-memory preview).
+ */
+export async function compressThumbnailDataUrl(
+  dataUrlOrUrl: string,
+  maxDimension = 1200,
+  quality = 0.8
+): Promise<string> {
+  if (!dataUrlOrUrl || !dataUrlOrUrl.startsWith('data:image/')) return dataUrlOrUrl;
+  if (dataUrlOrUrl.startsWith('data:image/svg+xml') || dataUrlOrUrl.startsWith('data:image/gif')) return dataUrlOrUrl;
+
+  return new Promise<string>((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        let width = img.naturalWidth || img.width;
+        let height = img.naturalHeight || img.height;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve(dataUrlOrUrl);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressed = canvas.toDataURL('image/webp', quality);
+        if (compressed.length < dataUrlOrUrl.length) {
+          resolve(compressed);
+        } else {
+          resolve(dataUrlOrUrl);
+        }
+      } catch {
+        resolve(dataUrlOrUrl);
+      }
+    };
+    img.onerror = () => resolve(dataUrlOrUrl);
+    img.src = dataUrlOrUrl;
+  });
+}
+
+export interface ImageOptimizationOptions {
+  isThumbnail?: boolean;
+  maxDimension?: number;
+  quality?: number;
+}
+
+/**
+ * Selective image compression:
+ * - Applies compression ONLY to thumbnail images (card covers, project listings, previews).
+ * - Non-thumbnail images (hero banners, section visuals, full-width screens, design systems)
+ *   remain 100% uncompressed to preserve pristine visual fidelity, color, and sharpness.
  */
 export async function compressAndOptimizeImage(
   file: File,
-  _maxDimension = 2400,
-  _quality = 1.0
-): Promise<{ file: File; dataUrl: string }> {
+  optionsOrMaxDimension?: ImageOptimizationOptions | number,
+  legacyQuality?: number
+): Promise<{ file: File; dataUrl: string; wasCompressed: boolean }> {
+  const isOptionsObject = typeof optionsOrMaxDimension === 'object' && optionsOrMaxDimension !== null;
+  const isThumbnail = isOptionsObject
+    ? Boolean(optionsOrMaxDimension.isThumbnail)
+    : isThumbnailLabelOrName(file.name);
+
+  // If this image is a thumbnail, apply thumbnail compression!
+  if (isThumbnail) {
+    const maxDim = isOptionsObject
+      ? optionsOrMaxDimension.maxDimension
+      : typeof optionsOrMaxDimension === 'number'
+      ? optionsOrMaxDimension
+      : 1200;
+    const q = isOptionsObject
+      ? optionsOrMaxDimension.quality
+      : typeof legacyQuality === 'number'
+      ? legacyQuality
+      : 0.8;
+    return compressThumbnailImage(file, { maxDimension: maxDim ?? 1200, quality: q ?? 0.8 });
+  }
+
+  // For non-thumbnail images: zero compression, 100% pristine visual fidelity
   const dataUrl = await fileToDataUrl(file);
-  return { file, dataUrl };
+  return { file, dataUrl, wasCompressed: false };
 }
 
 export function fileToDataUrl(file: File): Promise<string> {

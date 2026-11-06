@@ -369,6 +369,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                           decoding="async"
                           loading={index < 2 ? 'eager' : 'lazy'}
                           fetchPriority={index < 1 ? 'high' : 'auto'}
+                          width={900}
+                          height={1200}
                           src={project.coverImage || getInstantFallbackSvg(project.title)}
                           onError={(e) => {
                             e.currentTarget.src = getInstantFallbackSvg(project.title);

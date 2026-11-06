@@ -23,6 +23,7 @@ interface ImageCropPanZoomModalProps {
   imageTitle?: string;
   defaultAspectRatio?: 'original' | '21:9' | '16:9' | '16:10' | '4:3' | '1:1';
   onApplyCrop: (croppedDataUrl: string, blob: Blob) => Promise<void> | void;
+  isThumbnail?: boolean;
 }
 
 export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
@@ -31,7 +32,8 @@ export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
   imageUrl,
   imageTitle = 'Adjust Image Framing',
   defaultAspectRatio = 'original',
-  onApplyCrop
+  onApplyCrop,
+  isThumbnail = false
 }) => {
   const [aspectRatio, setAspectRatio] = useState<'original' | '21:9' | '16:9' | '16:10' | '4:3' | '1:1'>(defaultAspectRatio);
   const [zoom, setZoom] = useState(1);
@@ -182,8 +184,11 @@ export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
       });
 
       const aspect = getAspectNumeric();
-      // High-res export dimensions
-      const outputWidth = Math.min(2560, Math.max(1600, img.naturalWidth));
+      // For thumbnails: output dimensions tailored to card displays (max 1200px) with compression
+      // For non-thumbnails (e.g. hero banners, full case study visuals): max 2560px uncompressed PNG
+      const maxDim = isThumbnail ? 1200 : 2560;
+      const minDim = isThumbnail ? 640 : 1600;
+      const outputWidth = Math.min(maxDim, Math.max(minDim, img.naturalWidth));
       const outputHeight = Math.round(outputWidth / aspect);
 
       const canvas = document.createElement('canvas');
@@ -224,20 +229,44 @@ export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
 
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
-      // Generate uncompressed lossless PNG blob & data url
-      const dataUrl = canvas.toDataURL('image/png');
+      if (isThumbnail) {
+        // Apply image compression to thumbnail: compact WebP/JPEG format at 80% quality
+        let exportMime = 'image/webp';
+        const testWebp = canvas.toDataURL('image/webp');
+        if (!testWebp.startsWith('data:image/webp')) {
+          exportMime = 'image/jpeg';
+        }
+        const quality = 0.8;
+        const dataUrl = canvas.toDataURL(exportMime, quality);
 
-      await new Promise<void>((resolve) => {
-        canvas.toBlob(
-          async (blob) => {
-            if (blob) {
-              await onApplyCrop(dataUrl, blob);
-            }
-            resolve();
-          },
-          'image/png'
-        );
-      });
+        await new Promise<void>((resolve) => {
+          canvas.toBlob(
+            async (blob) => {
+              if (blob) {
+                await onApplyCrop(dataUrl, blob);
+              }
+              resolve();
+            },
+            exportMime,
+            quality
+          );
+        });
+      } else {
+        // Generate uncompressed lossless PNG blob & data url for non-thumbnails
+        const dataUrl = canvas.toDataURL('image/png');
+
+        await new Promise<void>((resolve) => {
+          canvas.toBlob(
+            async (blob) => {
+              if (blob) {
+                await onApplyCrop(dataUrl, blob);
+              }
+              resolve();
+            },
+            'image/png'
+          );
+        });
+      }
 
       onClose();
     } catch (err) {

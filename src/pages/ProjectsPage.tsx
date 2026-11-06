@@ -143,6 +143,8 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onNavigate }) => {
                         decoding="auto"
                         loading={index < 4 ? 'eager' : 'lazy'}
                         fetchPriority={index < 2 ? 'high' : 'auto'}
+                        width={900}
+                        height={1200}
                         src={project.coverImage || getInstantFallbackSvg(project.title)}
                         onError={(e) => {
                           e.currentTarget.src = getInstantFallbackSvg(project.title);
