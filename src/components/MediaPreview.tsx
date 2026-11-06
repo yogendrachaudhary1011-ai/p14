@@ -118,11 +118,14 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
     onError?.(event);
   };
 
+  const isFillHeight = Boolean(className?.includes('h-full') || containerClassName?.includes('h-full'));
+  const resolvedContainerClass = containerClassName
+    ? `${containerClassName} ${isFillHeight && !containerClassName.includes('h-') ? 'h-full' : ''}`
+    : `flex items-center justify-center overflow-hidden ${isFillHeight ? 'h-full' : ''}`;
+
   return (
     <div
-      className={`relative w-full min-w-0 ${
-        containerClassName || 'flex items-center justify-center overflow-hidden'
-      }`}
+      className={`relative w-full min-w-0 ${resolvedContainerClass}`}
     >
       {/* Subtle non-blocking background skeleton while image streams in */}
       {!isLoaded && !hasError && (

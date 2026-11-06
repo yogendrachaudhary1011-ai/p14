@@ -118,20 +118,40 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
         }
       }
 
-      if (section.type !== 'designSystem') return section;
+      const isDesignSystem =
+        section.type === 'designSystem' ||
+        section.id === 'design-system' ||
+        section.id?.toLowerCase().startsWith('designsystem') ||
+        section.navigationLabel?.toLowerCase().includes('design system') ||
+        section.heading?.toLowerCase().includes('design system');
+
+      if (!isDesignSystem) return section;
 
       const blocks = [...(section.blocks || [])];
       const existingCarouselIndex = blocks.findIndex((block) => block.type === 'carousel');
       const existingSlides = existingCarouselIndex >= 0 && blocks[existingCarouselIndex].type === 'carousel'
-        ? blocks[existingCarouselIndex].slides.filter((slide) => slide.url?.trim())
+        ? (blocks[existingCarouselIndex].slides || []).filter((slide) => slide && typeof slide.url === 'string' && slide.url.trim())
         : [];
-      const legacySlides = (project.designSystem?.images || [])
-        .filter((url) => url?.trim())
+
+      const cleanKey = (str?: string) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const projKey = cleanKey(project.slug || project.id || project.title);
+      const matchedInitial = initialProjects.find(
+        (p) =>
+          p.id === project.id ||
+          p.slug === project.slug ||
+          cleanKey(p.slug) === projKey ||
+          cleanKey(p.id) === projKey ||
+          cleanKey(p.title) === projKey
+      );
+
+      const legacySlides = (project.designSystem?.images || matchedInitial?.designSystem?.images || [])
+        .filter((url) => typeof url === 'string' && url.trim())
         .map((url, index) => ({
           url,
           title: `Design System Component Spec #${index + 1}`,
           alt: `Design System Slide ${index + 1}`
         }));
+
       const imageBlockIndexes = blocks
         .map((block, index) => ({ block, index }))
         .filter(({ block }) => block.type === 'image' || block.type === 'fullWidthImage');
@@ -140,24 +160,36 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
           ? block.url?.trim() ? [{ url: block.url, title: block.caption, alt: block.alt }] : []
           : []
       );
-      const slides = existingSlides.length ? existingSlides : legacySlides.length ? legacySlides : blockSlides;
 
-      // Older case studies stored Design System images as standalone image blocks (or
-      // only in the legacy designSystem.images field). Promote them to the carousel so
-      // existing project media remains visible after the section format changed.
-      if (!slides.length) return section;
+      const defaultFallbackSlides = [
+        { url: '/assets/media/home-media-04-f775f2921176.webp', title: 'Component Library & Variants', alt: 'Design System Slide 1' },
+        { url: '/assets/media/home-media-02-c6ea6ce61d01.webp', title: 'Typography & Elevation Tokens', alt: 'Design System Slide 2' },
+        { url: '/assets/media/home-media-03-d6c887bed8af.webp', title: 'Layout Guidelines & Navigation', alt: 'Design System Slide 3' }
+      ];
+
+      const slides = existingSlides.length
+        ? existingSlides
+        : legacySlides.length
+        ? legacySlides
+        : blockSlides.length
+        ? blockSlides
+        : defaultFallbackSlides;
+
       const carousel = existingCarouselIndex >= 0 && blocks[existingCarouselIndex].type === 'carousel'
         ? { ...blocks[existingCarouselIndex], slides }
         : { id: `${section.id}-carousel`, type: 'carousel' as const, slides };
+
       const firstImageIndex = imageBlockIndexes[0]?.index;
       const withoutImages = blocks.filter((block) => block.type !== 'image' && block.type !== 'fullWidthImage');
-      const insertAt = existingCarouselIndex >= 0
-        ? withoutImages.findIndex((block) => block.type === 'carousel')
-        : Math.min(firstImageIndex ?? withoutImages.length, withoutImages.length);
       if (existingCarouselIndex >= 0) {
         const carouselIndex = withoutImages.findIndex((block) => block.type === 'carousel');
-        withoutImages[carouselIndex] = carousel;
+        if (carouselIndex >= 0) {
+          withoutImages[carouselIndex] = carousel;
+        } else {
+          withoutImages.push(carousel);
+        }
       } else {
+        const insertAt = Math.min(firstImageIndex ?? withoutImages.length, withoutImages.length);
         withoutImages.splice(insertAt, 0, carousel);
       }
       return { ...section, blocks: withoutImages };
@@ -948,8 +980,9 @@ export function createDefaultSection(type: SectionType, order: number): CaseStud
     defaultBlocks = [
       { id: `blk-${Date.now()}-1`, type: 'paragraph', text: 'Extended the brand into a reusable tokenized component library with documented variants.' },
       { id: `blk-${Date.now()}-2`, type: 'carousel', slides: [
-        { url: '', title: 'Component Specs #1', alt: 'Design system slide 1' },
-        { url: '', title: 'Component Specs #2', alt: 'Design system slide 2' }
+        { url: '/assets/media/home-media-04-f775f2921176.webp', title: 'Component Library & Variants', alt: 'Design system slide 1' },
+        { url: '/assets/media/home-media-02-c6ea6ce61d01.webp', title: 'Typography & Elevation Tokens', alt: 'Design system slide 2' },
+        { url: '/assets/media/home-media-03-d6c887bed8af.webp', title: 'Layout Guidelines & Navigation', alt: 'Design system slide 3' }
       ]}
     ];
   } else if (type === 'product') {
