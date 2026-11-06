@@ -586,3 +586,126 @@
   image-rendering: auto;
   transform: translateZ(0);
 }
+
+/* Mobile Responsive: Single Column for Projects Grid (Selected Work) */
+@media (max-width: 640px) {
+  #projectsGrid.projects-grid,
+  #homeView #projectsGrid.projects-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  #projectsGrid.projects-grid > .project,
+  #projectsGrid.projects-grid > .project.wide,
+  #projectsGrid.projects-grid[data-active-filter] > .project:not(.is-hidden),
+  #homeView #projectsGrid.projects-grid > .project,
+  #homeView #projectsGrid.projects-grid > .project.wide,
+  #homeView #projectsGrid.projects-grid[data-active-filter] > .project:not(.is-hidden) {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    border: 1px solid var(--line-soft, rgba(255, 255, 255, 0.08)) !important;
+    background: var(--bg, #080808) !important;
+  }
+
+  #projectsGrid .project-card,
+  #homeView #projectsGrid .project-card {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  #projectsGrid .project-media,
+  #homeView #projectsGrid .project-media {
+    min-height: 0 !important;
+    aspect-ratio: 16 / 10 !important;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+  }
+
+  #projectsGrid .project-media img,
+  #projectsGrid .project-media > .project-cover,
+  #homeView #projectsGrid .project-media img,
+  #homeView #projectsGrid .project-media > .project-cover {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  #projectsGrid .project-copy,
+  #homeView #projectsGrid .project-copy {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    padding: 16px 16px 18px !important;
+  }
+
+  #projectsGrid .project-meta,
+  #homeView #projectsGrid .project-meta {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    font-size: 10px !important;
+    gap: 8px !important;
+    line-height: 1.4 !important;
+  }
+
+  #projectsGrid .project-copy h3,
+  #homeView #projectsGrid .project-copy h3 {
+    margin-top: 8px !important;
+    font-size: clamp(18px, 4.8vw, 22px) !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.035em !important;
+    text-wrap: balance !important;
+  }
+
+  #projectsGrid .project-copy p,
+  #homeView #projectsGrid .project-copy p {
+    margin-top: 6px !important;
+    font-size: 12.5px !important;
+    line-height: 1.5 !important;
+    color: rgba(245, 245, 240, 0.68) !important;
+  }
+
+  #projectsGrid .project-copy p strong,
+  #homeView #projectsGrid .project-copy p strong {
+    font-weight: 400 !important;
+    color: inherit !important;
+  }
+
+  #projectsGrid .media-note,
+  #homeView #projectsGrid .media-note {
+    top: 10px !important;
+    left: 10px !important;
+    padding: 5px 8px !important;
+    font-size: 9px !important;
+  }
+
+  #projectsGrid .media-action,
+  #homeView #projectsGrid .media-action {
+    right: 10px !important;
+    bottom: 10px !important;
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 16px !important;
+  }
+}
+
+/* Completely remove/hide media-note tags from project thumbnails */
+.media-note,
+#projectsGrid .media-note,
+#homeView #projectsGrid .media-note {
+  display: none !important;
+}
+
+

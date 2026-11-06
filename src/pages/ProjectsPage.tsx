@@ -133,7 +133,6 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onNavigate }) => {
                     }}
                   >
                     <div className="project-media">
-                      <span className="media-note">{project.mediaNote}</span>
                       <span aria-hidden="true" className="media-action material-symbols-rounded material-arrow-icon">
                         arrow_outward
                       </span>

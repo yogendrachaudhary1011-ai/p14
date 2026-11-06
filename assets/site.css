@@ -7134,14 +7134,14 @@ img,video,svg,canvas,iframe{max-width:100%;}
 }
 #homeView .hero-title-line--three b > span{display:block!important;}
 
-/* Mobile Selected Work: two equal cards per row, with balanced visual/copy proportions. */
-@media (min-width:391px) and (max-width:620px){
+/* Mobile Selected Work: single column on mobile responsive. */
+@media (max-width:620px){
   #projectsGrid.projects-grid{
     display:grid!important;
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-columns:minmax(0,1fr)!important;
     grid-auto-flow:row!important;
     align-items:stretch!important;
-    gap:10px!important;
+    gap:16px!important;
     min-width:0!important;
     max-width:100%!important;
     border:0!important;
@@ -7152,9 +7152,9 @@ img,video,svg,canvas,iframe{max-width:100%;}
   #projectsGrid.projects-grid[data-active-filter="product"] .project:not(.is-hidden),
   #projectsGrid.projects-grid[data-active-filter="archive"] .project:not(.is-hidden),
   #projectsGrid.projects-grid[data-active-filter="all"] .project:not(.is-hidden){
-    grid-column:span 1!important;
+    grid-column:1 / -1!important;
     min-width:0!important;
-    width:auto!important;
+    width:100%!important;
     height:100%!important;
     display:block!important;
     overflow:hidden!important;
@@ -7170,7 +7170,7 @@ img,video,svg,canvas,iframe{max-width:100%;}
   }
   #projectsGrid .project-media{
     min-height:0!important;
-    aspect-ratio:1.08 / 1!important;
+    aspect-ratio:16 / 10!important;
     flex:0 0 auto!important;
   }
   #projectsGrid .project-copy{
@@ -7178,30 +7178,31 @@ img,video,svg,canvas,iframe{max-width:100%;}
     flex:1 1 auto!important;
     flex-direction:column!important;
     min-width:0!important;
-    padding:13px 12px 14px!important;
+    padding:16px 16px 18px!important;
   }
   #projectsGrid .project-meta{
-    align-items:flex-start!important;
-    gap:6px!important;
-    font-size:7px!important;
-    line-height:1.28!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    font-size:10px!important;
+    line-height:1.4!important;
   }
   #projectsGrid .project-meta span:last-child{text-align:right!important;}
   #projectsGrid .project-copy h3{
-    margin-top:9px!important;
-    font-size:clamp(16px,4.35vw,20px)!important;
-    line-height:1.06!important;
-    letter-spacing:-.045em!important;
+    margin-top:8px!important;
+    font-size:clamp(18px,4.8vw,22px)!important;
+    line-height:1.15!important;
+    letter-spacing:-.035em!important;
     text-wrap:balance!important;
   }
   #projectsGrid .project-copy p{
-    margin-top:7px!important;
-    font-size:11px!important;
-    line-height:1.46!important;
-    color:rgba(245,245,240,.57)!important;
+    margin-top:6px!important;
+    font-size:12.5px!important;
+    line-height:1.5!important;
+    color:rgba(245,245,240,.68)!important;
   }
-  #projectsGrid .media-note{top:9px!important;left:9px!important;padding:5px 6px!important;font-size:7px!important;}
-  #projectsGrid .media-action{right:10px!important;bottom:10px!important;width:34px!important;height:34px!important;font-size:14px!important;}
+  #projectsGrid .media-note{top:10px!important;left:10px!important;padding:5px 8px!important;font-size:9px!important;}
+  #projectsGrid .media-action{right:10px!important;bottom:10px!important;width:36px!important;height:36px!important;font-size:16px!important;}
 }
 
 /* Very small phones retain one readable card per row. */
@@ -7287,14 +7288,14 @@ img,video,svg,canvas,iframe{max-width:100%;}
   #homeView .hero-title-line--three{width:min(100%,var(--home-name-line-width,100%)) !important;font-size:.80em !important;}
 }
 
-/* Mobile Selected Works: 2-column default across normal phones; one column only on very narrow widths. */
-@media (min-width:360px) and (max-width:620px){
+/* Mobile Selected Works: 1 column on mobile responsive. */
+@media (max-width:620px){
   #homeView #projectsGrid.projects-grid{
     display:grid !important;
-    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    grid-template-columns:minmax(0,1fr) !important;
     grid-auto-flow:row !important;
     align-items:stretch !important;
-    gap:10px !important;
+    gap:16px !important;
     width:100% !important;
     max-width:100% !important;
     min-width:0 !important;
@@ -7304,9 +7305,9 @@ img,video,svg,canvas,iframe{max-width:100%;}
   #homeView #projectsGrid.projects-grid>.project,
   #homeView #projectsGrid.projects-grid>.project.wide,
   #homeView #projectsGrid.projects-grid[data-active-filter]>.project:not(.is-hidden){
-    grid-column:auto !important;
+    grid-column:1 / -1 !important;
     grid-row:auto !important;
-    width:auto !important;
+    width:100% !important;
     min-width:0 !important;
     min-height:0 !important;
     height:100% !important;
@@ -7316,18 +7317,14 @@ img,video,svg,canvas,iframe{max-width:100%;}
   }
   #homeView #projectsGrid .project.is-hidden{display:none !important;}
   #homeView #projectsGrid .project-card{display:flex !important;flex-direction:column !important;height:100% !important;min-width:0 !important;overflow:hidden !important;}
-  #homeView #projectsGrid .project-media{min-height:0 !important;aspect-ratio:1.08 / 1 !important;flex:0 0 auto !important;}
-  #homeView #projectsGrid .project-copy{display:flex !important;flex:1 1 auto !important;flex-direction:column !important;min-width:0 !important;padding:12px 12px 14px !important;}
-  #homeView #projectsGrid .project-meta{gap:6px !important;font-size:7px !important;line-height:1.28 !important;}
-  #homeView #projectsGrid .project-copy h3{margin-top:8px !important;font-size:clamp(15px,4.15vw,19px) !important;line-height:1.07 !important;letter-spacing:-.045em !important;text-wrap:balance !important;}
-  #homeView #projectsGrid .project-copy p{margin-top:7px !important;font-size:10.5px !important;line-height:1.45 !important;color:rgba(245,245,240,.56) !important;}
+  #homeView #projectsGrid .project-media{min-height:0 !important;aspect-ratio:16 / 10 !important;flex:0 0 auto !important;}
+  #homeView #projectsGrid .project-copy{display:flex !important;flex:1 1 auto !important;flex-direction:column !important;min-width:0 !important;padding:16px 16px 18px !important;}
+  #homeView #projectsGrid .project-meta{display:flex !important;align-items:center !important;justify-content:space-between !important;gap:8px !important;font-size:10px !important;line-height:1.4 !important;}
+  #homeView #projectsGrid .project-copy h3{margin-top:8px !important;font-size:clamp(18px,4.8vw,22px) !important;line-height:1.15 !important;letter-spacing:-.035em !important;text-wrap:balance !important;}
+  #homeView #projectsGrid .project-copy p{margin-top:6px !important;font-size:12.5px !important;line-height:1.5 !important;color:rgba(245,245,240,.68) !important;}
   #homeView #projectsGrid .project-copy p strong{font-weight:400 !important;color:inherit !important;}
-  #homeView #projectsGrid .media-note{top:8px !important;left:8px !important;padding:5px 6px !important;font-size:7px !important;}
-  #homeView #projectsGrid .media-action{right:9px !important;bottom:9px !important;width:32px !important;height:32px !important;font-size:14px !important;}
-}
-@media(max-width:359px){
-  #homeView #projectsGrid.projects-grid{display:grid !important;grid-template-columns:minmax(0,1fr) !important;gap:12px !important;border:0 !important;background:transparent !important;}
-  #homeView #projectsGrid.projects-grid>.project,#homeView #projectsGrid.projects-grid>.project.wide{grid-column:1/-1 !important;width:100% !important;border:1px solid var(--line-soft) !important;}
+  #homeView #projectsGrid .media-note{top:10px !important;left:10px !important;padding:5px 8px !important;font-size:9px !important;}
+  #homeView #projectsGrid .media-action{right:10px !important;bottom:10px !important;width:36px !important;height:36px !important;font-size:16px !important;}
 }
 
 /* DANA Key Users: portrait stages preserve head, hands, and the object being held. */
