@@ -1087,8 +1087,8 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             defaultAspectRatio={adjustingCropTarget === 'hero' ? previewHeroAspect : previewCoverAspect}
             onApplyCrop={async (dataUrl, blob) => {
               const target = adjustingCropTarget;
-              const fileName = `${target || 'asset'}-${Date.now()}.webp`;
-              const file = new File([blob], fileName, { type: 'image/webp' });
+              const fileName = `${target || 'asset'}-${Date.now()}.png`;
+              const file = new File([blob], fileName, { type: 'image/png' });
               try {
                 const asset = await uploadProjectMedia(file);
                 if (target === 'hero') {

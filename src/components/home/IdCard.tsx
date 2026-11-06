@@ -364,16 +364,13 @@ export const IdCard: React.FC = () => {
               <div className="id-card-photo">
                 <img
                   alt={`${copy.idCardName} profile portrait`}
-                  decoding="auto"
+                  decoding="async"
                   draggable={false}
                   fetchPriority="high"
                   height="1371"
                   loading="eager"
-                  src={settings.profileImage || initialSiteSettings.profileImage}
+                  src={settings.profileImage || '/assets/media/hero-id-portrait.jpeg'}
                   width="720"
-                  onError={(e) => {
-                    e.currentTarget.src = '/assets/media/hero-id-portrait.jpeg';
-                  }}
                 />
               </div>
               <div className="id-card-body">

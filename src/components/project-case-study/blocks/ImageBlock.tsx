@@ -19,8 +19,8 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
           alt={block.alt || 'Case study illustration'}
           className="w-full h-auto max-w-full block rounded-none"
           containerClassName="w-full block rounded-none overflow-visible"
-          loading="eager"
-          priority={true}
+          loading="lazy"
+          priority={false}
         />
       </div>
       {block.caption && (

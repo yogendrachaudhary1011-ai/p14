@@ -224,8 +224,8 @@ export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
 
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
-      // Generate WebP blob & data url
-      const dataUrl = canvas.toDataURL('image/webp', 0.92);
+      // Generate uncompressed lossless PNG blob & data url
+      const dataUrl = canvas.toDataURL('image/png');
 
       await new Promise<void>((resolve) => {
         canvas.toBlob(
@@ -235,8 +235,7 @@ export const ImageCropPanZoomModal: React.FC<ImageCropPanZoomModalProps> = ({
             }
             resolve();
           },
-          'image/webp',
-          0.92
+          'image/png'
         );
       });
 

@@ -42,92 +42,21 @@ export function getInstantFallbackSvg(label = 'Image preview', width = 1200, hei
 }
 
 /**
- * Optimizes an uploaded image on the client side:
- * - Resizes if max dimension exceeds maxDimension (e.g. 2400px)
- * - Converts to optimized WebP at quality 0.88
- * - Reduces multi-megabyte camera photos/screenshots to ~200-400KB
- * - Returns both optimized File and dataUrl
+ * Retains original uncompressed image to guarantee 100% full visual fidelity:
+ * - Does NOT downscale, re-encode, or compress image files
+ * - Preserves original format, color accuracy, and pixel-crisp quality
+ * - Returns original uncompressed File and dataUrl
  */
 export async function compressAndOptimizeImage(
   file: File,
-  maxDimension = 2400,
-  quality = 0.88
+  _maxDimension = 2400,
+  _quality = 1.0
 ): Promise<{ file: File; dataUrl: string }> {
-  // If it's not an image (e.g. video or PDF) or it's SVG/GIF, don't re-encode
-  if (!file.type.startsWith('image/') || file.type === 'image/svg+xml' || file.type === 'image/gif') {
-    const dataUrl = await fileToDataUrl(file);
-    return { file, dataUrl };
-  }
-
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const src = e.target?.result as string;
-      if (!src) {
-        resolve({ file, dataUrl: '' });
-        return;
-      }
-
-      const img = new Image();
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > maxDimension || height > maxDimension) {
-          if (width > height) {
-            height = Math.round((height * maxDimension) / width);
-            width = maxDimension;
-          } else {
-            width = Math.round((width * maxDimension) / height);
-            height = maxDimension;
-          }
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          resolve({ file, dataUrl: src });
-          return;
-        }
-
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const targetType = 'image/webp';
-        canvas.toBlob(
-          (blob) => {
-            if (!blob || (blob.size >= file.size && file.type === 'image/webp')) {
-              resolve({ file, dataUrl: src });
-              return;
-            }
-
-            const optimizedName = file.name.replace(/\.[^.]+$/, '') + '.webp';
-            const optimizedFile = new File([blob], optimizedName, { type: targetType });
-            const optimizedDataUrl = canvas.toDataURL(targetType, quality);
-            resolve({ file: optimizedFile, dataUrl: optimizedDataUrl });
-          },
-          targetType,
-          quality
-        );
-      };
-
-      img.onerror = () => {
-        resolve({ file, dataUrl: src });
-      };
-
-      img.src = src;
-    };
-
-    reader.onerror = () => {
-      resolve({ file, dataUrl: '' });
-    };
-
-    reader.readAsDataURL(file);
-  });
+  const dataUrl = await fileToDataUrl(file);
+  return { file, dataUrl };
 }
 
-function fileToDataUrl(file: File): Promise<string> {
+export function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = () => resolve((reader.result as string) || '');

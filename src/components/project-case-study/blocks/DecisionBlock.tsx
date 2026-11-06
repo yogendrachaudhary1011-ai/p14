@@ -17,7 +17,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
             alt={block.imageAlt || 'Key architecture decision diagram'}
             className="w-full h-auto object-contain rounded-none max-h-[800px]"
             containerClassName="w-full block rounded-none overflow-visible"
-            loading="eager"
+            loading="lazy"
           />
         </div>
       )}

@@ -1,6 +1,5 @@
 import { getSupabase } from '../supabase';
 import { Project, SiteSettings, ExperienceItem, EducationItem, MediaAsset } from '../types';
-import { compressAndOptimizeImage } from './media';
 
 export interface PortfolioSnapshot {
   settings: SiteSettings;
@@ -22,11 +21,17 @@ export async function fetchPortfolioSnapshot(): Promise<PortfolioLoadResult> {
   if (!supabase) return { snapshot: null, connected: false, error: 'Supabase is not configured.' };
 
   try {
-    const { data, error } = await supabase
+    const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
+      setTimeout(() => resolve({ data: null, error: { message: 'Cloud state request timed out' } }), 3500)
+    );
+
+    const queryPromise = supabase
       .from('portfolio_state')
       .select('data')
       .eq('id', 'primary')
       .maybeSingle();
+
+    const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
     if (error) return { snapshot: null, connected: false, error: error.message };
     if (!data) return { snapshot: null, connected: true };
@@ -329,17 +334,7 @@ export async function uploadMediaToSupabase(file: File): Promise<{ url: string |
     return { url: null, error: 'Files must be 50 MB or smaller.' };
   }
 
-  let targetFile = file;
-  if (file.type.startsWith('image/') && file.type !== 'image/svg+xml' && file.type !== 'image/gif') {
-    try {
-      const optimized = await compressAndOptimizeImage(file);
-      if (optimized.file && optimized.file.size > 0) {
-        targetFile = optimized.file;
-      }
-    } catch {
-      targetFile = file;
-    }
-  }
+  const targetFile = file;
 
   try {
     const fileExt = targetFile.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';

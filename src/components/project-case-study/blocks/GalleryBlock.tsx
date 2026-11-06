@@ -23,7 +23,7 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({ block }) => {
               alt={img.alt || `Gallery item ${idx + 1}`}
               className="w-full h-auto object-contain rounded-none max-h-[700px]"
               containerClassName="w-full flex items-center justify-center rounded-none"
-              loading="eager"
+              loading="lazy"
             />
           </div>
           {img.caption && (

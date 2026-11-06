@@ -31,7 +31,7 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
   // Crop / Pan / Zoom modal state
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropImageSource, setCropImageSource] = useState<string>('');
-  const [pendingFileName, setPendingFileName] = useState<string>('cropped-image.webp');
+  const [pendingFileName, setPendingFileName] = useState<string>('cropped-image.png');
 
   const images = useMemo(() => mediaLibrary.filter((asset) => (asset.mimeType || '').startsWith('image/')), [mediaLibrary]);
 
@@ -71,7 +71,7 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
   // Handler for file selected for cropping & pan/zoom before upload
   const handleFileForCropping = (file?: File) => {
     if (!file) return;
-    setPendingFileName(file.name.replace(/\.[^/.]+$/, '') + '-framed.webp');
+    setPendingFileName(file.name.replace(/\.[^/.]+$/, '') + '-framed.png');
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === 'string') {
@@ -88,7 +88,7 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
     if (onUploadMedia) {
       setUploading(true);
       try {
-        const file = new File([blob], pendingFileName, { type: 'image/webp' });
+        const file = new File([blob], pendingFileName, { type: 'image/png' });
         const asset = await onUploadMedia(file);
         onChange(asset.url);
       } catch (err) {

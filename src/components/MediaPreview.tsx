@@ -28,7 +28,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   style,
   onLoad,
   onError,
-  loading = 'eager',
+  loading = 'lazy',
   priority = false,
   fallbackSrc,
   controls = true
@@ -87,7 +87,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
         style={style}
         controls={controls}
         playsInline
-        preload="metadata"
+        preload={priority ? 'metadata' : 'none'}
         aria-label={alt || 'Video preview'}
       />
     );
@@ -141,7 +141,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
         onLoad={handleImageLoad}
         onError={handleImageError}
         loading={priority ? 'eager' : loading}
-        decoding={priority ? 'sync' : 'auto'}
+        decoding={priority ? 'sync' : 'async'}
         fetchPriority={priority ? 'high' : 'auto'}
       />
     </div>

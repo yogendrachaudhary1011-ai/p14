@@ -4,6 +4,7 @@ import { initialSiteSettings } from '../data/initialData';
 import { IdCard } from '../components/home/IdCard';
 import { getGmailComposeUrl } from '../utils/emailUtils';
 import { getInstantFallbackSvg } from '../utils/media';
+import { useInView } from '../hooks/useInView';
 
 interface HomePageProps {
   onNavigate: (path: string) => void;
@@ -19,6 +20,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const aboutVideo = settings.aboutVideo || '/assets/media/about-profile-video.mp4';
   const [filter, setFilter] = useState<'all' | 'product' | 'archive'>('all');
   const [activeAboutTab, setActiveAboutTab] = useState<'about-profile' | 'about-experience' | 'about-education'>('about-profile');
+  const [aboutMediaRef, isAboutMediaInView] = useInView<HTMLElement>({ rootMargin: '300px', triggerOnce: true });
 
   const filteredProjects = useMemo(() => {
     return projects
@@ -364,9 +366,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                         <img
                           alt={project.title}
                           className={`project-cover ${project.coverClass || ''}`}
-                          decoding="auto"
-                          loading={index < 3 ? 'eager' : 'lazy'}
-                          fetchPriority={index < 2 ? 'high' : 'auto'}
+                          decoding="async"
+                          loading={index < 2 ? 'eager' : 'lazy'}
+                          fetchPriority={index < 1 ? 'high' : 'auto'}
                           src={project.coverImage || getInstantFallbackSvg(project.title)}
                           onError={(e) => {
                             e.currentTarget.src = getInstantFallbackSvg(project.title);
@@ -397,23 +399,34 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             <div className="about-journey">
               <div className="about-media-stack">
                 <aside
+                  ref={aboutMediaRef}
                   aria-label="Profile media for Yogendra"
                   className="about-visual about-sticky-visual has-about-media"
                   role="img"
                 >
-                  <video
-                    aria-hidden="true"
-                    autoPlay
-                    className="about-visual-media"
-                    loop
-                    muted
-                    playsInline
-                    preload="metadata"
-                    poster="/assets/media/about-profile-poster.png"
-                    src={aboutVideo}
-                  >
-                    <source src={aboutVideo} type="video/mp4" />
-                  </video>
+                  {isAboutMediaInView ? (
+                    <video
+                      aria-hidden="true"
+                      autoPlay
+                      className="about-visual-media"
+                      loop
+                      muted
+                      playsInline
+                      preload="auto"
+                      poster="/assets/media/about-profile-poster.png"
+                      src={aboutVideo}
+                    >
+                      <source src={aboutVideo} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img
+                      src="/assets/media/about-profile-poster.png"
+                      alt="Profile media preview"
+                      className="about-visual-media object-cover w-full h-full"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
                   <div className="about-visual-footer">
                     <div className="about-visual-caption">{copy.aboutCaption}</div>
                     <nav aria-label="About section shortcuts" className="about-visual-status">
