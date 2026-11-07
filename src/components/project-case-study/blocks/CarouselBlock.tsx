@@ -106,13 +106,20 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
         </div>
 
         {/* Caption bar */}
-        {(currentSlide.title || currentSlide.alt) && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col justify-end bg-gradient-to-t from-black/85 via-black/45 to-transparent p-4 pb-12 sm:pb-14">
-            <p className="text-center font-mono text-xs font-medium text-white/90 drop-shadow sm:text-sm">
-              {currentSlide.title || currentSlide.alt}
-            </p>
-          </div>
-        )}
+        {(() => {
+          const captionText = (currentSlide.title || '')
+            .replace(/design system component spec\s*#?\d*/gi, '')
+            .replace(/component spec/gi, '')
+            .trim();
+          if (!captionText) return null;
+          return (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col justify-end bg-gradient-to-t from-black/85 via-black/45 to-transparent p-4 pb-12 sm:pb-14">
+              <p className="text-center font-mono text-xs font-medium text-white/90 drop-shadow sm:text-sm">
+                {captionText}
+              </p>
+            </div>
+          );
+        })()}
 
         {/* Carousel controls */}
         {slides.length > 1 && (

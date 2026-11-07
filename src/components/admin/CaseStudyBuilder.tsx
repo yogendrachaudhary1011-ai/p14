@@ -1252,7 +1252,7 @@ export const CaseStudyBuilder: React.FC<CaseStudyBuilderProps> = ({
                                   ...(block.slides || []),
                                   {
                                     url: '',
-                                    title: 'Component Spec'
+                                    title: ''
                                   }
                                 ];
                                 handleUpdateBlock(block.id, { slides: updated });

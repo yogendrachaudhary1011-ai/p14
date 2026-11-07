@@ -280,34 +280,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 <p className="work-intro">
                   {copy.workDescription}
                 </p>
-                {projects.length > 0 && (
-                  <div aria-label="Filter selected work" className="filter-row" role="group">
-                    <button
-                      aria-pressed={filter === 'all'}
-                      className={`filter ${filter === 'all' ? 'is-active' : ''}`}
-                      onClick={() => setFilter('all')}
-                      type="button"
-                    >
-                      {copy.filterAll}
-                    </button>
-                    <button
-                      aria-pressed={filter === 'product'}
-                      className={`filter ${filter === 'product' ? 'is-active' : ''}`}
-                      onClick={() => setFilter('product')}
-                      type="button"
-                    >
-                      {copy.filterProduct}
-                    </button>
-                    <button
-                      aria-pressed={filter === 'archive'}
-                      className={`filter ${filter === 'archive' ? 'is-active' : ''}`}
-                      onClick={() => setFilter('archive')}
-                      type="button"
-                    >
-                      {copy.filterArchive}
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
 

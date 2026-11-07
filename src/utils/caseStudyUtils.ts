@@ -130,7 +130,15 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
       const blocks = [...(section.blocks || [])];
       const existingCarouselIndex = blocks.findIndex((block) => block.type === 'carousel');
       const existingSlides = existingCarouselIndex >= 0 && blocks[existingCarouselIndex].type === 'carousel'
-        ? (blocks[existingCarouselIndex].slides || []).filter((slide) => slide && typeof slide.url === 'string' && slide.url.trim())
+        ? (blocks[existingCarouselIndex].slides || [])
+            .filter((slide) => slide && typeof slide.url === 'string' && slide.url.trim())
+            .map((slide) => ({
+              ...slide,
+              title: (slide.title || '')
+                .replace(/design system component spec\s*#?\d*/gi, '')
+                .replace(/component spec/gi, '')
+                .trim()
+            }))
         : [];
 
       const cleanKey = (str?: string) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -148,7 +156,7 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
         .filter((url) => typeof url === 'string' && url.trim())
         .map((url, index) => ({
           url,
-          title: `Design System Component Spec #${index + 1}`,
+          title: '',
           alt: `Design System Slide ${index + 1}`
         }));
 
@@ -439,7 +447,7 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
         type: 'carousel',
         slides: project.designSystem.images.map((url, i) => ({
           url,
-          title: `Design System Component Spec #${i + 1}`,
+          title: '',
           alt: `Design System Slide ${i + 1}`
         }))
       });
@@ -782,7 +790,7 @@ export function getFullCaseStudyTemplate(projectTitle = 'Case Study'): CaseStudy
           id: `blk-${Date.now()}-ds-car`,
           type: 'carousel',
           slides: [
-            { url: '/assets/media/somtu-cover.webp', title: 'Component Library & Variants Spec', alt: 'Design system components' },
+            { url: '/assets/media/somtu-cover.webp', title: 'Component Library & Variants', alt: 'Design system components' },
             { url: '/assets/media/somtu-design-system.webp', title: 'Typography, Grid & Color Tokens', alt: 'Design system typography' },
             { url: '/assets/media/somtu-mobile-screens.webp', title: 'Responsive Mobile UI Tokens', alt: 'Mobile UI components' }
           ]

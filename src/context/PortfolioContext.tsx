@@ -66,6 +66,8 @@ const sanitizeLegacyMediaUrls = <T,>(input: T): T => {
   if (!input) return input;
   try {
     const str = JSON.stringify(input)
+      .replace(/Design System Component Spec\s*#?\d*/gi, '')
+      .replace(/Component Spec/gi, '')
       .replace(/og-rizka-portfolio\.jpg/g, 'og-portfolio.jpg')
       .replace(/\/assets\/media\/home-media-04-f775f2921176\.webp/g, '/assets/media/somtu-cover.webp')
       .replace(/\/assets\/media\/home-media-02-c6ea6ce61d01\.webp/g, '/assets/media/somtu-design-system.webp')
