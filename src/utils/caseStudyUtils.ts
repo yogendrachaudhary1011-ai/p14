@@ -101,8 +101,8 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
             legacyScreens.length > 0
               ? legacyScreens
               : (matchedInitial?.product?.screens?.filter((s) => s.trim()) || [
-                  '/assets/media/home-media-04-f775f2921176.webp',
-                  '/assets/media/home-media-03-d6c887bed8af.webp'
+                  '/assets/media/somtu-cover.webp',
+                  '/assets/media/somtu-mobile-screens.webp'
                 ]);
 
           if (fallbackScreens.length > 0) {
@@ -162,9 +162,9 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
       );
 
       const defaultFallbackSlides = [
-        { url: '/assets/media/home-media-04-f775f2921176.webp', title: 'Component Library & Variants', alt: 'Design System Slide 1' },
-        { url: '/assets/media/home-media-02-c6ea6ce61d01.webp', title: 'Typography & Elevation Tokens', alt: 'Design System Slide 2' },
-        { url: '/assets/media/home-media-03-d6c887bed8af.webp', title: 'Layout Guidelines & Navigation', alt: 'Design System Slide 3' }
+        { url: '/assets/media/somtu-cover.webp', title: 'Component Library & Variants', alt: 'Design System Slide 1' },
+        { url: '/assets/media/somtu-design-system.webp', title: 'Typography & Elevation Tokens', alt: 'Design System Slide 2' },
+        { url: '/assets/media/somtu-mobile-screens.webp', title: 'Layout Guidelines & Navigation', alt: 'Design System Slide 3' }
       ];
 
       const slides = existingSlides.length
@@ -595,7 +595,7 @@ export function getFullCaseStudyTemplate(projectTitle = 'Case Study'): CaseStudy
         {
           id: `blk-${Date.now()}-prob-img`,
           type: 'fullWidthImage',
-          url: '/assets/media/home-media-04-f775f2921176.webp',
+          url: '/assets/media/somtu-cover.webp',
           alt: `${projectTitle} Problem Discovery and Research`
         }
       ]
@@ -663,7 +663,7 @@ export function getFullCaseStudyTemplate(projectTitle = 'Case Study'): CaseStudy
         {
           id: `blk-${Date.now()}-dec-img`,
           type: 'fullWidthImage',
-          url: '/assets/media/home-media-04-f775f2921176.webp',
+          url: '/assets/media/somtu-cover.webp',
           alt: `${projectTitle} Key Architecture Decisions`
         },
         {
@@ -722,7 +722,7 @@ export function getFullCaseStudyTemplate(projectTitle = 'Case Study'): CaseStudy
         {
           id: `blk-${Date.now()}-sol-img`,
           type: 'fullWidthImage',
-          url: '/assets/media/home-media-04-f775f2921176.webp',
+          url: '/assets/media/somtu-cover.webp',
           alt: `${projectTitle} Solution Overview`
         }
       ]
@@ -782,9 +782,9 @@ export function getFullCaseStudyTemplate(projectTitle = 'Case Study'): CaseStudy
           id: `blk-${Date.now()}-ds-car`,
           type: 'carousel',
           slides: [
-            { url: '/assets/media/home-media-04-f775f2921176.webp', title: 'Component Library & Variants Spec', alt: 'Design system components' },
-            { url: '/assets/media/home-media-02-c6ea6ce61d01.webp', title: 'Typography, Grid & Color Tokens', alt: 'Design system typography' },
-            { url: '/assets/media/home-media-03-d6c887bed8af.webp', title: 'Responsive Mobile UI Tokens', alt: 'Mobile UI components' }
+            { url: '/assets/media/somtu-cover.webp', title: 'Component Library & Variants Spec', alt: 'Design system components' },
+            { url: '/assets/media/somtu-design-system.webp', title: 'Typography, Grid & Color Tokens', alt: 'Design system typography' },
+            { url: '/assets/media/somtu-mobile-screens.webp', title: 'Responsive Mobile UI Tokens', alt: 'Mobile UI components' }
           ]
         }
       ]
@@ -805,13 +805,13 @@ export function getFullCaseStudyTemplate(projectTitle = 'Case Study'): CaseStudy
         {
           id: `blk-${Date.now()}-prod-img-1`,
           type: 'fullWidthImage',
-          url: '/assets/media/home-media-04-f775f2921176.webp',
+          url: '/assets/media/somtu-cover.webp',
           alt: `${projectTitle} Desktop & Mobile Screens`
         },
         {
           id: `blk-${Date.now()}-prod-img-2`,
           type: 'fullWidthImage',
-          url: '/assets/media/home-media-02-c6ea6ce61d01.webp',
+          url: '/assets/media/somtu-design-system.webp',
           alt: `${projectTitle} Detailed Workflows`
         }
       ]
@@ -980,16 +980,16 @@ export function createDefaultSection(type: SectionType, order: number): CaseStud
     defaultBlocks = [
       { id: `blk-${Date.now()}-1`, type: 'paragraph', text: 'Extended the brand into a reusable tokenized component library with documented variants.' },
       { id: `blk-${Date.now()}-2`, type: 'carousel', slides: [
-        { url: '/assets/media/home-media-04-f775f2921176.webp', title: 'Component Library & Variants', alt: 'Design system slide 1' },
-        { url: '/assets/media/home-media-02-c6ea6ce61d01.webp', title: 'Typography & Elevation Tokens', alt: 'Design system slide 2' },
-        { url: '/assets/media/home-media-03-d6c887bed8af.webp', title: 'Layout Guidelines & Navigation', alt: 'Design system slide 3' }
+        { url: '/assets/media/somtu-cover.webp', title: 'Component Library & Variants', alt: 'Design system slide 1' },
+        { url: '/assets/media/somtu-design-system.webp', title: 'Typography & Elevation Tokens', alt: 'Design system slide 2' },
+        { url: '/assets/media/somtu-mobile-screens.webp', title: 'Layout Guidelines & Navigation', alt: 'Design system slide 3' }
       ]}
     ];
   } else if (type === 'product') {
     defaultBlocks = [
       { id: `blk-${Date.now()}-1`, type: 'paragraph', text: 'Core responsive feature areas designed for desktop and mobile viewports.' },
-      { id: `blk-${Date.now()}-2`, type: 'fullWidthImage', url: '/assets/media/home-media-04-f775f2921176.webp', alt: 'Product Screen 1' },
-      { id: `blk-${Date.now()}-3`, type: 'fullWidthImage', url: '/assets/media/home-media-03-d6c887bed8af.webp', alt: 'Product Screen 2' }
+      { id: `blk-${Date.now()}-2`, type: 'fullWidthImage', url: '/assets/media/somtu-cover.webp', alt: 'Product Screen 1' },
+      { id: `blk-${Date.now()}-3`, type: 'fullWidthImage', url: '/assets/media/somtu-mobile-screens.webp', alt: 'Product Screen 2' }
     ];
   } else if (type === 'learnings') {
     defaultBlocks = [

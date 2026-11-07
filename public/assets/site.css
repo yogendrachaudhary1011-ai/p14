@@ -7108,7 +7108,7 @@ img,video,svg,canvas,iframe{max-width:100%;}
 #homeView .hero-copy .copy-word:hover,
 #homeView .hero-copy .copy-word:focus-visible{font-weight:400!important;}
 
-/* The role stays 20% smaller, while its two words are optically spread to the width of RIZKA NURUL. */
+/* The role stays 20% smaller, while its two words are optically spread to the width of YOGENDRA. */
 #homeView .hero-title-static .static-title{
   display:inline-grid!important;
   grid-template-columns:max-content!important;
@@ -7255,7 +7255,7 @@ img,video,svg,canvas,iframe{max-width:100%;}
 #homeView #heroCopy.hero-copy .copy-word:focus-visible,
 #homeView #heroCopy.hero-copy .hero-copy-group:hover{font-weight:400 !important;}
 
-/* The role line is calculated from RIZKA NURUL, not from its own content width. */
+/* The role line is calculated from YOGENDRA, not from its own content width. */
 #homeView .hero-title-static .static-title{
   display:block !important;
   width:max-content !important;
@@ -7678,7 +7678,7 @@ img,video,svg,canvas,iframe{max-width:100%;}
   gap:7px!important;
 }
 
-/* Desktop title remains three lines. The role is optically aligned to RIZKA NURUL. */
+/* Desktop title remains three lines. The role is optically aligned to YOGENDRA. */
 #homeView .hero-title .hero-title-line--name .hero-name-word{
   display:inline!important;
 }

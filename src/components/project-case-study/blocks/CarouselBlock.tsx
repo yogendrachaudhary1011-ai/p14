@@ -7,9 +7,9 @@ interface CarouselBlockProps {
 }
 
 const DEFAULT_SLIDES = [
-  { url: '/assets/media/home-media-04-f775f2921176.webp', title: 'Component Library & Variants', alt: 'Design System Slide 1' },
-  { url: '/assets/media/home-media-02-c6ea6ce61d01.webp', title: 'Typography & Elevation Tokens', alt: 'Design System Slide 2' },
-  { url: '/assets/media/home-media-03-d6c887bed8af.webp', title: 'Layout Guidelines & Navigation', alt: 'Design System Slide 3' }
+  { url: '/assets/media/somtu-cover.webp', title: 'Component Library & Variants', alt: 'Design System Slide 1' },
+  { url: '/assets/media/somtu-design-system.webp', title: 'Typography & Elevation Tokens', alt: 'Design System Slide 2' },
+  { url: '/assets/media/somtu-mobile-screens.webp', title: 'Layout Guidelines & Navigation', alt: 'Design System Slide 3' }
 ];
 
 export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {

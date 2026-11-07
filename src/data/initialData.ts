@@ -46,7 +46,7 @@ export const initialSiteSettings: SiteSettings = {
     title: 'Yogendra Chaudhary — UI/UX & Product Designer Portfolio',
     description: 'UI/UX and Product Designer creating clear software interfaces, reusable components, user-centered workflows, and implementation-ready product experiences.',
     canonicalUrl: 'https://yogendrach.vercel.app/',
-    ogImage: '/og-rizka-portfolio.jpg',
+    ogImage: '/og-portfolio.jpg',
     robots: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'
   }
 };
@@ -60,7 +60,7 @@ export const initialProjects: Project[] = [
     category: 'product',
     categoryLabel: 'Case Study',
     mediaNote: 'Complete academic web experience with 87 screens and design system',
-    coverImage: '/assets/media/home-media-04-f775f2921176.webp',
+    coverImage: '/assets/media/somtu-cover.webp',
     year: '2026',
     order: 1,
     status: 'published',
@@ -106,7 +106,7 @@ export const initialProjects: Project[] = [
           ]
         }
       ],
-      image: '/assets/media/home-media-04-f775f2921176.webp'
+      image: '/assets/media/somtu-cover.webp'
     },
     challenge: {
       headline: 'MY CHALLENGE',
@@ -129,7 +129,7 @@ export const initialProjects: Project[] = [
     },
     keyDecisions: {
       headline: 'KEY DECISIONS & WHY?',
-      image: '/assets/media/home-media-04-f775f2921176.webp',
+      image: '/assets/media/somtu-cover.webp',
       decisions: [
         {
           title: 'One shell for every page',
@@ -186,7 +186,7 @@ export const initialProjects: Project[] = [
         { title: 'State-aware screens', desc: 'Upcoming, ended, empty, and success states designed, not left to chance.' },
         { title: 'Mobile as an equal', desc: 'Every chapter designed at 428 px with its own patterns.' }
       ],
-      image: '/assets/media/home-media-04-f775f2921176.webp'
+      image: '/assets/media/somtu-cover.webp'
     },
     whyWorks: {
       headline: 'Why this approach works?',
@@ -207,18 +207,18 @@ export const initialProjects: Project[] = [
       headline: 'DESIGN SYSTEM',
       desc: 'I extended the School of Management’s blue and orange brand into a system for content-heavy pages: a campus-photo banner under the header, white cards on a pale surface, and orange reserved for actions. All 81 component variants are documented.',
       images: [
-        '/assets/media/home-media-04-f775f2921176.webp',
-        '/assets/media/home-media-02-c6ea6ce61d01.webp',
-        '/assets/media/home-media-03-d6c887bed8af.webp'
+        '/assets/media/somtu-cover.webp',
+        '/assets/media/somtu-design-system.webp',
+        '/assets/media/somtu-mobile-screens.webp'
       ]
     },
     product: {
       headline: 'THE PRODUCT',
       desc: 'Eleven feature areas, each designed for desktop and mobile. Scroll inside any frame to see the full screen.',
       screens: [
-        '/assets/media/home-media-04-f775f2921176.webp',
-        '/assets/media/home-media-03-d6c887bed8af.webp',
-        '/assets/media/home-media-05-aa658763e66a.webp'
+        '/assets/media/somtu-cover.webp',
+        '/assets/media/somtu-mobile-screens.webp',
+        '/assets/media/somtu-architecture.webp'
       ]
     },
     learnings: {
@@ -406,18 +406,18 @@ export const initialProjects: Project[] = [
       headline: 'DESIGN SYSTEM',
       desc: 'Created an authentic visual system blending sacred saffron accents (#FF853A) with deep obsidian backgrounds, refined serif headings, clean sans-serif body typography, and detailed status tokens across 64+ component variants.',
       images: [
-        '/assets/media/home-media-01-a8072a2c986d.png',
-        '/assets/media/home-media-02-c6ea6ce61d01.webp',
-        '/assets/media/home-media-11-2c67061de865.webp'
+        '/assets/media/vedic-sewa-cover.png',
+        '/assets/media/vedic-sewa-platform.webp',
+        '/assets/media/vedic-sewa-tokens.webp'
       ]
     },
     product: {
       headline: 'THE PRODUCT',
       desc: 'Comprehensive web and mobile interface across devotee bookings, guru consultation dashboard, and live ritual ceremony streaming.',
       screens: [
-        '/assets/media/home-media-01-a8072a2c986d.png',
-        '/assets/media/home-media-02-c6ea6ce61d01.webp',
-        '/assets/media/home-media-11-2c67061de865.webp'
+        '/assets/media/vedic-sewa-cover.png',
+        '/assets/media/vedic-sewa-platform.webp',
+        '/assets/media/vedic-sewa-tokens.webp'
       ]
     },
     learnings: {

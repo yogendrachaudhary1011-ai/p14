@@ -54,12 +54,30 @@ interface PortfolioContextType {
 }
 
 const STORAGE_KEYS = {
-  SETTINGS: 'yc_portfolio_settings_v5',
-  PROJECTS: 'yc_portfolio_projects_v6',
+  SETTINGS: 'yc_portfolio_settings_v6',
+  PROJECTS: 'yc_portfolio_projects_v7',
   EXPERIENCE: 'yc_portfolio_experience_v2',
   EDUCATION: 'yc_portfolio_education',
-  MEDIA: 'yc_portfolio_media',
+  MEDIA: 'yc_portfolio_media_v2',
   AUTH: 'yc_portfolio_admin_auth'
+};
+
+const sanitizeLegacyMediaUrls = <T,>(input: T): T => {
+  if (!input) return input;
+  try {
+    const str = JSON.stringify(input)
+      .replace(/og-rizka-portfolio\.jpg/g, 'og-portfolio.jpg')
+      .replace(/\/assets\/media\/home-media-04-f775f2921176\.webp/g, '/assets/media/somtu-cover.webp')
+      .replace(/\/assets\/media\/home-media-02-c6ea6ce61d01\.webp/g, '/assets/media/somtu-design-system.webp')
+      .replace(/\/assets\/media\/home-media-03-d6c887bed8af\.webp/g, '/assets/media/somtu-mobile-screens.webp')
+      .replace(/\/assets\/media\/home-media-05-aa658763e66a\.webp/g, '/assets/media/somtu-architecture.webp')
+      .replace(/\/assets\/media\/home-media-11-2c67061de865\.webp/g, '/assets/media/vedic-sewa-platform.webp')
+      .replace(/\/assets\/media\/home-media-12-049c2eb75443\.webp/g, '/assets/media/vedic-sewa-tokens.webp')
+      .replace(/\/assets\/media\/home-media-01-a8072a2c986d\.png/g, '/assets/media/vedic-sewa-cover.png');
+    return JSON.parse(str);
+  } catch {
+    return input;
+  }
 };
 
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
@@ -97,7 +115,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [projects, setProjects] = useState<Project[]>(() => {
     try {
-      // Clear legacy storage versions to prevent deleted projects from persisting in local browser cache
+      // Clear legacy storage versions to prevent deleted projects or old templates from persisting in local browser cache
+      safeStorage.removeItem('yc_portfolio_projects_v6');
       safeStorage.removeItem('yc_portfolio_projects_v5');
       safeStorage.removeItem('yc_portfolio_projects_v4');
       safeStorage.removeItem('yc_portfolio_projects_v3');
@@ -105,7 +124,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          return sanitizeLegacyMediaUrls(parsed);
         }
       }
       return initialProjects;
@@ -143,21 +162,37 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [media, setMedia] = useState<MediaAsset[]>(() => {
     try {
       const stored = safeStorage.getItem(STORAGE_KEYS.MEDIA);
-      return stored ? JSON.parse(stored) : [
+      return stored ? sanitizeLegacyMediaUrls(JSON.parse(stored)) : [
         {
           id: 'media-01',
-          name: 'Home portrait',
-          url: '/assets/media/home-media-02-c6ea6ce61d01.webp',
-          mimeType: 'image/webp',
-          size: 142000,
+          name: 'Hero ID portrait',
+          url: '/assets/media/hero-id-portrait.jpeg',
+          mimeType: 'image/jpeg',
+          size: 704000,
           uploadedAt: new Date().toISOString()
         },
         {
           id: 'media-02',
           name: 'SOMTU Case Cover',
-          url: '/assets/media/home-media-04-f775f2921176.webp',
+          url: '/assets/media/somtu-cover.webp',
           mimeType: 'image/webp',
-          size: 218000,
+          size: 75800,
+          uploadedAt: new Date().toISOString()
+        },
+        {
+          id: 'media-03',
+          name: 'SOMTU Design System',
+          url: '/assets/media/somtu-design-system.webp',
+          mimeType: 'image/webp',
+          size: 52400,
+          uploadedAt: new Date().toISOString()
+        },
+        {
+          id: 'media-04',
+          name: 'The Vedic Sewa Cover',
+          url: '/assets/media/vedic-sewa-cover.png',
+          mimeType: 'image/png',
+          size: 118800,
           uploadedAt: new Date().toISOString()
         }
       ];
@@ -538,9 +573,9 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       category: projectData.category || 'product',
       categoryLabel: projectData.categoryLabel || 'Case Study',
       mediaNote: projectData.mediaNote || 'UI/UX & Product Design',
-      coverImage: projectData.coverImage || '/assets/media/home-media-04-f775f2921176.webp',
+      coverImage: projectData.coverImage || '/assets/media/somtu-cover.webp',
       heroImage: projectData.heroImage || {
-        url: projectData.coverImage || '/assets/media/home-media-04-f775f2921176.webp',
+        url: projectData.coverImage || '/assets/media/somtu-cover.webp',
         alt: projectData.title || 'Case study hero'
       },
       year: projectData.year || '2026',
@@ -579,7 +614,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       seo: projectData.seo || {
         title: `${projectData.title || 'Project'} — Yogendra Chaudhary`,
         description: projectData.shortSummary || 'UI/UX Case Study',
-        image: projectData.coverImage || '/og-rizka-portfolio.jpg'
+        image: projectData.coverImage || '/og-portfolio.jpg'
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -759,8 +794,10 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setExperience(initialExperience);
     setEducation(initialEducation);
     setMedia([
-      { id: 'media-01', name: 'Home portrait', url: '/assets/media/home-media-02-c6ea6ce61d01.webp', mimeType: 'image/webp', size: 142000, uploadedAt: new Date().toISOString() },
-      { id: 'media-02', name: 'SOMTU Case Cover', url: '/assets/media/home-media-04-f775f2921176.webp', mimeType: 'image/webp', size: 218000, uploadedAt: new Date().toISOString() }
+      { id: 'media-01', name: 'Hero ID portrait', url: '/assets/media/hero-id-portrait.jpeg', mimeType: 'image/jpeg', size: 704000, uploadedAt: new Date().toISOString() },
+      { id: 'media-02', name: 'SOMTU Case Cover', url: '/assets/media/somtu-cover.webp', mimeType: 'image/webp', size: 75800, uploadedAt: new Date().toISOString() },
+      { id: 'media-03', name: 'SOMTU Design System', url: '/assets/media/somtu-design-system.webp', mimeType: 'image/webp', size: 52400, uploadedAt: new Date().toISOString() },
+      { id: 'media-04', name: 'The Vedic Sewa Cover', url: '/assets/media/vedic-sewa-cover.png', mimeType: 'image/png', size: 118800, uploadedAt: new Date().toISOString() }
     ]);
     safeStorage.removeItem(STORAGE_KEYS.SETTINGS);
     safeStorage.removeItem(STORAGE_KEYS.PROJECTS);

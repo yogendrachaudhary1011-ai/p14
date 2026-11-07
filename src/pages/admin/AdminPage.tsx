@@ -831,7 +831,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     <div className="flex items-center gap-3 min-w-0">
                       <img
                         alt={proj.title}
-                        src={proj.heroImage?.url || proj.coverImage || '/assets/media/home-media-04-f775f2921176.webp'}
+                        src={proj.heroImage?.url || proj.coverImage || '/assets/media/somtu-cover.webp'}
                         className="w-12 h-9 object-cover rounded bg-black border border-white/10 shrink-0"
                       />
                       <div className="min-w-0">
@@ -1111,12 +1111,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                                     src={
                                       proj.heroImage?.url ||
                                       proj.coverImage ||
-                                      '/assets/media/home-media-04-f775f2921176.webp'
+                                      '/assets/media/somtu-cover.webp'
                                     }
                                     className="w-12 h-9 object-cover rounded bg-black border border-white/10 shrink-0"
                                     onError={(e) => {
                                       (e.target as HTMLImageElement).src =
-                                        '/assets/media/home-media-04-f775f2921176.webp';
+                                        '/assets/media/somtu-cover.webp';
                                     }}
                                   />
                                   <div className="min-w-0">
@@ -2548,7 +2548,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       src={item.url}
                       mimeType={item.mimeType}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      fallbackSrc="/assets/media/home-media-04-f775f2921176.webp"
+                      fallbackSrc="/assets/media/somtu-cover.webp"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <button
@@ -2675,10 +2675,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   <div className="h-44 bg-black overflow-hidden relative">
                     <img
                       alt="Social share card"
-                      src={settings.seo.ogImage || '/og-rizka-portfolio.jpg'}
+                      src={settings.seo.ogImage || '/og-portfolio.jpg'}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/assets/media/home-media-04-f775f2921176.webp';
+                        (e.target as HTMLImageElement).src = '/assets/media/somtu-cover.webp';
                       }}
                     />
                   </div>

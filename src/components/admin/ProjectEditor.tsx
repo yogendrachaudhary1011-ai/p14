@@ -77,13 +77,13 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
   // Media
   const [coverImage, setCoverImage] = useState(
-    initialProject?.coverImage || '/assets/media/home-media-04-f775f2921176.webp'
+    initialProject?.coverImage || '/assets/media/somtu-cover.webp'
   );
   const [coverClass, setCoverClass] = useState<string>(
     initialProject?.coverClass || ''
   );
   const [heroImageUrl, setHeroImageUrl] = useState(
-    initialProject?.heroImage?.url || initialProject?.coverImage || '/assets/media/home-media-04-f775f2921176.webp'
+    initialProject?.heroImage?.url || initialProject?.coverImage || '/assets/media/somtu-cover.webp'
   );
   const [heroImageAlt, setHeroImageAlt] = useState(initialProject?.heroImage?.alt || '');
   const [adjustingCropTarget, setAdjustingCropTarget] = useState<'hero' | 'cover' | null>(null);

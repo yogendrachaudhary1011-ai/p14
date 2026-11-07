@@ -97,7 +97,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
     }
   };
 
-  const heroImageSrc = project.heroImage?.url || project.coverImage || '/assets/media/home-media-04-f775f2921176.webp';
+  const heroImageSrc = project.heroImage?.url || project.coverImage || '/assets/media/somtu-cover.webp';
   const heroImageAlt = project.heroImage?.alt || project.title;
   const subtitle = project.heroSubtitle || project.shortSummary;
   const introText = project.introduction || project.summary;

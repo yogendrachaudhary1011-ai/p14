@@ -99,7 +99,7 @@ export function mapRowToProject(row: any): Project {
     category: row.category || 'product',
     categoryLabel: row.category_label || 'Case Study',
     mediaNote: row.media_note || '',
-    coverImage: row.cover_image || '/assets/media/home-media-04-f775f2921176.webp',
+    coverImage: row.cover_image || '/assets/media/somtu-cover.webp',
     heroImage: row.hero_image || (row.cover_image ? { url: row.cover_image, alt: row.title } : undefined),
     year: row.year || '2026',
     order: row.display_order ?? row.order ?? 1,
@@ -125,7 +125,7 @@ export function mapRowToProject(row: any): Project {
     seo: row.seo || {
       title: `${row.title || 'Project'} — Yogendra Chaudhary`,
       description: row.short_summary || 'UI/UX Case Study',
-      image: row.cover_image || '/og-rizka-portfolio.jpg'
+      image: row.cover_image || '/og-portfolio.jpg'
     },
     createdAt: row.created_at,
     updatedAt: row.updated_at
