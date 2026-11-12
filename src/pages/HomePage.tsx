@@ -238,7 +238,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
             <div className="hero-actions">
               <a
-                className="button primary"
+                className="button secondary"
                 href="#about"
                 onClick={(e) => {
                   e.preventDefault();
@@ -251,11 +251,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 </span>
               </a>
               <a
-                className="button secondary"
-                href="/projects"
+                className="button primary"
+                href="#work"
                 onClick={(e) => {
                   e.preventDefault();
-                  onNavigate('/projects');
+                  handleScrollTo('work');
                 }}
               >
                 {copy.heroWorkButton}{' '}
@@ -272,12 +272,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         {/* WORK SECTION */}
         <section className="section" id="work" data-reveal style={{ display: sections.work ? undefined : 'none', order: (settings.homeSectionOrder || initialSiteSettings.homeSectionOrder).indexOf('work') }}>
           <div className="shell">
-            <div className="work-top">
+            <div className="work-top" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start', gap: '16px' }}>
               <div>
-                <h2 className="display work-title">{copy.workHeading}</h2>
+                <h2 className="display work-title" style={{ margin: 0 }}>{copy.workHeading}</h2>
               </div>
-              <div className="work-top-side">
-                <p className="work-intro">
+              <div className="work-top-side" style={{ alignItems: 'flex-start', width: '100%' }}>
+                <p className="work-intro" style={{ width: '100%', maxWidth: '100%', textAlign: 'left', margin: 0 }}>
                   {copy.workDescription}
                 </p>
               </div>

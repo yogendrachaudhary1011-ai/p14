@@ -98,6 +98,32 @@ export const Header: React.FC<HeaderProps> = ({ currentPath, onNavigate, project
           transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
       >
+        <a
+          href="/"
+          className="brand"
+          onClick={(e) => handleNavClick(e, '/')}
+          aria-label={`${settings.brandName || 'Yogendra Chaudhary'} Home`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            textDecoration: 'none',
+            flexShrink: 0
+          }}
+        >
+          <img
+            src="/favicon.png"
+            alt={`${settings.brandName || 'Yogendra Chaudhary'} Logo`}
+            width={32}
+            height={32}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              objectFit: 'cover',
+              display: 'block'
+            }}
+          />
+        </a>
 
         <div className="nav-links">
           <a
