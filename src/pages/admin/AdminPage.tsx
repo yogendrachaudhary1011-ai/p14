@@ -1915,7 +1915,17 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
                     />
                   </div>
-                  <div className="flex items-center gap-2 pt-6">
+                  <div>
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Duration / Progression (Optional)</label>
+                    <BufferedTextInput
+                      type="text"
+                      placeholder="e.g. Progressed from internship or 1 yr 4 mos"
+                      value={expFormData.duration || ''}
+                      onCommit={(value) => setExpFormData((current) => ({ ...current, duration: value }))}
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 md:col-span-2">
                     <input
                       type="checkbox"
                       id="currentRoleCheckbox"
@@ -1926,6 +1936,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     <label htmlFor="currentRoleCheckbox" className="text-xs text-zinc-300 cursor-pointer font-medium">
                       Current active position
                     </label>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">
+                      Headline / Bold Lead Text (Optional)
+                    </label>
+                    <BufferedTextInput
+                      type="text"
+                      placeholder="e.g. Product design & development"
+                      value={expFormData.headline || ''}
+                      onCommit={(value) => setExpFormData((current) => ({ ...current, headline: value }))}
+                      className="w-full px-3 py-2 rounded-lg bg-[#0d0e14] border border-white/10 text-white text-sm outline-none focus:border-[#f37021]"
+                    />
+                    <p className="mt-1 text-[11px] text-zinc-500">
+                      Bold opening text shown at the start of the description paragraph on the About and Home timelines.
+                    </p>
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-xs uppercase text-zinc-400 mb-1 font-semibold">Description</label>
@@ -2004,8 +2029,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     </div>
                     <div className="text-xs text-zinc-400 font-medium">
                       {item.company} · {item.dates}
+                      {item.duration && <span className="ml-2 text-zinc-500 font-normal">({item.duration})</span>}
                     </div>
                     <p className="text-zinc-300 text-xs sm:text-sm line-clamp-3 max-w-3xl leading-relaxed">
+                      {item.headline && <b className="text-white font-semibold">{item.headline} </b>}
                       {item.description}
                     </p>
                     <div className="flex flex-wrap gap-1.5 pt-1">
