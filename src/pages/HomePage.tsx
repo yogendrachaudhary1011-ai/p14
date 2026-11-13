@@ -4,11 +4,46 @@ import { initialSiteSettings } from '../data/initialData';
 import { IdCard } from '../components/home/IdCard';
 import { getGmailComposeUrl } from '../utils/emailUtils';
 import { getInstantFallbackSvg } from '../utils/media';
+import {
+  getLandingVideoSources,
+  isSaveDataEnabled,
+  resolveLandingPosterUrl,
+  useCompressedLandingImage
+} from '../utils/landingMediaCompression';
 import { useInView } from '../hooks/useInView';
 
 interface HomePageProps {
   onNavigate: (path: string) => void;
 }
+
+const LandingProjectCover: React.FC<{
+  src?: string;
+  title: string;
+  coverClass?: string;
+  index: number;
+}> = ({ src, title, coverClass, index }) => {
+  const compressedSrc = useCompressedLandingImage(src, 900);
+  return (
+    <img
+      alt={title}
+      className={`project-cover ${coverClass || ''}`}
+      decoding="async"
+      loading={index < 2 ? 'eager' : 'lazy'}
+      fetchPriority={index < 2 ? 'high' : 'auto'}
+      width={900}
+      height={1200}
+      src={compressedSrc || getInstantFallbackSvg(title)}
+      onError={(e) => {
+        if (src && e.currentTarget.src !== src && !e.currentTarget.dataset.originalTried) {
+          e.currentTarget.dataset.originalTried = '1';
+          e.currentTarget.src = src;
+          return;
+        }
+        e.currentTarget.src = getInstantFallbackSvg(title);
+      }}
+    />
+  );
+};
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const { settings, projects, experience, education, isAdmin } = usePortfolio();
@@ -18,9 +53,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const aboutSections = { ...initialSiteSettings.aboutSections, ...(settings.aboutSections || {}) };
   const aboutOrder = settings.aboutSectionOrder || initialSiteSettings.aboutSectionOrder;
   const aboutVideo = settings.aboutVideo || '/assets/media/about-profile-video.mp4';
+  const aboutVideoSources = useMemo(() => getLandingVideoSources(aboutVideo), [aboutVideo]);
+  const aboutPoster = useMemo(() => resolveLandingPosterUrl('/assets/media/about-profile-poster.png'), []);
+  const saveDataMode = useMemo(() => isSaveDataEnabled(), []);
   const [filter, setFilter] = useState<'all' | 'product' | 'archive'>('all');
   const [activeAboutTab, setActiveAboutTab] = useState<'about-profile' | 'about-experience' | 'about-education'>('about-profile');
-  const [aboutMediaRef, isAboutMediaInView] = useInView<HTMLElement>({ rootMargin: '300px', triggerOnce: true });
+  const [aboutMediaRef, isAboutMediaInView] = useInView<HTMLElement>({ rootMargin: '150px', triggerOnce: true });
 
   const filteredProjects = useMemo(() => {
     return projects
@@ -334,18 +372,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                         <span aria-hidden="true" className="media-action material-symbols-rounded material-arrow-icon">
                           arrow_outward
                         </span>
-                        <img
-                          alt={project.title}
-                          className={`project-cover ${project.coverClass || ''}`}
-                          decoding="async"
-                          loading={index < 2 ? 'eager' : 'lazy'}
-                          fetchPriority={index < 1 ? 'high' : 'auto'}
-                          width={900}
-                          height={1200}
-                          src={project.coverImage || getInstantFallbackSvg(project.title)}
-                          onError={(e) => {
-                            e.currentTarget.src = getInstantFallbackSvg(project.title);
-                          }}
+                        <LandingProjectCover
+                          src={project.coverImage}
+                          title={project.title}
+                          coverClass={project.coverClass}
+                          index={index}
                         />
                       </div>
                       <div className="project-copy">
@@ -377,7 +408,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   className="about-visual about-sticky-visual has-about-media"
                   role="img"
                 >
-                  {isAboutMediaInView ? (
+                  {isAboutMediaInView && !saveDataMode ? (
                     <video
                       aria-hidden="true"
                       autoPlay
@@ -385,15 +416,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       loop
                       muted
                       playsInline
-                      preload="auto"
-                      poster="/assets/media/about-profile-poster.png"
-                      src={aboutVideo}
+                      preload="metadata"
+                      poster={aboutPoster}
                     >
-                      <source src={aboutVideo} type="video/mp4" />
+                      {aboutVideoSources.map((source) => (
+                        <source key={source.src} src={source.src} type={source.type} />
+                      ))}
                     </video>
                   ) : (
                     <img
-                      src="/assets/media/about-profile-poster.png"
+                      src={aboutPoster}
                       alt="Profile media preview"
                       className="about-visual-media object-cover w-full h-full"
                       loading="lazy"

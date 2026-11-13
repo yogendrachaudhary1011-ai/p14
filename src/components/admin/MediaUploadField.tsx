@@ -4,6 +4,11 @@ import { MediaAsset } from '../../types';
 import { MediaPreview } from '../MediaPreview';
 import { ImageCropPanZoomModal } from './ImageCropPanZoomModal';
 import { compressAndOptimizeImage, isThumbnailLabelOrName } from '../../utils/media';
+import {
+  compressLandingImage,
+  formatBytes,
+  LandingMediaSlot
+} from '../../utils/landingMediaCompression';
 
 interface MediaUploadFieldProps {
   value: string;
@@ -13,6 +18,7 @@ interface MediaUploadFieldProps {
   label?: string;
   cropAspectRatio?: '21:9' | '16:9' | '16:10' | '4:3' | '1:1';
   isThumbnail?: boolean;
+  landingSlot?: LandingMediaSlot;
 }
 
 /** A visual media picker with live pan, zoom, crop-bleed visualization and direct upload. */
@@ -23,15 +29,17 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
   mediaLibrary = [],
   label = 'Image',
   cropAspectRatio = '16:9',
-  isThumbnail
+  isThumbnail,
+  landingSlot
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const directInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [compressionNotice, setCompressionNotice] = useState<string | null>(null);
 
-  // Identify whether this field is a thumbnail (cover / card / listing)
-  const isThumb = isThumbnail ?? isThumbnailLabelOrName(label);
+  // Identify whether this field is a thumbnail or landing page slot (cover / card / listing / ID portrait)
+  const isThumb = Boolean(landingSlot) || (isThumbnail ?? isThumbnailLabelOrName(label));
 
   // Crop / Pan / Zoom modal state
   const [cropModalOpen, setCropModalOpen] = useState(false);
@@ -45,9 +53,26 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
     if (!file) return;
     setUploading(true);
     setError(null);
+    setCompressionNotice(null);
     try {
-      // Compress ONLY thumbnail images; non-thumbnails retain full uncompressed visual fidelity
-      const { file: optimizedFile, dataUrl } = await compressAndOptimizeImage(file, { isThumbnail: isThumb });
+      let optimizedFile = file;
+      let dataUrl = '';
+
+      if (landingSlot) {
+        const result = await compressLandingImage(file, landingSlot);
+        optimizedFile = result.file;
+        dataUrl = result.dataUrl;
+        if (result.wasCompressed) {
+          setCompressionNotice(
+            `Compressed for landing page: ${formatBytes(result.originalSize)} → ${formatBytes(result.compressedSize)} (${result.savingsPercent}% smaller)`
+          );
+        }
+      } else {
+        // Compress ONLY thumbnail images; non-thumbnails retain full uncompressed visual fidelity
+        const result = await compressAndOptimizeImage(file, { isThumbnail: isThumb });
+        optimizedFile = result.file;
+        dataUrl = result.dataUrl;
+      }
 
       if (onUploadMedia) {
         try {
@@ -239,6 +264,11 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
         </p>
       )}
 
+      {compressionNotice && (
+        <p role="status" className="text-[11px] text-emerald-400">
+          {compressionNotice}
+        </p>
+      )}
       {error && <p role="alert" className="text-xs text-red-300">{error}</p>}
 
       {/* Interactive Modal */}

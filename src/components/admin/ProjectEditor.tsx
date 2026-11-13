@@ -944,6 +944,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
                 label="cover image"
                 cropAspectRatio={previewCoverAspect}
                 isThumbnail={true}
+                landingSlot="work-cover"
               />
 
               {/* Fit Mode Selector (Cover vs Contain / No Crop) */}

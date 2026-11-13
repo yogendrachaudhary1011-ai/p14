@@ -10,6 +10,7 @@ import { MediaPreview } from '../../components/MediaPreview';
 import { SUPABASE_SQL_SCHEMA } from '../../supabase';
 import { uploadMediaToSupabase } from '../../utils/supabaseService';
 import { inferMediaMimeType, compressAndOptimizeImage, isThumbnailLabelOrName } from '../../utils/media';
+import { compressLandingVideo, formatBytes } from '../../utils/landingMediaCompression';
 import {
   ArrowUpRight,
   BriefcaseBusiness,
@@ -207,6 +208,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const mediaFileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingAboutVideo, setUploadingAboutVideo] = useState(false);
+  const [compressAboutVideo, setCompressAboutVideo] = useState(true);
+  const [aboutVideoProgress, setAboutVideoProgress] = useState<number | null>(null);
+  const [aboutVideoSavings, setAboutVideoSavings] = useState<string | null>(null);
   const aboutVideoInputRef = useRef<HTMLInputElement>(null);
   const [uploadingResume, setUploadingResume] = useState(false);
   const resumeFileInputRef = useRef<HTMLInputElement>(null);
@@ -1313,11 +1317,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
               <div className="border-t border-white/10 pt-5">
                 <label className="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Floating ID Card Portrait</label>
+                <p className="mb-2.5 text-xs text-zinc-500">Automatically compressed to WebP (max 800 px) for instant landing page hero loading.</p>
                 <MediaUploadField
                   value={settings.profileImage || initialSiteSettings.profileImage || ''}
                   onChange={(profileImage) => updateSettings({ profileImage })}
                   mediaLibrary={media}
                   label="ID card portrait"
+                  isThumbnail={true}
+                  landingSlot="id-card"
                   onUploadMedia={async (file) => {
                     if (!isAdmin) throw new Error('Sign in to Supabase Auth before uploading media.');
                     const result = await uploadMediaToSupabase(file);
@@ -1329,12 +1336,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
               <div className="border-t border-white/10 pt-5">
                 <label className="mb-2 block text-xs font-semibold uppercase text-zinc-400">About section video</label>
-                <p className="mb-3 text-xs text-zinc-500">Upload an MP4 or WebM. It replaces the video shown on both the landing page and About page, Press Save Changes to publish the new video setting.</p>
+                <p className="mb-3 text-xs text-zinc-500">Upload an MP4 or WebM for the landing page About card. Landing video compression scales to 720p · 30 fps before upload. Press Save Changes to publish.</p>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                   <div className="w-full max-w-sm overflow-hidden rounded-lg border border-white/10 bg-black">
                     <video
                       key={settings.aboutVideo || '/assets/media/about-profile-video.mp4'}
                       src={settings.aboutVideo || '/assets/media/about-profile-video.mp4'}
+                      poster="/assets/media/about-profile-poster.webp"
                       controls
                       playsInline
                       preload="metadata"
@@ -1342,7 +1350,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       aria-label="Current About section video"
                     />
                   </div>
-                  <div className="flex flex-col items-start gap-2">
+                  <div className="flex flex-col items-start gap-2.5">
+                    <label className="inline-flex items-center gap-2 text-xs text-zinc-300 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={compressAboutVideo}
+                        onChange={(e) => setCompressAboutVideo(e.target.checked)}
+                        className="rounded border-white/20 bg-[#0d0e14] accent-[#ff853a]"
+                      />
+                      <span>Compress video for landing page (720p · 30 fps)</span>
+                    </label>
                     <input
                       ref={aboutVideoInputRef}
                       type="file"
@@ -1358,16 +1375,36 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                           return;
                         }
                         setUploadingAboutVideo(true);
+                        setAboutVideoProgress(compressAboutVideo ? 0 : null);
+                        setAboutVideoSavings(null);
                         try {
-                          const result = await uploadMediaToSupabase(file);
+                          let uploadFile = file;
+                          if (compressAboutVideo) {
+                            const compressed = await compressLandingVideo(file, {
+                              onProgress: (pct) => setAboutVideoProgress(pct)
+                            });
+                            uploadFile = compressed.file;
+                            if (compressed.wasCompressed) {
+                              setAboutVideoSavings(
+                                `Compressed landing video: ${formatBytes(compressed.originalSize)} → ${formatBytes(compressed.compressedSize)} (${compressed.savingsPercent}% smaller)`
+                              );
+                            } else {
+                              setAboutVideoSavings(
+                                `Original video kept (${formatBytes(file.size)} — already compact)`
+                              );
+                            }
+                          }
+                          setAboutVideoProgress(null);
+                          const result = await uploadMediaToSupabase(uploadFile);
                           if (!result.url) throw new Error(result.error || 'Video upload failed.');
-                          addMedia(file.name.replace(/\.[^.]+$/, '') || file.name, result.url, file.type, file.size);
+                          addMedia(uploadFile.name.replace(/\.[^.]+$/, '') || uploadFile.name, result.url, uploadFile.type, uploadFile.size);
                           updateSettings({ aboutVideo: result.url });
                           showNotice('About video uploaded. Press Save Changes to publish it to the site.');
                         } catch (error) {
                           showNotice(error instanceof Error ? error.message : 'Video upload failed.');
                         } finally {
                           setUploadingAboutVideo(false);
+                          setAboutVideoProgress(null);
                           input.value = '';
                         }
                       }}
@@ -1379,14 +1416,24 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       className="inline-flex items-center gap-2 rounded-lg border border-[#ff853a]/35 bg-[#ff853a]/10 px-3 py-2.5 text-xs font-semibold text-[#ffb17d] hover:bg-[#ff853a]/20 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {uploadingAboutVideo ? <Upload size={14} className="animate-pulse" /> : <Video size={14} />}
-                      {uploadingAboutVideo ? 'Uploading video…' : 'Replace About video'}
+                      {aboutVideoProgress !== null
+                        ? `Compressing video… ${aboutVideoProgress}%`
+                        : uploadingAboutVideo
+                        ? 'Uploading video…'
+                        : 'Replace About video'}
                     </button>
+                    {aboutVideoSavings && (
+                      <p role="status" className="text-[11px] text-emerald-400">
+                        {aboutVideoSavings}
+                      </p>
+                    )}
                     {settings.aboutVideo && (
                       <button
                         type="button"
                         disabled={!isAdmin || uploadingAboutVideo}
                         onClick={() => {
                           updateSettings({ aboutVideo: '' });
+                          setAboutVideoSavings(null);
                           showNotice('Default About video restored locally. Press Save Changes to publish it.');
                         }}
                         className="rounded-lg px-3 py-2 text-xs text-zinc-400 hover:bg-white/5 hover:text-white disabled:opacity-50"

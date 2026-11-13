@@ -1,10 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { initialSiteSettings } from '../../data/initialData';
+import { useCompressedLandingImage } from '../../utils/landingMediaCompression';
 
 export const IdCard: React.FC = () => {
   const { settings } = usePortfolio();
   const copy = { ...initialSiteSettings.siteCopy, ...(settings.siteCopy || {}) };
+  const portraitSrc = useCompressedLandingImage(
+    settings.profileImage || '/assets/media/hero-id-portrait.jpeg',
+    800
+  );
   const stageRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLElement>(null);
@@ -369,7 +374,13 @@ export const IdCard: React.FC = () => {
                   fetchPriority="high"
                   height="1371"
                   loading="eager"
-                  src={settings.profileImage || '/assets/media/hero-id-portrait.jpeg'}
+                  src={portraitSrc}
+                  onError={(e) => {
+                    if (!e.currentTarget.dataset.fallbackApplied) {
+                      e.currentTarget.dataset.fallbackApplied = '1';
+                      e.currentTarget.src = '/assets/media/hero-id-portrait.jpeg';
+                    }
+                  }}
                   width="720"
                 />
               </div>

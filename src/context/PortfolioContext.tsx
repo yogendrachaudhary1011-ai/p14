@@ -3,6 +3,7 @@ import { SiteSettings, Project, ExperienceItem, EducationItem, MediaAsset } from
 import { initialSiteSettings, initialProjects, initialExperience, initialEducation } from '../data/initialData';
 import { normalizeProjectSections } from '../utils/caseStudyUtils';
 import { safeStorage } from '../utils/storage';
+import { resolveLandingImageUrl } from '../utils/landingMediaCompression';
 import {
   getSavedCredentials,
   saveSupabaseCredentials,
@@ -283,8 +284,12 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (typeof window === 'undefined') return;
     const preloadImages = () => {
       const preloadList = [
-        settings.profileImage || '/assets/media/hero-id-portrait.jpeg',
-        ...projects.slice(0, 4).flatMap((p) => [p.coverImage, p.heroImage?.url]).filter(Boolean)
+        resolveLandingImageUrl(settings.profileImage || '/assets/media/hero-id-portrait.jpeg'),
+        ...projects
+          .filter((p) => p.status === 'published')
+          .slice(0, 4)
+          .map((p) => resolveLandingImageUrl(p.coverImage))
+          .filter(Boolean)
       ];
       preloadList.forEach((url) => {
         if (url && typeof url === 'string' && !url.startsWith('data:') && !url.startsWith('blob:')) {
