@@ -13,7 +13,6 @@ export const Footer: React.FC = () => {
       <div className="shell case-footer-inner">
         <div className="case-footer-meta">
           <span>{settings.footerText}</span>
-          <span>{settings.footerSubtitle}</span>
         </div>
         <nav aria-label="Social channels" className="case-footer-socials">
           <a
