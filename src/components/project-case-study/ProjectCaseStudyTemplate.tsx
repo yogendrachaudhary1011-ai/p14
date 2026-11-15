@@ -205,7 +205,9 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
 
       {/* Main Container */}
       <div
-        className="w-full max-w-full mx-auto relative flex flex-col justify-start items-center box-border animate-cs-fade-in"
+        className={`w-full max-w-full mx-auto relative flex flex-col justify-start items-center box-border animate-cs-fade-in ${
+          isAdminPreview ? '' : 'pt-[var(--nav-height,72px)]'
+        }`}
         style={{ backgroundColor: resolvedTheme.backgroundColor }}
       >
         {/* Atmospheric Background Patterns */}
@@ -254,7 +256,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
         />
 
         {/* Two-Column Case Study Section with Left Sticky Navigation */}
-        <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col lg:flex-row justify-between items-start gap-8 sm:gap-12 lg:gap-16 relative pb-28 pt-4 box-border">
+        <div className="shell flex flex-col lg:flex-row justify-between items-start gap-8 sm:gap-12 lg:gap-16 relative pb-28 pt-4 box-border">
           {/* Left Table of Contents Nav */}
           <SectionNavigation
             sections={navSections}

@@ -80,7 +80,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
     <section
       ref={sectionRef}
       id={section.id}
-      className={`w-full max-w-[1200px] flex flex-col justify-start items-stretch gap-7 scroll-mt-28 min-w-0 cs-reveal-section ${
+      className={`w-full max-w-full flex flex-col justify-start items-stretch gap-7 scroll-mt-28 min-w-0 cs-reveal-section ${
         isInView ? 'cs-revealed' : ''
       }`}
     >

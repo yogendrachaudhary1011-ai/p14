@@ -30,7 +30,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   copy
 }) => {
   return (
-    <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 flex flex-col justify-center items-center gap-8 sm:gap-12 md:gap-16 relative z-10 box-border">
+    <div className="shell flex flex-col justify-center items-center gap-8 sm:gap-12 md:gap-16 relative z-10 box-border">
       {/* Big Hero Image with reveal and hover depth */}
       <div className="w-full rounded-none overflow-hidden bg-zinc-950 flex justify-center items-center aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] max-h-[728px] max-w-full animate-cs-image-reveal group">
         <MediaPreview

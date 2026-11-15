@@ -29,29 +29,19 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
   return (
     <div className="w-full flex flex-col items-center relative z-10 pt-2 sm:pt-4">
       {/* Top back navigation bar */}
-      <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-2 sm:pt-4 pb-4 sm:pb-6 flex justify-between items-center gap-2 box-border animate-cs-fade-in">
+      <div className="shell pt-2 sm:pt-4 pb-4 sm:pb-6 flex justify-between items-center gap-2 box-border animate-cs-fade-in">
         <a
           href="/#work"
-          className="inline-flex items-center gap-1.5 sm:gap-2 transition-all duration-200 text-xs sm:text-sm font-medium py-1.5 px-2.5 sm:px-3 rounded hover:bg-white/5 hover:-translate-x-1 cursor-pointer"
+          className="inline-flex items-center gap-1.5 sm:gap-2 transition-all duration-200 text-xs sm:text-sm font-medium py-1.5 px-2.5 sm:px-3 -ml-2.5 sm:-ml-3 rounded hover:bg-white/5 hover:-translate-x-1 cursor-pointer"
           style={{ color: 'var(--cs-back-btn, var(--cs-muted, #a1a1aa))' }}
         >
           <span className="material-symbols-rounded text-base sm:text-lg">arrow_back</span>
           <span>{backButtonText || copy.backToProjects}</span>
         </a>
-        <div
-          className="text-[11px] sm:text-xs font-mono tracking-wider uppercase shrink-0 font-semibold px-2 py-0.5 rounded border"
-          style={{
-            color: 'var(--cs-badge-text, var(--cs-accent-text, #8be28b))',
-            backgroundColor: 'var(--cs-badge-bg, rgba(139, 226, 139, 0.12))',
-            borderColor: 'var(--cs-badge-border, rgba(139, 226, 139, 0.35))'
-          }}
-        >
-          {badgeLabel || copy.caseStudyLabel} {year ? `· ${year}` : ''}
-        </div>
       </div>
 
       {/* Hero Title & Subtitle container: identical stacked layout for desktop and mobile */}
-      <div className="w-full max-w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-4 sm:py-6 flex flex-col justify-start items-start box-border">
+      <div className="shell py-4 sm:py-6 flex flex-col justify-start items-start box-border">
         {isSplit ? (
           <div className="w-full flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 pb-4 sm:pb-6">
             {/* Split Big Project Title */}
