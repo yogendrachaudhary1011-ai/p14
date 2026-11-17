@@ -380,10 +380,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                         />
                       </div>
                       <div className="project-copy">
-                        <div className="project-meta">
-                          <span>{project.categoryLabel}</span>
-                          <span>{project.year}</span>
-                        </div>
                         <h3>{project.title}</h3>
                         <p>
                           <strong>{project.summary}</strong>
