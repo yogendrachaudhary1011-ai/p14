@@ -77,8 +77,8 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
               alt=""
               className="h-full w-full max-h-full max-w-full object-contain"
               containerClassName="h-full w-full flex items-center justify-center overflow-hidden"
-              loading="eager"
-              priority={true}
+              loading="lazy"
+              priority={false}
             />
           </div>
         )}
@@ -100,8 +100,8 @@ export const CarouselBlock: React.FC<CarouselBlockProps> = ({ block }) => {
             alt={currentSlide.alt || currentSlide.title || `Slide ${currentIndex + 1}`}
             className="h-full w-full max-h-full max-w-full object-contain"
             containerClassName="h-full w-full flex items-center justify-center overflow-hidden"
-            loading="eager"
-            priority={true}
+            loading="lazy"
+            priority={false}
           />
         </div>
 

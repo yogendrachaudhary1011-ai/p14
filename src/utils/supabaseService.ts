@@ -1,5 +1,5 @@
 import { getSupabase } from '../supabase';
-import { Project, SiteSettings, ExperienceItem, EducationItem, MediaAsset } from '../types';
+import { Project, SiteSettings, ExperienceItem, EducationItem, MediaAsset, VisitorLog } from '../types';
 
 export interface PortfolioSnapshot {
   settings: SiteSettings;
@@ -12,29 +12,49 @@ export interface PortfolioSnapshot {
 export interface PortfolioLoadResult {
   snapshot: PortfolioSnapshot | null;
   connected: boolean;
+  updatedAt?: string | null;
+  notModified?: boolean;
   error?: string;
 }
 
-/** Loads the complete portfolio from its single cloud snapshot row. */
-export async function fetchPortfolioSnapshot(): Promise<PortfolioLoadResult> {
+/** Loads the complete portfolio from its single cloud snapshot row, skipping the full payload when unchanged. */
+export async function fetchPortfolioSnapshot(knownUpdatedAt?: string | null): Promise<PortfolioLoadResult> {
   const supabase = getSupabase();
   if (!supabase) return { snapshot: null, connected: false, error: 'Supabase is not configured.' };
 
   try {
-    const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
-      setTimeout(() => resolve({ data: null, error: { message: 'Cloud state request timed out' } }), 3500)
+    const withTimeout = <T,>(promise: PromiseLike<T>): Promise<T> =>
+      Promise.race([
+        Promise.resolve(promise),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Cloud state request timed out')), 3500)
+        )
+      ]);
+
+    if (knownUpdatedAt) {
+      const { data: meta, error: metaError } = await withTimeout(
+        supabase
+          .from('portfolio_state')
+          .select('updated_at')
+          .eq('id', 'primary')
+          .maybeSingle()
+      );
+
+      if (!metaError && meta?.updated_at && meta.updated_at === knownUpdatedAt) {
+        return { snapshot: null, connected: true, updatedAt: meta.updated_at, notModified: true };
+      }
+    }
+
+    const { data, error } = await withTimeout(
+      supabase
+        .from('portfolio_state')
+        .select('data, updated_at')
+        .eq('id', 'primary')
+        .maybeSingle()
     );
 
-    const queryPromise = supabase
-      .from('portfolio_state')
-      .select('data')
-      .eq('id', 'primary')
-      .maybeSingle();
-
-    const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
-
     if (error) return { snapshot: null, connected: false, error: error.message };
-    if (!data) return { snapshot: null, connected: true };
+    if (!data) return { snapshot: null, connected: true, updatedAt: null };
 
     const stored = data.data as Partial<PortfolioSnapshot> & SiteSettings;
     // Accept the older site_settings payload as well, so a migration does not discard it.
@@ -45,25 +65,26 @@ export async function fetchPortfolioSnapshot(): Promise<PortfolioLoadResult> {
       education: Array.isArray(stored.education) ? stored.education : [],
       media: Array.isArray(stored.media) ? stored.media : []
     };
-    return { snapshot, connected: true };
+    return { snapshot, connected: true, updatedAt: data.updated_at || null };
   } catch (error) {
     return { snapshot: null, connected: false, error: error instanceof Error ? error.message : 'Unknown Supabase error.' };
   }
 }
 
 /** Saves settings and every editable collection atomically in one cloud row. */
-export async function savePortfolioSnapshot(snapshot: PortfolioSnapshot): Promise<{ success: boolean; error?: string }> {
+export async function savePortfolioSnapshot(snapshot: PortfolioSnapshot): Promise<{ success: boolean; updatedAt?: string; error?: string }> {
   const supabase = getSupabase();
   if (!supabase) return { success: false, error: 'Supabase is not configured.' };
 
   try {
+    const updatedAt = new Date().toISOString();
     const { error } = await supabase.from('portfolio_state').upsert({
       id: 'primary',
       data: snapshot,
-      updated_at: new Date().toISOString()
+      updated_at: updatedAt
     }, { onConflict: 'id' });
     if (error) return { success: false, error: error.message };
-    return { success: true };
+    return { success: true, updatedAt };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown Supabase error.' };
   }
@@ -344,7 +365,7 @@ export async function uploadMediaToSupabase(file: File): Promise<{ url: string |
     const { error: uploadError } = await supabase.storage
       .from('portfolio-media')
       .upload(filePath, targetFile, {
-        cacheControl: '31536000, public, immutable',
+        cacheControl: '31536000',
         contentType: targetFile.type || contentType,
         upsert: false
       });
@@ -365,3 +386,67 @@ export async function uploadMediaToSupabase(file: File): Promise<{ url: string |
   }
 }
 
+export async function fetchVisitorLogsFromSupabase(limit = 150): Promise<{
+  logs: VisitorLog[];
+  needsSetup: boolean;
+  error?: string;
+}> {
+  const supabase = getSupabase();
+  if (!supabase) return { logs: [], needsSetup: false, error: 'Supabase is not configured.' };
+
+  try {
+    const { data, error } = await supabase
+      .from('visitor_logs')
+      .select('id, ip_address, browser_name, os_name, device_type, page_path, timezone, referrer, visited_at')
+      .order('visited_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      const msg = error.message || '';
+      const needsSetup =
+        msg.includes('visitor_logs') &&
+        (msg.includes('does not exist') || msg.includes('schema cache') || error.code === '42P01' || error.code === 'PGRST205');
+      return { logs: [], needsSetup, error: msg };
+    }
+
+    const logs: VisitorLog[] = (data || []).map((row: any) => ({
+      id: String(row.id),
+      ipAddress: row.ip_address || 'Unavailable',
+      browserName: row.browser_name || 'Unknown',
+      osName: row.os_name || 'Unknown',
+      deviceType: row.device_type || 'Desktop',
+      pagePath: row.page_path || '/',
+      timezone: row.timezone || 'UTC',
+      referrer: row.referrer || '',
+      visitedAt: row.visited_at || new Date().toISOString()
+    }));
+
+    return { logs, needsSetup: false };
+  } catch (err) {
+    return {
+      logs: [],
+      needsSetup: false,
+      error: err instanceof Error ? err.message : 'Failed to load visitor logs.'
+    };
+  }
+}
+
+export async function clearVisitorLogsInSupabase(): Promise<{ success: boolean; error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { success: false, error: 'Supabase is not configured.' };
+
+  try {
+    const { error } = await supabase
+      .from('visitor_logs')
+      .delete()
+      .not('id', 'is', null);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to clear visitor logs.'
+    };
+  }
+}

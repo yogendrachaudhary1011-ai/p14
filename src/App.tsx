@@ -3,6 +3,7 @@ import { usePortfolio } from './context/PortfolioContext';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { HomePage } from './pages/HomePage';
+import { recordVisitorVisit } from './utils/visitorTracking';
 
 // Code-split secondary routes so the initial landing page bundle is minimal and renders instantly
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage })));
@@ -65,6 +66,13 @@ export const App: React.FC = () => {
       window.clearTimeout(correctionTimer);
     };
   }, [currentPath, navigationVersion, scrollTarget]);
+
+  useEffect(() => {
+    const initialPath = window.location.pathname || '/';
+    if (!initialPath.startsWith('/admin')) {
+      void recordVisitorVisit(initialPath);
+    }
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => {

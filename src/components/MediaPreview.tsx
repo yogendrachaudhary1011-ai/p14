@@ -44,7 +44,6 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   const [currentSrc, setCurrentSrc] = useState<string>(src || '');
   const [isLoaded, setIsLoaded] = useState<boolean>(isPrecached);
   const [hasError, setHasError] = useState<boolean>(false);
-  const retryCountRef = useRef<number>(0);
   const imgRef = useRef<HTMLImageElement>(null);
 
   // Clean fallback: never hit slow external placehold.co services
@@ -55,7 +54,6 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
 
   // Immediate synchronous cache check and warm probe
   useEffect(() => {
-    retryCountRef.current = 0;
     setHasError(false);
 
     if (!src || !src.trim()) {
@@ -100,16 +98,6 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
   };
 
   const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
-    if (retryCountRef.current === 0 && currentSrc && !currentSrc.startsWith('data:') && !currentSrc.startsWith('blob:')) {
-      retryCountRef.current += 1;
-      // Retry once after brief delay
-      setTimeout(() => {
-        const separator = currentSrc.includes('?') ? '&' : '?';
-        setCurrentSrc(`${currentSrc}${separator}retry=${Date.now()}`);
-      }, 200);
-      return;
-    }
-
     setHasError(true);
     setIsLoaded(true);
     if (currentSrc !== resolvedFallback) {

@@ -501,3 +501,14 @@ export interface MediaAsset {
   uploadedAt: string;
 }
 
+export interface VisitorLog {
+  id: string;
+  ipAddress: string;
+  browserName: string;
+  osName: string;
+  deviceType: string;
+  pagePath: string;
+  timezone: string;
+  referrer: string;
+  visitedAt: string;
+}

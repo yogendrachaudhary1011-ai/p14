@@ -3,7 +3,6 @@ import { SiteSettings, Project, ExperienceItem, EducationItem, MediaAsset } from
 import { initialSiteSettings, initialProjects, initialExperience, initialEducation } from '../data/initialData';
 import { normalizeProjectSections } from '../utils/caseStudyUtils';
 import { safeStorage } from '../utils/storage';
-import { resolveLandingImageUrl } from '../utils/landingMediaCompression';
 import {
   getSavedCredentials,
   saveSupabaseCredentials,
@@ -60,7 +59,8 @@ const STORAGE_KEYS = {
   EXPERIENCE: 'yc_portfolio_experience_v2',
   EDUCATION: 'yc_portfolio_education',
   MEDIA: 'yc_portfolio_media_v2',
-  AUTH: 'yc_portfolio_admin_auth'
+  AUTH: 'yc_portfolio_admin_auth',
+  CLOUD_UPDATED_AT: 'yc_portfolio_cloud_updated_at_v1'
 };
 
 const sanitizeLegacyMediaUrls = <T,>(input: T): T => {
@@ -279,36 +279,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return () => window.clearTimeout(timer);
   }, [media]);
 
-  // Proactive background image preloader for instant navigation (deferred to idle time to avoid bandwidth contention)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const preloadImages = () => {
-      const preloadList = [
-        resolveLandingImageUrl(settings.profileImage || '/assets/media/hero-id-portrait.jpeg'),
-        ...projects
-          .filter((p) => p.status === 'published')
-          .slice(0, 4)
-          .map((p) => resolveLandingImageUrl(p.coverImage))
-          .filter(Boolean)
-      ];
-      preloadList.forEach((url) => {
-        if (url && typeof url === 'string' && !url.startsWith('data:') && !url.startsWith('blob:')) {
-          const img = new Image();
-          img.src = url;
-        }
-      });
-    };
-
-    if ('requestIdleCallback' in window) {
-      const handle = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(preloadImages, { timeout: 3000 });
-      return () => (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(handle);
-    } else {
-      const timer = window.setTimeout(preloadImages, 1500);
-      return () => window.clearTimeout(timer);
-    }
-  }, [settings.profileImage, projects]);
-
-  // Supabase session, initial cloud load, and live snapshot subscription.
+  // Supabase session, initial cloud load (conditional on updated_at), and admin-only live subscription.
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
     let active = true;
@@ -332,7 +303,15 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (session) safeStorage.setItem(STORAGE_KEYS.AUTH, 'true');
         else safeStorage.removeItem(STORAGE_KEYS.AUTH);
 
-        const { snapshot, connected, error } = await fetchPortfolioSnapshot();
+        const hasLocalSnapshot = Boolean(
+          safeStorage.getItem(STORAGE_KEYS.SETTINGS) &&
+          safeStorage.getItem(STORAGE_KEYS.PROJECTS)
+        );
+        const knownUpdatedAt = hasLocalSnapshot
+          ? safeStorage.getItem(STORAGE_KEYS.CLOUD_UPDATED_AT)
+          : null;
+
+        const { snapshot, connected, updatedAt, notModified, error } = await fetchPortfolioSnapshot(knownUpdatedAt);
         if (!active) return;
         setIsSupabaseConnected(connected);
         if (error) {
@@ -340,30 +319,43 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           setCloudSaveStatus('error');
           setCloudSaveError(error);
         } else {
-          setCloudSaveStatus(snapshot ? 'saved' : 'idle');
+          setCloudSaveStatus(snapshot || notModified ? 'saved' : 'idle');
           setCloudSaveError(null);
         }
-        lastCloudSnapshot.current = snapshot ? JSON.stringify(snapshot) : null;
-        hasUnsavedChanges.current = false;
+
+        if (updatedAt) {
+          safeStorage.setItem(STORAGE_KEYS.CLOUD_UPDATED_AT, updatedAt);
+        }
+
         if (snapshot) {
+          lastCloudSnapshot.current = JSON.stringify(snapshot);
+          hasUnsavedChanges.current = false;
           setSettings(mergeSiteSettings(snapshot.settings));
           setProjects(snapshot.projects);
           setExperience(snapshot.experience);
           setEducation(snapshot.education);
           setMedia(snapshot.media);
+        } else if (notModified) {
+          hasUnsavedChanges.current = false;
+        } else {
+          lastCloudSnapshot.current = null;
+          hasUnsavedChanges.current = false;
         }
 
-        unsubscribe = subscribeToPortfolioSnapshot((fresh) => {
-          if (!active || hasUnsavedChanges.current) return;
-          const serialized = JSON.stringify(fresh);
-          if (serialized === lastCloudSnapshot.current) return;
-          lastCloudSnapshot.current = serialized;
-          setSettings(mergeSiteSettings(fresh.settings));
-          setProjects(fresh.projects);
-          setExperience(fresh.experience);
-          setEducation(fresh.education);
-          setMedia(fresh.media);
-        });
+        // Only subscribe to Realtime updates for authenticated admins to avoid background egress for public visitors.
+        if (session) {
+          unsubscribe = subscribeToPortfolioSnapshot((fresh) => {
+            if (!active || hasUnsavedChanges.current) return;
+            const serialized = JSON.stringify(fresh);
+            if (serialized === lastCloudSnapshot.current) return;
+            lastCloudSnapshot.current = serialized;
+            setSettings(mergeSiteSettings(fresh.settings));
+            setProjects(fresh.projects);
+            setExperience(fresh.experience);
+            setEducation(fresh.education);
+            setMedia(fresh.media);
+          });
+        }
         setCloudReady(connected && Boolean(session));
       } catch (err) {
         console.warn('Supabase initialization notice:', err);
@@ -406,6 +398,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const serialized = JSON.stringify(snapshot);
       const result = await savePortfolioSnapshot(snapshot);
       if (!result.success) throw new Error(result.error || 'Cloud save failed.');
+      if (result.updatedAt) safeStorage.setItem(STORAGE_KEYS.CLOUD_UPDATED_AT, result.updatedAt);
       setIsSupabaseConnected(true);
       lastCloudSnapshot.current = serialized;
       if (versionAtSave === localChangeVersion.current) {
@@ -464,6 +457,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return { success: true, error: result.error };
       }
 
+      if (result.updatedAt) safeStorage.setItem(STORAGE_KEYS.CLOUD_UPDATED_AT, result.updatedAt);
       setIsSupabaseConnected(true);
       lastCloudSnapshot.current = JSON.stringify(snapshot);
       if (versionAtSave === localChangeVersion.current) {
@@ -808,6 +802,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     ]);
     safeStorage.removeItem(STORAGE_KEYS.SETTINGS);
     safeStorage.removeItem(STORAGE_KEYS.PROJECTS);
+    safeStorage.removeItem(STORAGE_KEYS.CLOUD_UPDATED_AT);
   };
 
   return (

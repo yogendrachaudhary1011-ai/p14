@@ -1,14 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
-import { Project, ExperienceItem, EducationItem, AboutCertificate } from '../../types';
+import { Project, ExperienceItem, EducationItem, AboutCertificate, VisitorLog } from '../../types';
 import { initialSiteSettings } from '../../data/initialData';
 import { ProjectEditor } from '../../components/admin/ProjectEditor';
 import { BufferedTextInput, BufferedTextarea } from '../../components/admin/BufferedTextField';
 import { SiteCopyEditor } from '../../components/admin/SiteCopyEditor';
 import { MediaUploadField } from '../../components/admin/MediaUploadField';
 import { MediaPreview } from '../../components/MediaPreview';
-import { SUPABASE_SQL_SCHEMA } from '../../supabase';
-import { uploadMediaToSupabase } from '../../utils/supabaseService';
+import { SUPABASE_SQL_SCHEMA, VISITOR_LOGS_SQL_SCHEMA } from '../../supabase';
+import {
+  uploadMediaToSupabase,
+  fetchVisitorLogsFromSupabase,
+  clearVisitorLogsInSupabase
+} from '../../utils/supabaseService';
+import { getLocalVisitorLogs, clearLocalVisitorLogs } from '../../utils/visitorTracking';
 import { inferMediaMimeType, compressAndOptimizeImage, isThumbnailLabelOrName } from '../../utils/media';
 import { compressLandingVideo, formatBytes } from '../../utils/landingMediaCompression';
 import {
@@ -17,6 +22,7 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
+  Clock,
   Command,
   Copy,
   ExternalLink,
@@ -25,12 +31,14 @@ import {
   FileText,
   Filter,
   FolderKanban,
+  Globe,
   GraduationCap,
   Image as ImageIcon,
   Layers,
   LayoutDashboard,
   LockKeyhole,
   Menu,
+  Monitor,
   Palette,
   Plus,
   RefreshCw,
@@ -54,7 +62,8 @@ const NAV_TABS = [
   { id: 'experience', label: 'Experience', detail: 'Work history & positions', icon: BriefcaseBusiness },
   { id: 'education', label: 'Education', detail: 'Degrees & qualifications', icon: GraduationCap },
   { id: 'media', label: 'Media Library', detail: 'Assets, mockups & CDN', icon: ImageIcon },
-  { id: 'seo', label: 'SEO & Metadata', detail: 'Search cards & social', icon: FileText }
+  { id: 'seo', label: 'SEO & Metadata', detail: 'Search cards & social', icon: FileText },
+  { id: 'visitors', label: 'Visitors', detail: 'Time, IP & browser logs', icon: Globe }
 ] as const;
 
 interface AdminPageProps {
@@ -132,7 +141,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   } = usePortfolio();
 
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'projects' | 'settings' | 'experience' | 'education' | 'media' | 'seo'
+    'overview' | 'projects' | 'settings' | 'experience' | 'education' | 'media' | 'seo' | 'visitors'
   >('overview');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -226,6 +235,15 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [syncingSupabase, setSyncingSupabase] = useState(false);
   const [showSqlModal, setShowSqlModal] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
+
+  // Visitor activity logs state
+  const [visitorLogs, setVisitorLogs] = useState<VisitorLog[]>(() => getLocalVisitorLogs());
+  const [loadingVisitors, setLoadingVisitors] = useState(false);
+  const [visitorSearchQuery, setVisitorSearchQuery] = useState('');
+  const [visitorNeedsSetup, setVisitorNeedsSetup] = useState(false);
+  const [visitorLoadError, setVisitorLoadError] = useState<string | null>(null);
+  const [showVisitorSqlModal, setShowVisitorSqlModal] = useState(false);
+  const [copiedVisitorSql, setCopiedVisitorSql] = useState(false);
 
   const showNotice = (msg: string) => {
     setNotice(msg);
@@ -329,6 +347,77 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       m.url.toLowerCase().includes(query)
     );
   }, [media, mediaSearchQuery]);
+
+  const loadVisitorLogs = async () => {
+    setLoadingVisitors(true);
+    setVisitorLoadError(null);
+    const localLogs = getLocalVisitorLogs();
+    if (!isSupabaseConnected) {
+      setVisitorLogs(localLogs);
+      setVisitorNeedsSetup(false);
+      setLoadingVisitors(false);
+      return;
+    }
+
+    const result = await fetchVisitorLogsFromSupabase(150);
+    if (result.needsSetup) {
+      setVisitorNeedsSetup(true);
+      setVisitorLoadError(null);
+      setVisitorLogs(localLogs);
+    } else if (result.error) {
+      setVisitorNeedsSetup(false);
+      setVisitorLoadError(result.error);
+      setVisitorLogs(localLogs);
+    } else {
+      setVisitorNeedsSetup(false);
+      setVisitorLoadError(null);
+      setVisitorLogs(result.logs);
+    }
+    setLoadingVisitors(false);
+  };
+
+  useEffect(() => {
+    if (isAdmin && activeTab === 'visitors') {
+      void loadVisitorLogs();
+    }
+  }, [isAdmin, activeTab, isSupabaseConnected]);
+
+  const filteredVisitorLogs = useMemo(() => {
+    const query = visitorSearchQuery.trim().toLowerCase();
+    if (!query) return visitorLogs;
+    return visitorLogs.filter((v) =>
+      v.ipAddress.toLowerCase().includes(query) ||
+      v.browserName.toLowerCase().includes(query) ||
+      v.osName.toLowerCase().includes(query) ||
+      v.pagePath.toLowerCase().includes(query) ||
+      v.timezone.toLowerCase().includes(query)
+    );
+  }, [visitorLogs, visitorSearchQuery]);
+
+  const visitorSummary = useMemo(() => {
+    const uniqueIps = new Set(
+      visitorLogs.map((v) => v.ipAddress).filter((ip) => ip && ip !== 'Unavailable')
+    ).size;
+    const browserCounts = new Map<string, number>();
+    visitorLogs.forEach((v) => {
+      const name = v.browserName || 'Unknown';
+      browserCounts.set(name, (browserCounts.get(name) || 0) + 1);
+    });
+    let topBrowser = '—';
+    let topCount = 0;
+    browserCounts.forEach((count, name) => {
+      if (count > topCount) {
+        topBrowser = name;
+        topCount = count;
+      }
+    });
+    return {
+      total: visitorLogs.length,
+      uniqueIps,
+      topBrowser,
+      latestVisit: visitorLogs[0]?.visitedAt || null
+    };
+  }, [visitorLogs]);
 
   // Navigation tab spec and active tab resolution (must run before any early return)
   const navTabs = NAV_TABS;
@@ -2771,6 +2860,251 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 8: VISITOR ACTIVITY LOGS
+        ========================================== */}
+        {activeTab === 'visitors' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Visitor Logs</h2>
+                <p className="text-zinc-400 text-xs sm:text-sm mt-1">
+                  Automatically captures visit time, IP address, and browser name without requesting any user permissions.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void loadVisitorLogs()}
+                  disabled={loadingVisitors}
+                  className="px-3.5 py-2 rounded-lg bg-[#181923] hover:bg-[#202230] border border-white/10 text-zinc-200 text-xs font-medium cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <RefreshCw size={14} className={loadingVisitors ? 'animate-spin text-[#f37021]' : 'text-zinc-400'} />
+                  <span>{loadingVisitors ? 'Refreshing…' : 'Refresh'}</span>
+                </button>
+                {visitorLogs.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmDialog({
+                        title: 'Clear Visitor Logs',
+                        message: 'Are you sure you want to delete all recorded visitor entries?',
+                        confirmLabel: 'Clear Logs',
+                        onConfirm: async () => {
+                          clearLocalVisitorLogs();
+                          if (isSupabaseConnected && !visitorNeedsSetup) {
+                            const res = await clearVisitorLogsInSupabase();
+                            if (!res.success && res.error) {
+                              showNotice(`Local logs cleared; cloud delete failed: ${res.error}`);
+                              setConfirmDialog(null);
+                              return;
+                            }
+                          }
+                          setVisitorLogs([]);
+                          showNotice('Visitor logs cleared.');
+                          setConfirmDialog(null);
+                        }
+                      });
+                    }}
+                    className="px-3.5 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-medium cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Trash2 size={14} />
+                    <span>Clear Logs</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {visitorNeedsSetup && (
+              <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="text-xs text-amber-200 leading-relaxed">
+                  <strong className="text-amber-300 block mb-0.5">Supabase visitor_logs table not created yet</strong>
+                  Showing visits recorded in this browser’s local storage. Run the visitor logs SQL migration in Supabase to store visits across all visitors and devices.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowVisitorSqlModal(true)}
+                  className="shrink-0 px-3.5 py-2 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs font-semibold cursor-pointer"
+                >
+                  View SQL Setup
+                </button>
+              </div>
+            )}
+
+            {visitorLoadError && (
+              <div className="p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-xs text-red-300">
+                Could not fetch remote visitor logs ({visitorLoadError}). Showing locally recorded visits.
+              </div>
+            )}
+
+            {/* SUMMARY CARDS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 bg-[#12131a] border border-white/10 rounded-xl">
+                <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                  <span>Recorded Visits</span>
+                  <Globe size={16} className="text-[#f37021]" />
+                </div>
+                <div className="text-2xl font-bold text-white mt-2">{visitorSummary.total}</div>
+                <div className="text-[11px] text-zinc-500 mt-1">Latest 150 sessions</div>
+              </div>
+
+              <div className="p-4 bg-[#12131a] border border-white/10 rounded-xl">
+                <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                  <span>Unique IP Addresses</span>
+                  <ShieldCheck size={16} className="text-emerald-400" />
+                </div>
+                <div className="text-2xl font-bold text-emerald-400 mt-2">{visitorSummary.uniqueIps}</div>
+                <div className="text-[11px] text-zinc-500 mt-1">Distinct public IPs</div>
+              </div>
+
+              <div className="p-4 bg-[#12131a] border border-white/10 rounded-xl">
+                <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                  <span>Top Browser</span>
+                  <Monitor size={16} className="text-sky-400" />
+                </div>
+                <div className="text-lg font-bold text-white mt-2 truncate">{visitorSummary.topBrowser}</div>
+                <div className="text-[11px] text-zinc-500 mt-1">Most frequent user agent</div>
+              </div>
+
+              <div className="p-4 bg-[#12131a] border border-white/10 rounded-xl">
+                <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                  <span>Latest Visit</span>
+                  <Clock size={16} className="text-amber-400" />
+                </div>
+                <div className="text-sm font-semibold text-white mt-2.5 truncate">
+                  {visitorSummary.latestVisit
+                    ? new Date(visitorSummary.latestVisit).toLocaleString()
+                    : 'No visits yet'}
+                </div>
+                <div className="text-[11px] text-zinc-500 mt-1">Local admin time</div>
+              </div>
+            </div>
+
+            {/* SEARCH BAR */}
+            <div className="relative max-w-md">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+              <input
+                type="text"
+                value={visitorSearchQuery}
+                onChange={(e) => setVisitorSearchQuery(e.target.value)}
+                placeholder="Search by IP, browser, OS, page, or timezone…"
+                className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#12131a] border border-white/10 text-white text-xs sm:text-sm outline-none focus:border-[#f37021]"
+              />
+            </div>
+
+            {/* VISITOR LOGS TABLE */}
+            <div className="bg-[#12131a] border border-white/10 rounded-xl overflow-hidden">
+              {filteredVisitorLogs.length === 0 ? (
+                <div className="p-10 text-center space-y-2">
+                  <Globe size={28} className="mx-auto text-zinc-600" />
+                  <div className="text-sm font-semibold text-zinc-200">
+                    {visitorLogs.length === 0 ? 'No visitor logs recorded yet' : 'No matching visitor logs'}
+                  </div>
+                  <p className="text-xs text-zinc-500 max-w-md mx-auto">
+                    Visits to public portfolio pages are logged silently in the background with timestamp, IP address, and browser name.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/10 bg-[#0d0e14] text-[11px] font-mono uppercase tracking-wider text-zinc-400">
+                        <th className="py-3 px-4 font-semibold">Visitor Time</th>
+                        <th className="py-3 px-4 font-semibold">IP Address</th>
+                        <th className="py-3 px-4 font-semibold">Browser</th>
+                        <th className="py-3 px-4 font-semibold">Device / OS</th>
+                        <th className="py-3 px-4 font-semibold">Page</th>
+                        <th className="py-3 px-4 font-semibold">Timezone</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 text-xs sm:text-sm">
+                      {filteredVisitorLogs.map((log) => (
+                        <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
+                          <td className="py-3 px-4 text-zinc-200 whitespace-nowrap">
+                            {new Date(log.visitedAt).toLocaleString()}
+                          </td>
+                          <td className="py-3 px-4 font-mono text-xs text-emerald-400 whitespace-nowrap">
+                            <div className="inline-flex items-center gap-1.5">
+                              <span>{log.ipAddress}</span>
+                              {log.ipAddress !== 'Unavailable' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopy(log.ipAddress, log.id)}
+                                  className="text-zinc-500 hover:text-white cursor-pointer"
+                                  title="Copy IP address"
+                                >
+                                  {copiedId === log.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-white font-medium whitespace-nowrap">
+                            {log.browserName}
+                          </td>
+                          <td className="py-3 px-4 text-zinc-400 whitespace-nowrap">
+                            {log.deviceType} · {log.osName}
+                          </td>
+                          <td className="py-3 px-4 font-mono text-xs text-zinc-300 whitespace-nowrap">
+                            {log.pagePath || '/'}
+                          </td>
+                          <td className="py-3 px-4 text-zinc-400 text-xs whitespace-nowrap">
+                            {log.timezone}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {showVisitorSqlModal && (
+              <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+                <div className="bg-[#12131a] border border-white/15 rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+                  <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Command size={16} className="text-[#f37021]" />
+                      <h3 className="font-bold text-white text-sm sm:text-base">Supabase visitor_logs SQL Setup</h3>
+                    </div>
+                    <button onClick={() => setShowVisitorSqlModal(false)} className="text-zinc-400 hover:text-white p-1">
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <div className="flex-1 p-4 overflow-y-auto space-y-3">
+                    <p className="text-xs text-zinc-400">
+                      Run this in your Supabase SQL Editor so public visits are stored in PostgreSQL and only readable by your authenticated admin account.
+                    </p>
+                    <pre className="p-3 bg-[#090a0d] border border-white/10 text-emerald-400 font-mono text-xs overflow-x-auto whitespace-pre-wrap rounded-lg">
+                      {VISITOR_LOGS_SQL_SCHEMA}
+                    </pre>
+                  </div>
+                  <div className="p-4 border-t border-white/10 flex justify-end gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(VISITOR_LOGS_SQL_SCHEMA);
+                        setCopiedVisitorSql(true);
+                        setTimeout(() => setCopiedVisitorSql(false), 2000);
+                      }}
+                      className="px-4 py-2 bg-[#f37021] hover:bg-[#ff7e33] text-white rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-1.5"
+                    >
+                      {copiedVisitorSql ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedVisitorSql ? 'Copied to Clipboard' : 'Copy SQL Script'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowVisitorSqlModal(false)}
+                      className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs font-medium cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>

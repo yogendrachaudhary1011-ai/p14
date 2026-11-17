@@ -28,8 +28,8 @@ const LandingProjectCover: React.FC<{
       alt={title}
       className={`project-cover ${coverClass || ''}`}
       decoding="async"
-      loading={index < 2 ? 'eager' : 'lazy'}
-      fetchPriority={index < 2 ? 'high' : 'auto'}
+      loading="lazy"
+      fetchPriority="auto"
       width={900}
       height={1200}
       src={compressedSrc || getInstantFallbackSvg(title)}
@@ -58,7 +58,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const saveDataMode = useMemo(() => isSaveDataEnabled(), []);
   const [filter, setFilter] = useState<'all' | 'product' | 'archive'>('all');
   const [activeAboutTab, setActiveAboutTab] = useState<'about-profile' | 'about-experience' | 'about-education'>('about-profile');
-  const [aboutMediaRef, isAboutMediaInView] = useInView<HTMLElement>({ rootMargin: '150px', triggerOnce: true });
+  const [aboutMediaRef, isAboutMediaInView] = useInView<HTMLElement>({ rootMargin: '0px', triggerOnce: true });
 
   const filteredProjects = useMemo(() => {
     return projects
@@ -412,7 +412,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       loop
                       muted
                       playsInline
-                      preload="metadata"
+                      preload="none"
                       poster={aboutPoster}
                     >
                       {aboutVideoSources.map((source) => (
