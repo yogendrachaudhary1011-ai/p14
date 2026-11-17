@@ -205,7 +205,6 @@ export const initialProjects: Project[] = [
     },
     designSystem: {
       headline: 'DESIGN SYSTEM',
-      desc: 'I extended the School of Management’s blue and orange brand into a system for content-heavy pages: a campus-photo banner under the header, white cards on a pale surface, and orange reserved for actions. All 81 component variants are documented.',
       images: [
         '/assets/media/somtu-cover.webp',
         '/assets/media/somtu-design-system.webp',

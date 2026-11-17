@@ -200,7 +200,15 @@ export function normalizeProjectSections(project: Project): CaseStudySection[] {
         const insertAt = Math.min(firstImageIndex ?? withoutImages.length, withoutImages.length);
         withoutImages.splice(insertAt, 0, carousel);
       }
-      return { ...section, blocks: withoutImages };
+
+      const isSomtuDesignSystem =
+        (project.slug === 'somtu' || project.id === 'somtu') &&
+        section.id === 'design-system';
+      const filteredBlocks = isSomtuDesignSystem
+        ? withoutImages.filter((block) => !(block.id === 'blk-8-desc' && block.type === 'paragraph'))
+        : withoutImages;
+
+      return { ...section, blocks: filteredBlocks };
     });
 
     return sections.sort((a, b) => a.order - b.order);
