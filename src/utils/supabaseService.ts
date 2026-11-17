@@ -389,39 +389,102 @@ export async function uploadMediaToSupabase(file: File): Promise<{ url: string |
 export async function fetchVisitorLogsFromSupabase(limit = 150): Promise<{
   logs: VisitorLog[];
   needsSetup: boolean;
+  needsUpgrade?: boolean;
   error?: string;
 }> {
   const supabase = getSupabase();
   if (!supabase) return { logs: [], needsSetup: false, error: 'Supabase is not configured.' };
 
-  try {
-    const { data, error } = await supabase
-      .from('visitor_logs')
-      .select('id, ip_address, browser_name, os_name, device_type, page_path, timezone, referrer, visited_at')
-      .order('visited_at', { ascending: false })
-      .limit(limit);
+  const normalizeRow = (row: any): VisitorLog => {
+    const visitedAt = row.visited_at || new Date().toISOString();
+    const pagePath = row.page_path || '/';
+    const pagesVisited = Array.isArray(row.pages_visited) && row.pages_visited.length > 0
+      ? row.pages_visited
+          .filter((p: any) => p && typeof p.path === 'string')
+          .map((p: any) => ({
+            path: p.path,
+            label: typeof p.label === 'string' && p.label ? p.label : p.path,
+            visitedAt: p.visitedAt || visitedAt
+          }))
+      : [{ path: pagePath, label: pagePath === '/' ? 'Home' : pagePath, visitedAt }];
 
-    if (error) {
-      const msg = error.message || '';
-      const needsSetup =
-        msg.includes('visitor_logs') &&
-        (msg.includes('does not exist') || msg.includes('schema cache') || error.code === '42P01' || error.code === 'PGRST205');
-      return { logs: [], needsSetup, error: msg };
-    }
+    const activities = Array.isArray(row.activities)
+      ? row.activities
+          .filter((a: any) => a && typeof a.action === 'string')
+          .map((a: any) => ({
+            type: a.type || 'click',
+            action: a.action,
+            detail: typeof a.detail === 'string' ? a.detail : undefined,
+            pagePath: typeof a.pagePath === 'string' ? a.pagePath : pagePath,
+            at: a.at || visitedAt
+          }))
+      : [];
 
-    const logs: VisitorLog[] = (data || []).map((row: any) => ({
+    return {
       id: String(row.id),
+      sessionId: String(row.session_id || row.id),
       ipAddress: row.ip_address || 'Unavailable',
       browserName: row.browser_name || 'Unknown',
       osName: row.os_name || 'Unknown',
       deviceType: row.device_type || 'Desktop',
-      pagePath: row.page_path || '/',
+      pagePath,
+      pagesVisited,
+      activities,
       timezone: row.timezone || 'UTC',
       referrer: row.referrer || '',
-      visitedAt: row.visited_at || new Date().toISOString()
-    }));
+      visitedAt,
+      lastActiveAt: row.last_active_at || visitedAt
+    };
+  };
 
-    return { logs, needsSetup: false };
+  try {
+    const { data, error } = await supabase
+      .from('visitor_logs')
+      .select('id, session_id, ip_address, browser_name, os_name, device_type, page_path, pages_visited, activities, timezone, referrer, visited_at, last_active_at')
+      .order('last_active_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      const msg = error.message || '';
+      const isMissingTable =
+        msg.includes('visitor_logs') &&
+        (msg.includes('does not exist') || msg.includes('schema cache') || error.code === '42P01' || error.code === 'PGRST205');
+      if (isMissingTable) {
+        return { logs: [], needsSetup: true, error: msg };
+      }
+
+      const isMissingNewColumns =
+        error.code === '42703' ||
+        error.code === 'PGRST204' ||
+        msg.includes('pages_visited') ||
+        msg.includes('activities') ||
+        msg.includes('session_id') ||
+        msg.includes('last_active_at');
+
+      if (isMissingNewColumns) {
+        const legacy = await supabase
+          .from('visitor_logs')
+          .select('id, ip_address, browser_name, os_name, device_type, page_path, timezone, referrer, visited_at')
+          .order('visited_at', { ascending: false })
+          .limit(limit);
+        if (legacy.error) {
+          return { logs: [], needsSetup: false, needsUpgrade: true, error: legacy.error.message };
+        }
+        return {
+          logs: (legacy.data || []).map(normalizeRow),
+          needsSetup: false,
+          needsUpgrade: true
+        };
+      }
+
+      return { logs: [], needsSetup: false, error: msg };
+    }
+
+    return {
+      logs: (data || []).map(normalizeRow),
+      needsSetup: false,
+      needsUpgrade: false
+    };
   } catch (err) {
     return {
       logs: [],
@@ -450,3 +513,4 @@ export async function clearVisitorLogsInSupabase(): Promise<{ success: boolean; 
     };
   }
 }
+

@@ -501,14 +501,33 @@ export interface MediaAsset {
   uploadedAt: string;
 }
 
+export interface VisitorPageVisit {
+  path: string;
+  label: string;
+  visitedAt: string;
+}
+
+export interface VisitorActivity {
+  type: 'visit' | 'page' | 'click' | 'media' | 'filter' | 'section';
+  action: string;
+  detail?: string;
+  pagePath: string;
+  at: string;
+}
+
 export interface VisitorLog {
   id: string;
+  sessionId: string;
   ipAddress: string;
   browserName: string;
   osName: string;
   deviceType: string;
   pagePath: string;
+  pagesVisited: VisitorPageVisit[];
+  activities: VisitorActivity[];
   timezone: string;
   referrer: string;
   visitedAt: string;
+  lastActiveAt: string;
 }
+

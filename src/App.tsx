@@ -3,7 +3,7 @@ import { usePortfolio } from './context/PortfolioContext';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { HomePage } from './pages/HomePage';
-import { recordVisitorVisit } from './utils/visitorTracking';
+import { installVisitorActivityListeners, recordVisitorPageVisit } from './utils/visitorTracking';
 
 // Code-split secondary routes so the initial landing page bundle is minimal and renders instantly
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage })));
@@ -68,10 +68,7 @@ export const App: React.FC = () => {
   }, [currentPath, navigationVersion, scrollTarget]);
 
   useEffect(() => {
-    const initialPath = window.location.pathname || '/';
-    if (!initialPath.startsWith('/admin')) {
-      void recordVisitorVisit(initialPath);
-    }
+    return installVisitorActivityListeners();
   }, []);
 
   useEffect(() => {
@@ -127,6 +124,30 @@ export const App: React.FC = () => {
   const matchedProject = findProjectByPath(normalized);
   const isCaseStudy = !!matchedProject;
   const isAdminView = normalized.startsWith('/admin');
+
+  useEffect(() => {
+    if (isAdminView) return;
+
+    const hashSuffix = scrollTarget ? `#${scrollTarget}` : '';
+    const fullRoute = `${normalized}${hashSuffix}`;
+
+    let pageLabel = 'Home';
+    if (matchedProject) {
+      pageLabel = `${matchedProject.title} Case Study`;
+    } else if (normalized === '/projects' || normalized === '/work') {
+      pageLabel = 'All Projects';
+    } else if (normalized === '/about') {
+      pageLabel = 'About';
+    } else if (normalized === '/' && scrollTarget === 'work') {
+      pageLabel = 'Selected Work';
+    } else if (normalized === '/' && scrollTarget === 'about') {
+      pageLabel = 'About Section';
+    } else if (normalized !== '/') {
+      pageLabel = normalized.replace(/^\//, '');
+    }
+
+    void recordVisitorPageVisit(fullRoute, pageLabel);
+  }, [normalized, scrollTarget, navigationVersion, matchedProject?.title, isAdminView]);
 
   const renderRoute = () => {
     if (isAdminView) {

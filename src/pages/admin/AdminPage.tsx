@@ -17,10 +17,12 @@ import { getLocalVisitorLogs, clearLocalVisitorLogs } from '../../utils/visitorT
 import { inferMediaMimeType, compressAndOptimizeImage, isThumbnailLabelOrName } from '../../utils/media';
 import { compressLandingVideo, formatBytes } from '../../utils/landingMediaCompression';
 import {
+  Activity,
   ArrowUpRight,
   BriefcaseBusiness,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Clock,
   Command,
@@ -63,7 +65,7 @@ const NAV_TABS = [
   { id: 'education', label: 'Education', detail: 'Degrees & qualifications', icon: GraduationCap },
   { id: 'media', label: 'Media Library', detail: 'Assets, mockups & CDN', icon: ImageIcon },
   { id: 'seo', label: 'SEO & Metadata', detail: 'Search cards & social', icon: FileText },
-  { id: 'visitors', label: 'Visitors', detail: 'Time, IP & browser logs', icon: Globe }
+  { id: 'visitors', label: 'Visitors', detail: 'IP, browser, pages & activity', icon: Globe }
 ] as const;
 
 interface AdminPageProps {
@@ -241,9 +243,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [loadingVisitors, setLoadingVisitors] = useState(false);
   const [visitorSearchQuery, setVisitorSearchQuery] = useState('');
   const [visitorNeedsSetup, setVisitorNeedsSetup] = useState(false);
+  const [visitorNeedsUpgrade, setVisitorNeedsUpgrade] = useState(false);
   const [visitorLoadError, setVisitorLoadError] = useState<string | null>(null);
   const [showVisitorSqlModal, setShowVisitorSqlModal] = useState(false);
   const [copiedVisitorSql, setCopiedVisitorSql] = useState(false);
+  const [expandedVisitorId, setExpandedVisitorId] = useState<string | null>(null);
 
   const showNotice = (msg: string) => {
     setNotice(msg);
@@ -355,6 +359,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     if (!isSupabaseConnected) {
       setVisitorLogs(localLogs);
       setVisitorNeedsSetup(false);
+      setVisitorNeedsUpgrade(false);
       setLoadingVisitors(false);
       return;
     }
@@ -362,16 +367,39 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     const result = await fetchVisitorLogsFromSupabase(150);
     if (result.needsSetup) {
       setVisitorNeedsSetup(true);
+      setVisitorNeedsUpgrade(false);
       setVisitorLoadError(null);
       setVisitorLogs(localLogs);
     } else if (result.error) {
       setVisitorNeedsSetup(false);
+      setVisitorNeedsUpgrade(Boolean(result.needsUpgrade));
       setVisitorLoadError(result.error);
       setVisitorLogs(localLogs);
     } else {
       setVisitorNeedsSetup(false);
+      setVisitorNeedsUpgrade(Boolean(result.needsUpgrade));
       setVisitorLoadError(null);
-      setVisitorLogs(result.logs);
+      const localBySession = new Map(localLogs.map((item) => [item.sessionId, item]));
+      const merged = result.logs.map((remote) => {
+        const localMatch = localBySession.get(remote.sessionId);
+        if (!localMatch) return remote;
+        return {
+          ...remote,
+          pagesVisited:
+            localMatch.pagesVisited.length > remote.pagesVisited.length
+              ? localMatch.pagesVisited
+              : remote.pagesVisited,
+          activities:
+            localMatch.activities.length > remote.activities.length
+              ? localMatch.activities
+              : remote.activities,
+          lastActiveAt:
+            new Date(localMatch.lastActiveAt).getTime() > new Date(remote.lastActiveAt).getTime()
+              ? localMatch.lastActiveAt
+              : remote.lastActiveAt
+        };
+      });
+      setVisitorLogs(merged);
     }
     setLoadingVisitors(false);
   };
@@ -390,7 +418,15 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       v.browserName.toLowerCase().includes(query) ||
       v.osName.toLowerCase().includes(query) ||
       v.pagePath.toLowerCase().includes(query) ||
-      v.timezone.toLowerCase().includes(query)
+      v.timezone.toLowerCase().includes(query) ||
+      v.pagesVisited.some(
+        (p) => p.path.toLowerCase().includes(query) || p.label.toLowerCase().includes(query)
+      ) ||
+      v.activities.some(
+        (a) =>
+          a.action.toLowerCase().includes(query) ||
+          (a.detail && a.detail.toLowerCase().includes(query))
+      )
     );
   }, [visitorLogs, visitorSearchQuery]);
 
@@ -399,10 +435,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       visitorLogs.map((v) => v.ipAddress).filter((ip) => ip && ip !== 'Unavailable')
     ).size;
     const browserCounts = new Map<string, number>();
+    let totalPages = 0;
+    let totalActivities = 0;
+
     visitorLogs.forEach((v) => {
       const name = v.browserName || 'Unknown';
       browserCounts.set(name, (browserCounts.get(name) || 0) + 1);
+      totalPages += Math.max(1, v.pagesVisited.length);
+      totalActivities += v.activities.length;
     });
+
     let topBrowser = '—';
     let topCount = 0;
     browserCounts.forEach((count, name) => {
@@ -411,11 +453,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
         topCount = count;
       }
     });
+
     return {
       total: visitorLogs.length,
       uniqueIps,
       topBrowser,
-      latestVisit: visitorLogs[0]?.visitedAt || null
+      totalPages,
+      totalActivities,
+      latestVisit: visitorLogs[0]?.lastActiveAt || visitorLogs[0]?.visitedAt || null
     };
   }, [visitorLogs]);
 
@@ -2870,9 +2915,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-white">Visitor Logs</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Visitor Logs &amp; Activity</h2>
                 <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-                  Automatically captures visit time, IP address, and browser name without requesting any user permissions.
+                  Silently records visit time, IP address, browser name, visited pages, and on-site activities without asking any permissions.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -2891,7 +2936,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     onClick={() => {
                       setConfirmDialog({
                         title: 'Clear Visitor Logs',
-                        message: 'Are you sure you want to delete all recorded visitor entries?',
+                        message: 'Are you sure you want to delete all recorded visitor sessions and activities?',
                         confirmLabel: 'Clear Logs',
                         onConfirm: async () => {
                           clearLocalVisitorLogs();
@@ -2904,6 +2949,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                             }
                           }
                           setVisitorLogs([]);
+                          setExpandedVisitorId(null);
                           showNotice('Visitor logs cleared.');
                           setConfirmDialog(null);
                         }
@@ -2918,11 +2964,17 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            {visitorNeedsSetup && (
+            {(visitorNeedsSetup || visitorNeedsUpgrade) && (
               <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="text-xs text-amber-200 leading-relaxed">
-                  <strong className="text-amber-300 block mb-0.5">Supabase visitor_logs table not created yet</strong>
-                  Showing visits recorded in this browser’s local storage. Run the visitor logs SQL migration in Supabase to store visits across all visitors and devices.
+                  <strong className="text-amber-300 block mb-0.5">
+                    {visitorNeedsSetup
+                      ? 'Supabase visitor_logs table not created yet'
+                      : 'Supabase visitor_logs schema needs page & activity columns'}
+                  </strong>
+                  {visitorNeedsSetup
+                    ? 'Showing sessions recorded in this browser’s local storage. Run the visitor logs SQL setup in Supabase to store visits and activities across all visitors.'
+                    : 'Run the updated visitor logs SQL script in Supabase so multi-page journeys and website activity timelines sync across all devices.'}
                 </div>
                 <button
                   type="button"
@@ -2936,7 +2988,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
             {visitorLoadError && (
               <div className="p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-xs text-red-300">
-                Could not fetch remote visitor logs ({visitorLoadError}). Showing locally recorded visits.
+                Could not fetch remote visitor logs ({visitorLoadError}). Showing locally recorded sessions.
               </div>
             )}
 
@@ -2944,7 +2996,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-4 bg-[#12131a] border border-white/10 rounded-xl">
                 <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
-                  <span>Recorded Visits</span>
+                  <span>Visitor Sessions</span>
                   <Globe size={16} className="text-[#f37021]" />
                 </div>
                 <div className="text-2xl font-bold text-white mt-2">{visitorSummary.total}</div>
@@ -2962,35 +3014,40 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
               <div className="p-4 bg-[#12131a] border border-white/10 rounded-xl">
                 <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
-                  <span>Top Browser</span>
-                  <Monitor size={16} className="text-sky-400" />
+                  <span>Pages &amp; Actions</span>
+                  <Activity size={16} className="text-sky-400" />
                 </div>
-                <div className="text-lg font-bold text-white mt-2 truncate">{visitorSummary.topBrowser}</div>
-                <div className="text-[11px] text-zinc-500 mt-1">Most frequent user agent</div>
+                <div className="text-2xl font-bold text-white mt-2">
+                  {visitorSummary.totalPages}
+                  <span className="text-sm font-normal text-zinc-400 ml-1.5">
+                    / {visitorSummary.totalActivities} actions
+                  </span>
+                </div>
+                <div className="text-[11px] text-zinc-500 mt-1">Pages viewed &amp; tracked events</div>
               </div>
 
               <div className="p-4 bg-[#12131a] border border-white/10 rounded-xl">
                 <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
-                  <span>Latest Visit</span>
+                  <span>Top Browser &amp; Latest</span>
                   <Clock size={16} className="text-amber-400" />
                 </div>
-                <div className="text-sm font-semibold text-white mt-2.5 truncate">
+                <div className="text-base font-bold text-white mt-2 truncate">{visitorSummary.topBrowser}</div>
+                <div className="text-[11px] text-zinc-500 mt-1 truncate">
                   {visitorSummary.latestVisit
-                    ? new Date(visitorSummary.latestVisit).toLocaleString()
+                    ? `Latest: ${new Date(visitorSummary.latestVisit).toLocaleString()}`
                     : 'No visits yet'}
                 </div>
-                <div className="text-[11px] text-zinc-500 mt-1">Local admin time</div>
               </div>
             </div>
 
             {/* SEARCH BAR */}
-            <div className="relative max-w-md">
+            <div className="relative max-w-lg">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
               <input
                 type="text"
                 value={visitorSearchQuery}
                 onChange={(e) => setVisitorSearchQuery(e.target.value)}
-                placeholder="Search by IP, browser, OS, page, or timezone…"
+                placeholder="Search IP, browser, OS, visited page, or website activity…"
                 className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#12131a] border border-white/10 text-white text-xs sm:text-sm outline-none focus:border-[#f37021]"
               />
             </div>
@@ -3004,7 +3061,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     {visitorLogs.length === 0 ? 'No visitor logs recorded yet' : 'No matching visitor logs'}
                   </div>
                   <p className="text-xs text-zinc-500 max-w-md mx-auto">
-                    Visits to public portfolio pages are logged silently in the background with timestamp, IP address, and browser name.
+                    Public portfolio visits, page navigation, and interactions are logged silently without prompting visitors.
                   </p>
                 </div>
               ) : (
@@ -3014,47 +3071,200 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       <tr className="border-b border-white/10 bg-[#0d0e14] text-[11px] font-mono uppercase tracking-wider text-zinc-400">
                         <th className="py-3 px-4 font-semibold">Visitor Time</th>
                         <th className="py-3 px-4 font-semibold">IP Address</th>
-                        <th className="py-3 px-4 font-semibold">Browser</th>
-                        <th className="py-3 px-4 font-semibold">Device / OS</th>
-                        <th className="py-3 px-4 font-semibold">Page</th>
-                        <th className="py-3 px-4 font-semibold">Timezone</th>
+                        <th className="py-3 px-4 font-semibold">Browser / Device</th>
+                        <th className="py-3 px-4 font-semibold">Pages Visited</th>
+                        <th className="py-3 px-4 font-semibold">Website Activity</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-xs sm:text-sm">
-                      {filteredVisitorLogs.map((log) => (
-                        <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3 px-4 text-zinc-200 whitespace-nowrap">
-                            {new Date(log.visitedAt).toLocaleString()}
-                          </td>
-                          <td className="py-3 px-4 font-mono text-xs text-emerald-400 whitespace-nowrap">
-                            <div className="inline-flex items-center gap-1.5">
-                              <span>{log.ipAddress}</span>
-                              {log.ipAddress !== 'Unavailable' && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleCopy(log.ipAddress, log.id)}
-                                  className="text-zinc-500 hover:text-white cursor-pointer"
-                                  title="Copy IP address"
-                                >
-                                  {copiedId === log.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-white font-medium whitespace-nowrap">
-                            {log.browserName}
-                          </td>
-                          <td className="py-3 px-4 text-zinc-400 whitespace-nowrap">
-                            {log.deviceType} · {log.osName}
-                          </td>
-                          <td className="py-3 px-4 font-mono text-xs text-zinc-300 whitespace-nowrap">
-                            {log.pagePath || '/'}
-                          </td>
-                          <td className="py-3 px-4 text-zinc-400 text-xs whitespace-nowrap">
-                            {log.timezone}
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredVisitorLogs.map((log) => {
+                        const isExpanded = expandedVisitorId === log.id;
+                        const durationSec = Math.max(
+                          0,
+                          Math.round((new Date(log.lastActiveAt).getTime() - new Date(log.visitedAt).getTime()) / 1000)
+                        );
+                        const durationLabel =
+                          durationSec >= 60
+                            ? `${Math.floor(durationSec / 60)}m ${durationSec % 60}s`
+                            : durationSec > 0
+                            ? `${durationSec}s`
+                            : null;
+                        const nonLandingActivities = log.activities.filter((a) => a.type !== 'visit');
+                        const latestHighlight =
+                          nonLandingActivities[nonLandingActivities.length - 1] ||
+                          log.activities[log.activities.length - 1];
+
+                        return (
+                          <React.Fragment key={log.id}>
+                            <tr className="hover:bg-white/[0.02] transition-colors align-top">
+                              <td className="py-3.5 px-4 text-zinc-200 whitespace-nowrap">
+                                <div>{new Date(log.visitedAt).toLocaleString()}</div>
+                                <div className="text-[11px] text-zinc-500 mt-0.5">
+                                  {durationLabel ? `Active ${durationLabel}` : 'Single view'} · {log.timezone}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 font-mono text-xs text-emerald-400 whitespace-nowrap">
+                                <div className="inline-flex items-center gap-1.5">
+                                  <span>{log.ipAddress}</span>
+                                  {log.ipAddress !== 'Unavailable' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopy(log.ipAddress, log.id)}
+                                      className="text-zinc-500 hover:text-white cursor-pointer"
+                                      title="Copy IP address"
+                                    >
+                                      {copiedId === log.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 whitespace-nowrap">
+                                <div className="text-white font-medium">{log.browserName}</div>
+                                <div className="text-[11px] text-zinc-400 mt-0.5">
+                                  {log.deviceType} · {log.osName}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 min-w-[200px]">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  {log.pagesVisited.slice(0, 3).map((page, pIdx) => (
+                                    <React.Fragment key={`${page.path}-${pIdx}`}>
+                                      <span
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[11px] text-zinc-200"
+                                        title={`${page.path} at ${new Date(page.visitedAt).toLocaleTimeString()}`}
+                                      >
+                                        <span className="font-medium">{page.label}</span>
+                                        <span className="font-mono text-[10px] text-zinc-500">{page.path}</span>
+                                      </span>
+                                      {pIdx < Math.min(log.pagesVisited.length, 3) - 1 && (
+                                        <span className="text-zinc-600 text-[10px]">→</span>
+                                      )}
+                                    </React.Fragment>
+                                  ))}
+                                  {log.pagesVisited.length > 3 && (
+                                    <span className="text-[11px] text-[#f37021] font-mono">
+                                      +{log.pagesVisited.length - 3} more
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 min-w-[220px]">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <div className="text-xs text-zinc-200 truncate">
+                                      {latestHighlight ? (
+                                        <>
+                                          <span className="font-medium">{latestHighlight.action}</span>
+                                          {latestHighlight.detail && (
+                                            <span className="text-zinc-400"> · {latestHighlight.detail}</span>
+                                          )}
+                                        </>
+                                      ) : (
+                                        <span className="text-zinc-500">Visited {log.pagePath || '/'}</span>
+                                      )}
+                                    </div>
+                                    <div className="text-[11px] text-zinc-500 mt-0.5">
+                                      {log.activities.length || 1} {(log.activities.length || 1) === 1 ? 'activity' : 'activities'} recorded
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedVisitorId(isExpanded ? null : log.id)}
+                                    className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-zinc-200 cursor-pointer"
+                                  >
+                                    <span>{isExpanded ? 'Hide' : 'Details'}</span>
+                                    <ChevronDown
+                                      size={12}
+                                      className={`transition-transform ${isExpanded ? 'rotate-180 text-[#f37021]' : ''}`}
+                                    />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+
+                            {isExpanded && (
+                              <tr className="bg-[#0b0c11]">
+                                <td colSpan={5} className="px-4 py-4 border-t border-white/5">
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    {/* PAGES VISITED PANEL */}
+                                    <div className="p-3.5 rounded-lg bg-[#12131a] border border-white/10 space-y-2.5">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                                          Pages Visited ({log.pagesVisited.length})
+                                        </span>
+                                        {log.referrer && (
+                                          <span className="text-[11px] text-zinc-500 truncate max-w-[220px]" title={log.referrer}>
+                                            Ref: {log.referrer}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <ol className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                                        {log.pagesVisited.map((page, idx) => (
+                                          <li
+                                            key={`${page.path}-${page.visitedAt}-${idx}`}
+                                            className="flex items-center justify-between gap-2 text-xs py-1.5 px-2.5 rounded bg-[#0d0e14] border border-white/5"
+                                          >
+                                            <div className="flex items-center gap-2 min-w-0">
+                                              <span className="text-[10px] font-mono text-zinc-500 w-4 shrink-0">
+                                                {idx + 1}.
+                                              </span>
+                                              <span className="text-zinc-100 font-medium truncate">{page.label}</span>
+                                              <span className="font-mono text-[11px] text-zinc-500 truncate">
+                                                {page.path}
+                                              </span>
+                                            </div>
+                                            <span className="text-[11px] text-zinc-500 whitespace-nowrap">
+                                              {new Date(page.visitedAt).toLocaleTimeString()}
+                                            </span>
+                                          </li>
+                                        ))}
+                                      </ol>
+                                    </div>
+
+                                    {/* WEBSITE ACTIVITY TIMELINE PANEL */}
+                                    <div className="p-3.5 rounded-lg bg-[#12131a] border border-white/10 space-y-2.5">
+                                      <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                                        Website Activity Timeline ({log.activities.length})
+                                      </div>
+                                      {log.activities.length === 0 ? (
+                                        <div className="text-xs text-zinc-500 py-3">
+                                          Landed on {log.pagePath || '/'} (no additional clicks recorded).
+                                        </div>
+                                      ) : (
+                                        <ol className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                                          {log.activities.map((act, idx) => (
+                                            <li
+                                              key={`${act.action}-${act.at}-${idx}`}
+                                              className="flex items-start justify-between gap-2 text-xs py-1.5 px-2.5 rounded bg-[#0d0e14] border border-white/5"
+                                            >
+                                              <div className="min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-[#f37021]/15 text-[#ff9a5b] border border-[#f37021]/25">
+                                                    {act.type}
+                                                  </span>
+                                                  <span className="text-zinc-100 font-medium">{act.action}</span>
+                                                </div>
+                                                {(act.detail || act.pagePath) && (
+                                                  <div className="text-[11px] text-zinc-400 mt-0.5 truncate">
+                                                    {act.detail ? `${act.detail} · ` : ''}
+                                                    <span className="font-mono text-zinc-500">on {act.pagePath}</span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                              <span className="text-[11px] text-zinc-500 whitespace-nowrap shrink-0">
+                                                {new Date(act.at).toLocaleTimeString()}
+                                              </span>
+                                            </li>
+                                          ))}
+                                        </ol>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
