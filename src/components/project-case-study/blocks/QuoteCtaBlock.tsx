@@ -12,14 +12,14 @@ export const QuoteBlock: React.FC<{ block: QuoteBlockItem }> = ({ block }) => {
       }}
     >
       <blockquote
-        className="text-lg sm:text-xl md:text-2xl font-normal italic leading-relaxed break-words"
+        className="text-lg sm:text-xl md:text-2xl font-normal italic leading-[1.5] break-words"
         style={{ color: 'var(--cs-quote-text, var(--cs-heading, #ffffff))' }}
       >
         “{block.quote}”
       </blockquote>
       {(block.author || block.role) && (
         <div
-          className="text-xs sm:text-sm flex flex-wrap items-center gap-2"
+          className="text-xs sm:text-sm leading-[1.5] flex flex-wrap items-center gap-2"
           style={{ color: 'var(--cs-quote-author, var(--cs-muted, #a1a1aa))' }}
         >
           {block.author && (
@@ -43,7 +43,7 @@ export const CtaBlock: React.FC<{ block: CtaBlockItem }> = ({ block }) => {
         href={block.url}
         target={block.isExternal ? '_blank' : '_self'}
         rel={block.isExternal ? 'noopener noreferrer' : undefined}
-        className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base font-medium transition-all text-center max-w-full break-words shadow-md hover:-translate-y-0.5 border"
+        className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base font-medium leading-[1.4] transition-all text-center max-w-full break-words shadow-md hover:-translate-y-0.5 border"
         style={
           isPrimary
             ? {

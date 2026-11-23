@@ -278,7 +278,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
             >
               <button
                 onClick={() => window.location.assign('/#work')}
-                className="inline-flex items-center gap-2 transition-all duration-200 hover:-translate-x-1.5 text-base font-medium cursor-pointer group"
+                className="inline-flex items-center gap-2 transition-all duration-200 hover:-translate-x-1.5 text-sm sm:text-base font-medium leading-[1.4] cursor-pointer group"
                 style={{ color: 'var(--cs-back-btn, #ffffff)' }}
               >
                 <span className="material-symbols-rounded transition-transform duration-200 group-hover:-translate-x-1">arrow_back</span>
@@ -287,7 +287,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
               <div className="flex flex-col-reverse sm:flex-row items-center gap-5">
                 <button
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  className="inline-flex items-center gap-2 transition-all duration-200 hover:-translate-y-1 text-sm cursor-pointer group"
+                  className="inline-flex items-center gap-2 transition-all duration-200 hover:-translate-y-1 text-sm leading-[1.4] cursor-pointer group"
                   style={{ color: 'var(--cs-muted, #a1a1aa)' }}
                 >
                   <span>{copy.backToTop}</span>
@@ -310,14 +310,14 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
                     }}
                   >
                     <span
-                      className="inline-flex items-center gap-2 text-sm font-semibold"
+                      className="inline-flex items-center gap-2 text-sm font-semibold leading-[1.35]"
                       style={{ color: 'var(--cs-next-accent, #8be28b)' }}
                     >
                       {copy.viewNextProject}
                       <span className="material-symbols-rounded transition-transform duration-200 group-hover:translate-x-1">arrow_forward</span>
                     </span>
                     <span
-                      className="max-w-64 truncate text-xs"
+                      className="max-w-64 truncate text-xs leading-[1.4]"
                       style={{ color: 'var(--cs-next-text, #a1a1aa)' }}
                     >
                       {nextProject.title}

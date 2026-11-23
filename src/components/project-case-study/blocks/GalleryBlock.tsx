@@ -28,7 +28,7 @@ export const GalleryBlock: React.FC<GalleryBlockProps> = ({ block }) => {
           </div>
           {img.caption && (
             <span
-              className="text-xs font-mono transition-colors cs-muted"
+              className="text-xs font-mono leading-[1.5] transition-colors cs-muted"
               style={{ color: 'var(--cs-muted, #71717a)' }}
             >
               {img.caption}

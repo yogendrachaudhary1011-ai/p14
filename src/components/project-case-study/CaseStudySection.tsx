@@ -101,7 +101,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
       <div className="w-full flex justify-between items-center gap-4">
         <div className="flex-1 flex flex-col justify-start items-start min-w-0">
           <h2
-            className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight break-words"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight leading-[1.12] break-words"
             style={{ color: 'var(--cs-section-heading, var(--cs-heading, #ffffff))' }}
           >
             {section.heading}
@@ -127,7 +127,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
       {section.intro && (
         <div className="w-full flex flex-col justify-start items-start">
           <p
-            className="text-lg sm:text-xl font-normal leading-relaxed sm:leading-7 break-words [text-wrap:pretty]"
+            className="text-base sm:text-lg font-normal leading-[1.65] break-words [text-wrap:pretty]"
             style={{ color: 'var(--cs-body, #ffffff)' }}
           >
             {section.intro}

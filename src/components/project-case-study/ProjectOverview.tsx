@@ -49,7 +49,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
         {introduction && (
           <div className="w-full max-w-full animate-cs-slide-up-delay-1">
             <p
-              className="w-full text-lg sm:text-xl font-normal leading-relaxed sm:leading-7 break-words [text-wrap:pretty]"
+              className="w-full text-base sm:text-lg font-normal leading-[1.65] break-words [text-wrap:pretty]"
               style={{ color: 'var(--cs-body, #ffffff)' }}
             >
               {introduction}
@@ -64,13 +64,13 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             {role && (
               <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
                 <div
-                  className="w-48 sm:w-60 shrink-0 text-lg font-normal leading-6 transition-colors"
+                  className="w-48 sm:w-60 shrink-0 text-base sm:text-lg font-medium leading-[1.4] transition-colors"
                   style={{ color: 'var(--cs-meta-label, var(--cs-heading, #ffffff))' }}
                 >
                   {copy.roleLabel}
                 </div>
                 <div
-                  className="w-full flex-1 text-base font-normal leading-relaxed"
+                  className="w-full flex-1 text-[15px] sm:text-base font-normal leading-[1.6]"
                   style={{ color: 'var(--cs-meta-val, var(--cs-muted, #a1a1aa))' }}
                 >
                   {role}
@@ -82,13 +82,13 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
             {duration && (
               <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
                 <div
-                  className="w-48 sm:w-60 shrink-0 text-lg font-normal leading-6 transition-colors"
+                  className="w-48 sm:w-60 shrink-0 text-base sm:text-lg font-medium leading-[1.4] transition-colors"
                   style={{ color: 'var(--cs-meta-label, var(--cs-heading, #ffffff))' }}
                 >
                   {copy.durationLabel}
                 </div>
                 <div
-                  className="w-full flex-1 text-base font-normal leading-relaxed"
+                  className="w-full flex-1 text-[15px] sm:text-base font-normal leading-[1.6]"
                   style={{ color: 'var(--cs-meta-val, var(--cs-muted, #a1a1aa))' }}
                 >
                   {duration}
@@ -102,7 +102,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               .map((group) => (
                 <div key={group.id} className="w-full flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-6 group">
                   <div
-                    className="w-48 sm:w-60 shrink-0 text-lg font-normal leading-6"
+                    className="w-48 sm:w-60 shrink-0 text-base sm:text-lg font-medium leading-[1.4]"
                     style={{ color: 'var(--cs-meta-label, var(--cs-heading, #ffffff))' }}
                   >
                     {group.label}
@@ -111,7 +111,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                     {group.items.map((item, index) => (
                       <div
                         key={index}
-                        className="w-full text-base font-normal leading-relaxed break-words"
+                        className="w-full text-[15px] sm:text-base font-normal leading-[1.6] break-words"
                         style={{ color: 'var(--cs-meta-val, var(--cs-muted, #a1a1aa))' }}
                       >
                         {item}
@@ -130,7 +130,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 href={figmaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-4 border-[1.60px] text-lg font-normal leading-6 hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group"
+                className="inline-flex items-center justify-center px-6 py-4 border-[1.60px] text-sm sm:text-base font-medium leading-[1.4] hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group"
                 style={{
                   backgroundColor: 'var(--cs-btn-secondary-bg, transparent)',
                   borderColor: 'var(--cs-btn-secondary-border, var(--cs-divider, rgba(255, 255, 255, 0.4)))',
@@ -148,7 +148,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                 href={externalProjectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-4 border text-lg font-normal leading-6 hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group shadow-md"
+                className="inline-flex items-center justify-center px-6 py-4 border text-sm sm:text-base font-medium leading-[1.4] hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group shadow-md"
                 style={{
                   backgroundColor: 'var(--cs-btn-primary-bg, var(--cs-accent, #ffffff))',
                   color: 'var(--cs-btn-primary-text, var(--cs-btn-text, #000000))',

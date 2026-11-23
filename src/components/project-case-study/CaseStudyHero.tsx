@@ -32,7 +32,7 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
       <div className="shell pt-2 sm:pt-4 pb-4 sm:pb-6 flex justify-between items-center gap-2 box-border animate-cs-fade-in">
         <a
           href="/#work"
-          className="inline-flex items-center gap-1.5 sm:gap-2 transition-all duration-200 text-xs sm:text-sm font-medium py-1.5 px-2.5 sm:px-3 -ml-2.5 sm:-ml-3 rounded hover:bg-white/5 hover:-translate-x-1 cursor-pointer"
+          className="inline-flex items-center gap-1.5 sm:gap-2 transition-all duration-200 text-xs sm:text-sm font-medium leading-[1.4] py-1.5 px-2.5 sm:px-3 -ml-2.5 sm:-ml-3 rounded hover:bg-white/5 hover:-translate-x-1 cursor-pointer"
           style={{ color: 'var(--cs-back-btn, var(--cs-muted, #a1a1aa))' }}
         >
           <span className="material-symbols-rounded text-base sm:text-lg">arrow_back</span>
@@ -58,7 +58,7 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
             {subtitle && (
               <div className="w-full lg:max-w-[560px] pb-1 lg:pb-5 flex flex-col justify-start items-start animate-cs-slide-up-delay-1">
                 <p
-                  className="text-base sm:text-lg lg:text-xl font-normal leading-relaxed sm:leading-7 [text-wrap:pretty]"
+                  className="text-base sm:text-lg lg:text-xl font-normal leading-[1.55] [text-wrap:pretty]"
                   style={{ color: 'var(--cs-hero-subtitle, var(--cs-body, #ffffff))' }}
                 >
                   {subtitle}
@@ -83,7 +83,7 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
             {subtitle && (
               <div className="w-full max-w-full pb-1 flex flex-col justify-start items-start animate-cs-slide-up-delay-1">
                 <p
-                  className="w-full max-w-full text-lg sm:text-xl lg:text-2xl font-normal leading-relaxed sm:leading-8 [text-wrap:pretty]"
+                  className="w-full max-w-full text-[17px] sm:text-xl lg:text-2xl font-normal leading-[1.45] [text-wrap:pretty]"
                   style={{ color: 'var(--cs-hero-subtitle, var(--cs-body, #ffffff))' }}
                 >
                   {subtitle}

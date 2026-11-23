@@ -24,7 +24,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
         />
       </div>
       {block.caption && (
-        <span className="text-zinc-500 text-xs font-mono tracking-wide px-1">
+        <span className="text-zinc-500 text-xs font-mono leading-[1.5] tracking-wide px-1">
           {block.caption}
         </span>
       )}

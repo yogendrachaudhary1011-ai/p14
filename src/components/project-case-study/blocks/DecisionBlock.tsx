@@ -40,7 +40,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
             }}
           >
             <h4
-              className="text-lg font-normal leading-6 border-b border-white/10 pb-3 w-full break-words"
+              className="text-base sm:text-lg font-medium leading-[1.35] border-b border-white/10 pb-3 w-full break-words"
               style={{ color: 'var(--cs-card-title, #ffffff)' }}
             >
               {decision.title}
@@ -51,7 +51,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
                 <div key={detailIndex} className="flex flex-col gap-1">
                   {detail.label?.trim() && (
                     <span
-                      className="text-xs font-normal leading-4 font-mono uppercase tracking-wider"
+                      className="text-xs font-medium leading-[1.4] font-mono uppercase tracking-wider"
                       style={{ color: 'var(--cs-meta-label, var(--cs-heading, #ffffff))' }}
                     >
                       {detail.label}
@@ -59,7 +59,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
                   )}
                   {detail.text?.trim() && (
                     <p
-                      className="text-sm sm:text-base font-normal leading-5 break-words"
+                      className="text-sm sm:text-[15px] font-normal leading-[1.6] break-words"
                       style={{ color: 'var(--cs-card-text, #a1a1aa)' }}
                     >
                       {detail.text}

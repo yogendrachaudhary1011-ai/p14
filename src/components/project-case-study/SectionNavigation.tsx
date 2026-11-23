@@ -36,7 +36,7 @@ export const SectionNavigation: React.FC<SectionNavigationProps> = ({
               <button
                 key={item.id}
                 onClick={() => onSelectSection(item.id)}
-                className={`w-full text-left py-1.5 px-0 relative flex items-center justify-between text-lg leading-6 transition-all duration-200 cursor-pointer group ${
+                className={`w-full text-left py-1.5 px-0 relative flex items-center justify-between text-[15px] sm:text-base leading-[1.45] transition-all duration-200 cursor-pointer group ${
                   isActive
                     ? 'font-medium translate-x-1'
                     : 'hover:translate-x-0.5'

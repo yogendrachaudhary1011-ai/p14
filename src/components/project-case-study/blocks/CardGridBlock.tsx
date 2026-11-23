@@ -49,7 +49,7 @@ export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block, columnsOver
             )}
             <div className="w-full flex flex-col justify-start items-start">
               <h4
-                className="text-lg font-normal leading-6 break-words"
+                className="text-base sm:text-lg font-medium leading-[1.35] break-words"
                 style={{ color: 'var(--cs-card-title, #ffffff)' }}
               >
                 {card.title}
@@ -58,7 +58,7 @@ export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block, columnsOver
             {card.desc && (
               <div className="w-full flex flex-col justify-start items-start">
                 <p
-                  className="text-xs sm:text-sm font-normal leading-4 sm:leading-5 break-words"
+                  className="text-sm sm:text-[15px] font-normal leading-[1.6] break-words"
                   style={{ color: 'var(--cs-card-text, #a1a1aa)' }}
                 >
                   {card.desc}
@@ -70,10 +70,10 @@ export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block, columnsOver
                 {card.items.map((item, itemIdx) => (
                   <div
                     key={itemIdx}
-                    className="flex items-start gap-2 text-sm sm:text-base font-normal leading-5 break-words"
+                    className="flex items-start gap-2 text-sm sm:text-[15px] font-normal leading-[1.6] break-words"
                     style={{ color: 'var(--cs-card-text, #a1a1aa)' }}
                   >
-                    <span className="opacity-40 select-none text-sm leading-none mt-1 shrink-0">•</span>
+                    <span className="opacity-40 select-none text-sm leading-none mt-[7px] shrink-0">•</span>
                     <span className="min-w-0 flex-1">{item}</span>
                   </div>
                 ))}

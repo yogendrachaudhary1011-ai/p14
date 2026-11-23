@@ -796,7 +796,9 @@
 
 /* 4. Section Major & Sub-Headings (Selected Work, About Me, Experience, Education) */
 #homeView .work-title,
-#homeView .about-profile-panel .display-lg {
+#projectsView .work-title,
+#homeView .about-profile-panel .display-lg,
+#aboutView .about-profile-panel .display-lg {
   font-size: clamp(36px, 4.4vw, 64px) !important;
   line-height: 0.98 !important;
   letter-spacing: -0.035em !important;
@@ -804,7 +806,9 @@
 }
 
 #homeView .about-experience-panel .display-md,
-#homeView .about-education-panel .display-md {
+#homeView .about-education-panel .display-md,
+#aboutView .about-experience-panel .display-md,
+#aboutView .about-education-panel .display-md {
   font-size: clamp(28px, 3.2vw, 46px) !important;
   line-height: 1.02 !important;
   letter-spacing: -0.032em !important;
@@ -812,7 +816,8 @@
 }
 
 /* 5. Section Lead & Narrative Body Copy */
-#homeView .work-intro {
+#homeView .work-intro,
+#projectsView .work-intro {
   max-width: 56ch !important;
   font-size: clamp(15px, 1.2vw, 17.5px) !important;
   font-weight: 400 !important;
@@ -821,7 +826,8 @@
   color: rgba(245, 245, 240, 0.78) !important;
 }
 
-#homeView .about-profile-panel .lead {
+#homeView .about-profile-panel .lead,
+#aboutView .about-profile-panel .lead {
   max-width: 56ch !important;
   margin-top: 20px !important;
   font-size: clamp(16px, 1.3vw, 19px) !important;
@@ -831,7 +837,8 @@
   color: rgba(245, 245, 240, 0.92) !important;
 }
 
-#homeView .about-profile-panel > p:not(.lead) {
+#homeView .about-profile-panel > p:not(.lead),
+#aboutView .about-profile-panel > p:not(.lead) {
   max-width: 58ch !important;
   margin-top: 16px !important;
   font-size: 15.5px !important;
@@ -842,11 +849,13 @@
 }
 
 /* 6. Selected Work Project Cards */
-#homeView #projectsGrid .project-copy {
+#homeView #projectsGrid .project-copy,
+#projectsView #projectsGrid .project-copy {
   padding: 20px 20px 22px !important;
 }
 
-#homeView #projectsGrid .project-copy h3 {
+#homeView #projectsGrid .project-copy h3,
+#projectsView #projectsGrid .project-copy h3 {
   margin-top: 0 !important;
   font-size: clamp(20px, 1.75vw, 25px) !important;
   font-weight: 600 !important;
@@ -856,7 +865,8 @@
   text-wrap: balance;
 }
 
-#homeView #projectsGrid .project-copy p {
+#homeView #projectsGrid .project-copy p,
+#projectsView #projectsGrid .project-copy p {
   margin-top: 10px !important;
   font-size: 14px !important;
   line-height: 1.58 !important;
@@ -864,30 +874,35 @@
   color: rgba(245, 245, 240, 0.74) !important;
 }
 
-#homeView #projectsGrid .project-copy p strong {
+#homeView #projectsGrid .project-copy p strong,
+#projectsView #projectsGrid .project-copy p strong {
   font-weight: 400 !important;
   color: inherit !important;
 }
 
 /* 7. About Sticky Media Controls & Resume / Social Buttons */
-#homeView .about-visual-footer .about-visual-caption {
+#homeView .about-visual-footer .about-visual-caption,
+#aboutView .about-visual-footer .about-visual-caption {
   font-size: 10.5px !important;
   letter-spacing: 0.055em !important;
 }
 
-#homeView .about-visual-footer .about-visual-status button {
+#homeView .about-visual-footer .about-visual-status button,
+#aboutView .about-visual-footer .about-visual-status button {
   font-size: 9.5px !important;
   letter-spacing: 0.055em !important;
   padding: 7px 10px !important;
 }
 
-#homeView .about-cv-button {
+#homeView .about-cv-button,
+#aboutView .about-cv-button {
   font-size: 10.5px !important;
   letter-spacing: 0.055em !important;
 }
 
 /* 8. Experience Timeline Typography */
-#homeView .timeline-meta {
+#homeView .timeline-meta,
+#aboutView .timeline-meta {
   display: flex !important;
   align-items: center !important;
   flex-wrap: wrap !important;
@@ -896,19 +911,24 @@
 
 #homeView .timeline-date,
 #homeView .timeline-duration,
-#homeView .timeline-present-label {
+#homeView .timeline-present-label,
+#aboutView .timeline-date,
+#aboutView .timeline-duration,
+#aboutView .timeline-present-label {
   font-family: var(--mono) !important;
   font-size: 10.5px !important;
   letter-spacing: 0.06em !important;
   font-variant-numeric: tabular-nums;
 }
 
-#homeView .timeline-title {
+#homeView .timeline-title,
+#aboutView .timeline-title {
   margin-top: 10px !important;
   gap: 6px 12px !important;
 }
 
-#homeView .timeline-title h3 {
+#homeView .timeline-title h3,
+#aboutView .timeline-title h3 {
   font-size: clamp(20px, 1.75vw, 25px) !important;
   font-weight: 600 !important;
   line-height: 1.18 !important;
@@ -916,7 +936,8 @@
   color: var(--text, #f5f5f0) !important;
 }
 
-#homeView .timeline-title span {
+#homeView .timeline-title span,
+#aboutView .timeline-title span {
   font-size: 14.5px !important;
   font-weight: 400 !important;
   line-height: 1.4 !important;
@@ -924,7 +945,8 @@
   color: rgba(245, 245, 240, 0.72) !important;
 }
 
-#homeView .timeline-desc {
+#homeView .timeline-desc,
+#aboutView .timeline-desc {
   max-width: 58ch !important;
   margin-top: 12px !important;
   font-size: 15px !important;
@@ -933,19 +955,22 @@
   color: rgba(245, 245, 240, 0.76) !important;
 }
 
-#homeView .tag-row {
+#homeView .tag-row,
+#aboutView .tag-row {
   gap: 7px !important;
   margin-top: 16px !important;
 }
 
-#homeView .tag-row .tag {
+#homeView .tag-row .tag,
+#aboutView .tag-row .tag {
   padding: 6px 10px !important;
   font-size: 10px !important;
   letter-spacing: 0.05em !important;
 }
 
 /* 9. Education Timeline Layout & Typography */
-#homeView .education-item {
+#homeView .education-item,
+#aboutView .education-item {
   display: flex !important;
   justify-content: space-between !important;
   align-items: flex-start !important;
@@ -953,16 +978,19 @@
   padding: 0 0 42px !important;
 }
 
-#homeView .education-item:last-child {
+#homeView .education-item:last-child,
+#aboutView .education-item:last-child {
   padding-bottom: 0 !important;
 }
 
-#homeView .education-main {
+#homeView .education-main,
+#aboutView .education-main {
   flex: 1 1 auto !important;
   min-width: 0 !important;
 }
 
-#homeView .education-main h3 {
+#homeView .education-main h3,
+#aboutView .education-main h3 {
   font-size: clamp(20px, 1.75vw, 25px) !important;
   font-weight: 600 !important;
   line-height: 1.18 !important;
@@ -971,7 +999,8 @@
   text-wrap: balance;
 }
 
-#homeView .education-institution {
+#homeView .education-institution,
+#aboutView .education-institution {
   margin-top: 6px !important;
   font-size: 14.5px !important;
   font-weight: 500 !important;
@@ -980,7 +1009,8 @@
   color: rgba(245, 245, 240, 0.76) !important;
 }
 
-#homeView .education-desc {
+#homeView .education-desc,
+#aboutView .education-desc {
   max-width: 58ch !important;
   margin-top: 10px !important;
   font-size: 15px !important;
@@ -989,7 +1019,8 @@
   color: rgba(245, 245, 240, 0.76) !important;
 }
 
-#homeView .education-aside {
+#homeView .education-aside,
+#aboutView .education-aside {
   flex: 0 0 auto !important;
   display: flex !important;
   flex-direction: column !important;
@@ -999,7 +1030,8 @@
   padding-top: 4px !important;
 }
 
-#homeView .education-badge {
+#homeView .education-badge,
+#aboutView .education-badge {
   font-family: var(--mono) !important;
   font-size: 10.5px !important;
   font-weight: 500 !important;
@@ -1009,7 +1041,8 @@
   color: var(--lime, #b8ff57) !important;
 }
 
-#homeView .education-dates {
+#homeView .education-dates,
+#aboutView .education-dates {
   font-family: var(--mono) !important;
   font-size: 10.5px !important;
   font-weight: 500 !important;
@@ -1131,36 +1164,4 @@ section[data-section-type="learnings"] .case-study-card-grid {
   section[data-section-type="learnings"] .case-study-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
-}
-
-/* Focus-mode typography override: make selected constraint list items in #my-challenge noticeably larger */
-section#my-challenge:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(2),
-section#my-challenge:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > span:nth-of-type(2),
-section#my-challenge:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > span:nth-of-type(2),
-section#my-challenge:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(4) > span:nth-of-type(2) {
-  font-size: clamp(1.125rem, 1.05rem + 0.5vw, 1.3125rem) !important;
-  line-height: 1.6 !important;
-}
-
-section#my-challenge:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1),
-section#my-challenge:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > span:nth-of-type(1),
-section#my-challenge:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > span:nth-of-type(1),
-section#my-challenge:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(4) > span:nth-of-type(1) {
-  margin-top: 0.7rem !important;
-}
-
-/* Focus-mode typography override: match #my-challenge list item sizing on selected #problem-1793591926177 list items */
-section#problem-1793591926177:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div,
-section#problem-1793591926177:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div > span:nth-of-type(2) {
-  font-size: clamp(1.125rem, 1.05rem + 0.5vw, 1.3125rem) !important;
-  line-height: 1.6 !important;
-}
-
-section#problem-1793591926177:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div > span:nth-of-type(1) {
-  margin-top: 0.7rem !important;
-}
-
-/* Focus-mode typography override: fix cramped line-height on selected #problem paragraph */
-section#problem-1793591926177:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > p:nth-of-type(1) {
-  line-height: 1.65 !important;
 }
