@@ -376,13 +376,80 @@ export async function uploadMediaToSupabase(file: File): Promise<{ url: string |
     }
 
     const { data } = supabase.storage
-      .from('portfolio-media')
+      .from(PORTFOLIO_MEDIA_BUCKET)
       .getPublicUrl(filePath);
 
     return { url: data.publicUrl };
   } catch (err) {
     console.warn('Upload to Supabase Storage failed:', err);
     return { url: null, error: err instanceof Error ? err.message : 'Upload failed.' };
+  }
+}
+
+export const PORTFOLIO_MEDIA_BUCKET = 'portfolio-media';
+
+/** Extracts the object path inside the portfolio-media bucket from a Supabase Storage URL. */
+export function extractStoragePathFromUrl(url?: string | null, bucket = PORTFOLIO_MEDIA_BUCKET): string | null {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  if (!trimmed || trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('/')) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const pattern = new RegExp(`/storage/v1/object/(?:public|sign|authenticated)/${bucket}/(.+)$`);
+    const match = parsed.pathname.match(pattern);
+    if (!match || !match[1]) return null;
+    return decodeURIComponent(match[1]).replace(/^\/+/, '');
+  } catch {
+    return null;
+  }
+}
+
+/** Permanently deletes one or more files from the Supabase portfolio-media Storage bucket. */
+export async function deleteMediaFromSupabase(
+  urls: string | string[]
+): Promise<{ deletedPaths: string[]; failedPaths: string[]; error?: string }> {
+  const list = Array.isArray(urls) ? urls : [urls];
+  const paths = Array.from(
+    new Set(
+      list
+        .map((url) => extractStoragePathFromUrl(url))
+        .filter((path): path is string => Boolean(path))
+    )
+  );
+
+  if (paths.length === 0) {
+    return { deletedPaths: [], failedPaths: [] };
+  }
+
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { deletedPaths: [], failedPaths: paths, error: 'Supabase is not configured.' };
+  }
+
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      return {
+        deletedPaths: [],
+        failedPaths: paths,
+        error: 'Sign in with Supabase Auth to delete files permanently from Storage.'
+      };
+    }
+
+    const { error } = await supabase.storage.from(PORTFOLIO_MEDIA_BUCKET).remove(paths);
+    if (error) {
+      console.warn('Supabase storage delete error:', error.message);
+      return { deletedPaths: [], failedPaths: paths, error: error.message };
+    }
+
+    return { deletedPaths: paths, failedPaths: [] };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to delete media from Supabase Storage.';
+    console.warn('Delete from Supabase Storage failed:', err);
+    return { deletedPaths: [], failedPaths: paths, error: message };
   }
 }
 

@@ -45,7 +45,19 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
       case 'heading':
         return <TextBlock key={block.id} block={block} />;
       case 'cardGrid':
-        return <CardGridBlock key={block.id} block={block} />;
+        return (
+          <CardGridBlock
+            key={block.id}
+            block={block}
+            columnsOverride={
+              section.type === 'keyDecisions'
+                ? 1
+                : section.type === 'learnings'
+                ? 2
+                : undefined
+            }
+          />
+        );
       case 'decisionList':
         return <DecisionBlock key={block.id} block={block} copy={copy} />;
       case 'twoColumnComparison':
@@ -80,6 +92,7 @@ export const CaseStudySection: React.FC<CaseStudySectionProps> = ({ section, ind
     <section
       ref={sectionRef}
       id={section.id}
+      data-section-type={section.type}
       className={`w-full max-w-full flex flex-col justify-start items-stretch gap-7 scroll-mt-28 min-w-0 cs-reveal-section ${
         isInView ? 'cs-revealed' : ''
       }`}

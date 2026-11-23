@@ -3,12 +3,13 @@ import { CardGridBlock as CardGridBlockType } from '../../../types';
 
 interface CardGridBlockProps {
   block: CardGridBlockType;
+  columnsOverride?: 1 | 2 | 3 | 4;
 }
 
-export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block }) => {
+export const CardGridBlock: React.FC<CardGridBlockProps> = ({ block, columnsOverride }) => {
   const cards = block.cards || [];
   const cardCount = cards.length;
-  const targetCols = block.columns || (cardCount === 2 ? 2 : cardCount >= 3 ? 3 : 2);
+  const targetCols = columnsOverride ?? (block.columns || (cardCount === 2 ? 2 : cardCount >= 3 ? 3 : 2));
 
   // Decide responsive grid class based on column setting and card count
   let gridColsClass = 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3';

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { SiteSettings, Project, ExperienceItem, EducationItem, MediaAsset } from '../types';
+import { SiteSettings, Project, ExperienceItem, EducationItem, MediaAsset, AboutCertificate } from '../types';
 import { initialSiteSettings, initialProjects, initialExperience, initialEducation } from '../data/initialData';
 import { normalizeProjectSections } from '../utils/caseStudyUtils';
 import { safeStorage } from '../utils/storage';
@@ -12,8 +12,18 @@ import {
 import {
   fetchPortfolioSnapshot,
   savePortfolioSnapshot,
-  subscribeToPortfolioSnapshot
+  subscribeToPortfolioSnapshot,
+  deleteMediaFromSupabase,
+  PortfolioSnapshot
 } from '../utils/supabaseService';
+import {
+  collectPortfolioMediaUrls,
+  collectProjectMediaUrls,
+  isManagedUploadUrl,
+  stripMediaUrlsFromPortfolio
+} from '../utils/mediaLifecycle';
+
+export type SettingMediaField = 'profileImage' | 'aboutVideo' | 'resumeUrl' | 'seoOgImage';
 
 interface PortfolioContextType {
   settings: SiteSettings;
@@ -29,27 +39,41 @@ interface PortfolioContextType {
   supabaseConfig: { url: string; key: string };
   updateSupabaseConfig: (url: string, key: string) => boolean;
   syncAllProjectsToSupabase: () => Promise<{ success: boolean; count: number; message: string }>;
-  saveProjectsNow: (nextProjects: Project[]) => Promise<{ success: boolean; error?: string }>;
+  saveProjectsNow: (
+    nextProjects: Project[],
+    extraRemovedUrls?: string[]
+  ) => Promise<{ success: boolean; deletedMediaCount?: number; error?: string }>;
   login: (u: string, p: string) => Promise<boolean>;
   logout: () => Promise<void>;
   changeAdminPassword: (newPass: string) => Promise<boolean>;
   updateSettings: (newSettings: Partial<SiteSettings>) => void;
+  replaceSettingMedia: (
+    field: SettingMediaField,
+    newUrl: string,
+    newAsset?: { name: string; mimeType: string; size: number }
+  ) => Promise<{ success: boolean; deletedPrevious: boolean; error?: string }>;
   addProject: (project: Partial<Project>) => Project;
   updateProject: (id: string, updates: Partial<Project>) => void;
-  deleteProject: (id: string) => void;
+  deleteProject: (id: string) => Promise<{ success: boolean; deletedMediaCount: number; error?: string }>;
   duplicateProject: (id: string) => Project | null;
   reorderProjects: (orderedIds: string[]) => void;
   toggleProjectStatus: (id: string) => void;
-  deleteAllProjects: () => void;
+  deleteAllProjects: () => Promise<{ success: boolean; deletedMediaCount: number; error?: string }>;
   addExperience: (item: Omit<ExperienceItem, 'id'>) => void;
   updateExperience: (id: string, updates: Partial<ExperienceItem>) => void;
-  deleteExperience: (id: string) => void;
+  updateExperienceCertificates: (
+    expId: string,
+    nextCertificates: AboutCertificate[],
+    newlyAddedAssets?: MediaAsset[]
+  ) => Promise<{ success: boolean; deletedMediaCount: number; error?: string }>;
+  deleteExperience: (id: string) => Promise<{ success: boolean; deletedMediaCount: number; error?: string }>;
   addEducation: (item: Omit<EducationItem, 'id'>) => void;
   updateEducation: (id: string, updates: Partial<EducationItem>) => void;
   deleteEducation: (id: string) => void;
   addMedia: (name: string, url: string, mimeType: string, size: number) => MediaAsset;
-  saveResumeUpload: (url: string, name: string, size: number) => Promise<{ success: boolean; error?: string }>;
-  deleteMedia: (id: string) => void;
+  saveResumeUpload: (url: string, name: string, size: number) => Promise<{ success: boolean; deletedPrevious?: boolean; error?: string }>;
+  deleteMedia: (id: string) => Promise<{ success: boolean; deletedUrl?: string; error?: string }>;
+  discardMediaUrls: (urls: string[]) => Promise<{ deletedCount: number; error?: string }>;
   resetToDefaults: () => void;
 }
 
@@ -235,6 +259,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const lastCloudSnapshot = useRef<string | null>(null);
   const hasUnsavedChanges = useRef(false);
   const localChangeVersion = useRef(0);
+  const stateRef = useRef<PortfolioSnapshot>({ settings, projects, experience, education, media });
+  stateRef.current = { settings, projects, experience, education, media };
 
   const markUnsavedChanges = () => {
     localChangeVersion.current += 1;
@@ -242,6 +268,92 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     hasUnsavedChanges.current = true;
     setCloudSaveStatus((current) => current === 'saving' ? current : 'unsaved');
     setCloudSaveError(null);
+  };
+
+  const persistSnapshotNow = async (nextSnapshot: PortfolioSnapshot): Promise<{ success: boolean; error?: string }> => {
+    markUnsavedChanges();
+    stateRef.current = nextSnapshot;
+    setSettings(nextSnapshot.settings);
+    setProjects(nextSnapshot.projects);
+    setExperience(nextSnapshot.experience);
+    setEducation(nextSnapshot.education);
+    setMedia(nextSnapshot.media);
+
+    try {
+      safeStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(nextSnapshot.settings));
+      safeStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(nextSnapshot.projects));
+      safeStorage.setItem(STORAGE_KEYS.EXPERIENCE, JSON.stringify(nextSnapshot.experience));
+      safeStorage.setItem(STORAGE_KEYS.EDUCATION, JSON.stringify(nextSnapshot.education));
+      safeStorage.setItem(STORAGE_KEYS.MEDIA, JSON.stringify(nextSnapshot.media));
+    } catch (e) {
+      console.warn('Local storage write warning:', e);
+    }
+
+    const supabase = getSupabase();
+    if (!supabase || !isSupabaseConnected) {
+      setCloudSaveStatus('saved');
+      return { success: true };
+    }
+
+    const versionAtSave = localChangeVersion.current;
+    setCloudSaveStatus('saving');
+    setCloudSaveError(null);
+
+    try {
+      const result = await savePortfolioSnapshot(nextSnapshot);
+      if (!result.success) {
+        console.warn('Supabase snapshot save notice:', result.error);
+        setCloudSaveStatus('unsaved');
+        setCloudSaveError(result.error || 'Cloud sync pending');
+        return { success: true, error: result.error };
+      }
+
+      if (result.updatedAt) safeStorage.setItem(STORAGE_KEYS.CLOUD_UPDATED_AT, result.updatedAt);
+      setIsSupabaseConnected(true);
+      lastCloudSnapshot.current = JSON.stringify(nextSnapshot);
+      if (versionAtSave === localChangeVersion.current) {
+        hasUnsavedChanges.current = false;
+        setCloudSaveStatus('saved');
+      } else {
+        setCloudSaveStatus('unsaved');
+      }
+      return { success: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not sync portfolio to Supabase.';
+      setCloudSaveStatus('unsaved');
+      setCloudSaveError(message);
+      return { success: true, error: message };
+    }
+  };
+
+  /** Permanently removes any candidate URLs that are no longer referenced anywhere in nextState. */
+  const cleanupUnreferencedMedia = async (
+    candidateUrls: string[],
+    nextState: PortfolioSnapshot
+  ): Promise<{ nextMedia: MediaAsset[]; deletedCount: number; storageError?: string }> => {
+    const referenced = collectPortfolioMediaUrls({
+      settings: nextState.settings,
+      projects: nextState.projects,
+      experience: nextState.experience
+    });
+
+    const removable = Array.from(
+      new Set(candidateUrls.map((u) => (typeof u === 'string' ? u.trim() : '')).filter(Boolean))
+    ).filter((url) => isManagedUploadUrl(url) && !referenced.has(url));
+
+    if (removable.length === 0) {
+      return { nextMedia: nextState.media, deletedCount: 0 };
+    }
+
+    const storageRes = await deleteMediaFromSupabase(removable);
+    const removableSet = new Set(removable);
+    const nextMedia = nextState.media.filter((asset) => !removableSet.has(asset.url.trim()));
+
+    return {
+      nextMedia,
+      deletedCount: removable.length,
+      storageError: storageRes.error
+    };
   };
 
   // Sync to local storage for fast boot
@@ -428,51 +540,32 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [settings, projects, experience, education, media]);
 
-  const saveProjectsNow = async (nextProjects: Project[]): Promise<{ success: boolean; error?: string }> => {
-    markUnsavedChanges();
-    setProjects(nextProjects);
-    try {
-      safeStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(nextProjects));
-    } catch (e) {
-      console.warn('Local storage write warning:', e);
-    }
+  const saveProjectsNow = async (
+    nextProjects: Project[],
+    extraRemovedUrls: string[] = []
+  ): Promise<{ success: boolean; deletedMediaCount?: number; error?: string }> => {
+    const current = stateRef.current;
+    const previousUrls = new Set<string>(extraRemovedUrls);
+    current.projects.forEach((p) => {
+      collectProjectMediaUrls(p).forEach((url) => previousUrls.add(url));
+    });
 
-    const supabase = getSupabase();
-    if (!supabase || !isSupabaseConnected) {
-      setCloudSaveStatus('saved');
-      return { success: true };
-    }
+    const draftSnapshot: PortfolioSnapshot = {
+      ...current,
+      projects: nextProjects
+    };
+    const cleanup = await cleanupUnreferencedMedia(Array.from(previousUrls), draftSnapshot);
+    const finalSnapshot: PortfolioSnapshot = {
+      ...draftSnapshot,
+      media: cleanup.nextMedia
+    };
 
-    const versionAtSave = localChangeVersion.current;
-    const snapshot = { settings, projects: nextProjects, experience, education, media };
-    setCloudSaveStatus('saving');
-    setCloudSaveError(null);
-
-    try {
-      const result = await savePortfolioSnapshot(snapshot);
-      if (!result.success) {
-        console.warn('Supabase snapshot save notice:', result.error);
-        setCloudSaveStatus('unsaved');
-        setCloudSaveError(result.error || 'Cloud sync pending');
-        return { success: true, error: result.error };
-      }
-
-      if (result.updatedAt) safeStorage.setItem(STORAGE_KEYS.CLOUD_UPDATED_AT, result.updatedAt);
-      setIsSupabaseConnected(true);
-      lastCloudSnapshot.current = JSON.stringify(snapshot);
-      if (versionAtSave === localChangeVersion.current) {
-        hasUnsavedChanges.current = false;
-        setCloudSaveStatus('saved');
-      } else {
-        setCloudSaveStatus('unsaved');
-      }
-      return { success: true };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Could not sync case study to Supabase.';
-      setCloudSaveStatus('unsaved');
-      setCloudSaveError(message);
-      return { success: true, error: message };
-    }
+    const persistRes = await persistSnapshotNow(finalSnapshot);
+    return {
+      success: persistRes.success,
+      deletedMediaCount: cleanup.deletedCount,
+      error: cleanup.storageError || persistRes.error
+    };
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -645,9 +738,21 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     );
   };
 
-  const deleteProject = (id: string) => {
-    markUnsavedChanges();
-    setProjects((prev) => prev.filter((p) => p.id !== id));
+  const deleteProject = async (
+    id: string
+  ): Promise<{ success: boolean; deletedMediaCount: number; error?: string }> => {
+    const current = stateRef.current;
+    const target = current.projects.find((p) => p.id === id);
+    const candidateUrls = target ? Array.from(collectProjectMediaUrls(target)) : [];
+    const nextProjects = current.projects.filter((p) => p.id !== id);
+    const draftSnapshot: PortfolioSnapshot = { ...current, projects: nextProjects };
+    const cleanup = await cleanupUnreferencedMedia(candidateUrls, draftSnapshot);
+    const persistRes = await persistSnapshotNow({ ...draftSnapshot, media: cleanup.nextMedia });
+    return {
+      success: persistRes.success,
+      deletedMediaCount: cleanup.deletedCount,
+      error: cleanup.storageError || persistRes.error
+    };
   };
 
   const duplicateProject = (id: string): Project | null => {
@@ -700,9 +805,24 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     updateProject(id, { status: newStatus });
   };
 
-  const deleteAllProjects = () => {
-    markUnsavedChanges();
-    setProjects([]);
+  const deleteAllProjects = async (): Promise<{
+    success: boolean;
+    deletedMediaCount: number;
+    error?: string;
+  }> => {
+    const current = stateRef.current;
+    const candidateUrls: string[] = [];
+    current.projects.forEach((p) => {
+      collectProjectMediaUrls(p).forEach((url) => candidateUrls.push(url));
+    });
+    const draftSnapshot: PortfolioSnapshot = { ...current, projects: [] };
+    const cleanup = await cleanupUnreferencedMedia(candidateUrls, draftSnapshot);
+    const persistRes = await persistSnapshotNow({ ...draftSnapshot, media: cleanup.nextMedia });
+    return {
+      success: persistRes.success,
+      deletedMediaCount: cleanup.deletedCount,
+      error: cleanup.storageError || persistRes.error
+    };
   };
 
   const addExperience = (item: Omit<ExperienceItem, 'id'>) => {
@@ -711,17 +831,85 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ...item,
       id: `exp-${Date.now()}`
     };
-    setExperience((prev) => [...prev, newItem]);
+    const nextExperience = [...stateRef.current.experience, newItem];
+    stateRef.current = { ...stateRef.current, experience: nextExperience };
+    setExperience(nextExperience);
   };
 
   const updateExperience = (id: string, updates: Partial<ExperienceItem>) => {
     markUnsavedChanges();
-    setExperience((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)));
+    const nextExperience = stateRef.current.experience.map((e) => (e.id === id ? { ...e, ...updates } : e));
+    stateRef.current = { ...stateRef.current, experience: nextExperience };
+    setExperience(nextExperience);
   };
 
-  const deleteExperience = (id: string) => {
-    markUnsavedChanges();
-    setExperience((prev) => prev.filter((e) => e.id !== id));
+  const updateExperienceCertificates = async (
+    expId: string,
+    nextCertificates: AboutCertificate[],
+    newlyAddedAssets: MediaAsset[] = []
+  ): Promise<{ success: boolean; deletedMediaCount: number; error?: string }> => {
+    const current = stateRef.current;
+    const targetExp = current.experience.find((entry) => entry.id === expId);
+    const legacyCertificates = current.settings.certificates ?? [];
+    const legacyOwner = current.experience.find((entry) => entry.visible) ?? current.experience[0];
+
+    const previousUrls = new Set<string>();
+    (targetExp?.certificates || []).forEach((cert) => cert.url && previousUrls.add(cert.url));
+    if (legacyCertificates.length && legacyOwner?.id === expId) {
+      legacyCertificates.forEach((cert) => cert.url && previousUrls.add(cert.url));
+    }
+
+    let nextSettings = current.settings;
+    let nextExperience = current.experience;
+    if (legacyCertificates.length && legacyOwner) {
+      if (legacyOwner.id !== expId) {
+        nextExperience = nextExperience.map((entry) =>
+          entry.id === legacyOwner.id
+            ? { ...entry, certificates: entry.certificates ?? legacyCertificates }
+            : entry
+        );
+      }
+      nextSettings = { ...current.settings, certificates: undefined };
+    }
+    nextExperience = nextExperience.map((entry) =>
+      entry.id === expId ? { ...entry, certificates: nextCertificates } : entry
+    );
+
+    const nextMedia = [...newlyAddedAssets, ...current.media.filter((m) => !newlyAddedAssets.some((n) => n.id === m.id || n.url === m.url))];
+    const draftSnapshot: PortfolioSnapshot = {
+      ...current,
+      settings: nextSettings,
+      experience: nextExperience,
+      media: nextMedia
+    };
+
+    const nextCertUrlSet = new Set(nextCertificates.map((c) => c.url.trim()));
+    const removedUrls = Array.from(previousUrls).filter((u) => !nextCertUrlSet.has(u.trim()));
+
+    const cleanup = await cleanupUnreferencedMedia(removedUrls, draftSnapshot);
+    const persistRes = await persistSnapshotNow({ ...draftSnapshot, media: cleanup.nextMedia });
+    return {
+      success: persistRes.success,
+      deletedMediaCount: cleanup.deletedCount,
+      error: cleanup.storageError || persistRes.error
+    };
+  };
+
+  const deleteExperience = async (
+    id: string
+  ): Promise<{ success: boolean; deletedMediaCount: number; error?: string }> => {
+    const current = stateRef.current;
+    const target = current.experience.find((e) => e.id === id);
+    const certUrls = (target?.certificates || []).map((c) => c.url).filter(Boolean);
+    const nextExperience = current.experience.filter((e) => e.id !== id);
+    const draftSnapshot: PortfolioSnapshot = { ...current, experience: nextExperience };
+    const cleanup = await cleanupUnreferencedMedia(certUrls, draftSnapshot);
+    const persistRes = await persistSnapshotNow({ ...draftSnapshot, media: cleanup.nextMedia });
+    return {
+      success: persistRes.success,
+      deletedMediaCount: cleanup.deletedCount,
+      error: cleanup.storageError || persistRes.error
+    };
   };
 
   const addEducation = (item: Omit<EducationItem, 'id'>) => {
@@ -730,17 +918,23 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ...item,
       id: `edu-${Date.now()}`
     };
-    setEducation((prev) => [...prev, newItem]);
+    const nextEducation = [...stateRef.current.education, newItem];
+    stateRef.current = { ...stateRef.current, education: nextEducation };
+    setEducation(nextEducation);
   };
 
   const updateEducation = (id: string, updates: Partial<EducationItem>) => {
     markUnsavedChanges();
-    setEducation((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)));
+    const nextEducation = stateRef.current.education.map((e) => (e.id === id ? { ...e, ...updates } : e));
+    stateRef.current = { ...stateRef.current, education: nextEducation };
+    setEducation(nextEducation);
   };
 
   const deleteEducation = (id: string) => {
     markUnsavedChanges();
-    setEducation((prev) => prev.filter((e) => e.id !== id));
+    const nextEducation = stateRef.current.education.filter((e) => e.id !== id);
+    stateRef.current = { ...stateRef.current, education: nextEducation };
+    setEducation(nextEducation);
   };
 
   const addMedia = (name: string, url: string, mimeType: string, size: number): MediaAsset => {
@@ -753,39 +947,147 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       size,
       uploadedAt: new Date().toISOString()
     };
-    setMedia((prev) => [newAsset, ...prev]);
+    const nextMedia = [newAsset, ...stateRef.current.media.filter((asset) => asset.url !== url)];
+    stateRef.current = { ...stateRef.current, media: nextMedia };
+    setMedia(nextMedia);
     return newAsset;
   };
 
-  const saveResumeUpload = async (url: string, name: string, size: number): Promise<{ success: boolean; error?: string }> => {
-    if (!isAdmin) return { success: false, error: 'Sign in to Supabase Auth before replacing the resume.' };
-    markUnsavedChanges();
-    const asset: MediaAsset = {
-      id: `media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      name,
-      url,
-      mimeType: 'application/pdf',
-      size,
-      uploadedAt: new Date().toISOString()
+  const replaceSettingMedia = async (
+    field: SettingMediaField,
+    newUrl: string,
+    newAsset?: { name: string; mimeType: string; size: number }
+  ): Promise<{ success: boolean; deletedPrevious: boolean; error?: string }> => {
+    const current = stateRef.current;
+    let previousUrl = '';
+    let nextSettings: SiteSettings = current.settings;
+
+    if (field === 'profileImage') {
+      previousUrl = current.settings.profileImage || '';
+      nextSettings = { ...current.settings, profileImage: newUrl };
+    } else if (field === 'aboutVideo') {
+      previousUrl = current.settings.aboutVideo || '';
+      nextSettings = { ...current.settings, aboutVideo: newUrl };
+    } else if (field === 'resumeUrl') {
+      previousUrl = current.settings.resumeUrl || '';
+      nextSettings = { ...current.settings, resumeUrl: newUrl };
+    } else if (field === 'seoOgImage') {
+      previousUrl = current.settings.seo?.ogImage || '';
+      nextSettings = {
+        ...current.settings,
+        seo: { ...current.settings.seo, ogImage: newUrl }
+      };
+    }
+
+    let nextMedia = current.media;
+    if (newAsset && newUrl) {
+      const created: MediaAsset = {
+        id: `media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: newAsset.name,
+        url: newUrl,
+        mimeType: newAsset.mimeType,
+        size: newAsset.size,
+        uploadedAt: new Date().toISOString()
+      };
+      nextMedia = [created, ...current.media.filter((asset) => asset.url !== newUrl)];
+    }
+
+    const draftSnapshot: PortfolioSnapshot = {
+      ...current,
+      settings: nextSettings,
+      media: nextMedia
     };
-    setSettings((current) => ({ ...current, resumeUrl: url }));
-    setMedia((current) => [asset, ...current]);
-    setCloudSaveError(null);
-    return { success: true };
+
+    const candidateUrls =
+      previousUrl && previousUrl.trim() !== newUrl.trim() ? [previousUrl] : [];
+    const cleanup = await cleanupUnreferencedMedia(candidateUrls, draftSnapshot);
+    const persistRes = await persistSnapshotNow({ ...draftSnapshot, media: cleanup.nextMedia });
+
+    return {
+      success: persistRes.success,
+      deletedPrevious: cleanup.deletedCount > 0,
+      error: cleanup.storageError || persistRes.error
+    };
   };
 
-  const deleteMedia = (id: string) => {
-    markUnsavedChanges();
-    setMedia((prev) => {
-      let removed = false;
-      return prev.filter((asset) => {
-        if (!removed && asset.id === id) {
-          removed = true;
-          return false;
-        }
-        return true;
-      });
+  const saveResumeUpload = async (
+    url: string,
+    name: string,
+    size: number
+  ): Promise<{ success: boolean; deletedPrevious?: boolean; error?: string }> => {
+    if (!isAdmin) return { success: false, error: 'Sign in to Supabase Auth before replacing the resume.' };
+    return replaceSettingMedia('resumeUrl', url, {
+      name,
+      mimeType: 'application/pdf',
+      size
     });
+  };
+
+  const deleteMedia = async (
+    id: string
+  ): Promise<{ success: boolean; deletedUrl?: string; error?: string }> => {
+    const current = stateRef.current;
+    const target = current.media.find((asset) => asset.id === id);
+    if (!target) {
+      return { success: false, error: 'Media asset not found.' };
+    }
+
+    const targetUrl = target.url.trim();
+    const nextMedia = current.media.filter((asset) => asset.id !== id);
+    const otherAssetSharesUrl = nextMedia.some((asset) => asset.url.trim() === targetUrl);
+
+    let storageError: string | undefined;
+    let unlinked = {
+      settings: current.settings,
+      projects: current.projects,
+      experience: current.experience
+    };
+
+    if (!otherAssetSharesUrl && targetUrl) {
+      const storageRes = await deleteMediaFromSupabase([targetUrl]);
+      storageError = storageRes.error;
+      unlinked = stripMediaUrlsFromPortfolio(
+        new Set([targetUrl]),
+        unlinked,
+        { resumeUrl: initialSiteSettings.resumeUrl, profileImage: '' }
+      );
+    }
+
+    const persistRes = await persistSnapshotNow({
+      ...current,
+      ...unlinked,
+      media: nextMedia
+    });
+
+    return {
+      success: persistRes.success,
+      deletedUrl: targetUrl,
+      error: storageError || persistRes.error
+    };
+  };
+
+  const discardMediaUrls = async (
+    urls: string[]
+  ): Promise<{ deletedCount: number; error?: string }> => {
+    const normalized = Array.from(
+      new Set(urls.map((u) => (typeof u === 'string' ? u.trim() : '')).filter(Boolean))
+    );
+    if (normalized.length === 0) return { deletedCount: 0 };
+
+    const current = stateRef.current;
+    const cleanup = await cleanupUnreferencedMedia(normalized, current);
+    if (cleanup.deletedCount === 0) {
+      return { deletedCount: 0 };
+    }
+
+    const persistRes = await persistSnapshotNow({
+      ...current,
+      media: cleanup.nextMedia
+    });
+    return {
+      deletedCount: cleanup.deletedCount,
+      error: cleanup.storageError || persistRes.error
+    };
   };
 
   const resetToDefaults = () => {
@@ -826,6 +1128,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         logout,
         changeAdminPassword,
         updateSettings,
+        replaceSettingMedia,
         addProject,
         updateProject,
         deleteProject,
@@ -835,6 +1138,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         deleteAllProjects,
         addExperience,
         updateExperience,
+        updateExperienceCertificates,
         deleteExperience,
         addEducation,
         updateEducation,
@@ -842,6 +1146,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         addMedia,
         saveResumeUpload,
         deleteMedia,
+        discardMediaUrls,
         resetToDefaults
       }}
     >

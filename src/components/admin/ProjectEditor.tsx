@@ -1,8 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Project, CaseStudySection, DeliverableGroup, MediaAsset, ProjectTheme } from '../../types';
 import { CaseStudyBuilder } from './CaseStudyBuilder';
 import { ProjectCaseStudyTemplate } from '../project-case-study/ProjectCaseStudyTemplate';
 import { normalizeProjectSections, getFullCaseStudyTemplate } from '../../utils/caseStudyUtils';
+import { collectProjectMediaUrls, isManagedUploadUrl } from '../../utils/mediaLifecycle';
 import { MediaPreview } from '../MediaPreview';
 import { MediaUploadField } from './MediaUploadField';
 import { BufferedTextInput, BufferedTextarea } from './BufferedTextField';
@@ -17,8 +18,9 @@ interface ProjectEditorProps {
   existingProjects: Project[];
   mediaLibrary: MediaAsset[];
   initialTab?: TabType;
-  onSave: (projectData: Partial<Project>) => Promise<void>;
+  onSave: (projectData: Partial<Project>, removedUrls?: string[]) => Promise<void>;
   onUploadMedia: (file: File, isThumbnail?: boolean) => Promise<MediaAsset>;
+  onDiscardMedia?: (urls: string[]) => Promise<{ deletedCount: number; error?: string } | void>;
   onCancel: () => void;
 }
 
@@ -31,6 +33,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   initialTab,
   onSave,
   onUploadMedia,
+  onDiscardMedia,
   onCancel
 }) => {
   const isEditing = !!initialProject;
@@ -43,6 +46,13 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const projectMediaInputRef = useRef<HTMLInputElement>(null);
+  const initialProjectUrlsRef = useRef<Set<string>>(collectProjectMediaUrls(initialProject));
+  const pendingSessionUrlsRef = useRef<Set<string>>(new Set());
+  const activeSessionUrlsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    setProjectMedia(mediaLibrary);
+  }, [mediaLibrary]);
 
   // Form State
   const [title, setTitle] = useState(initialProject?.title || '');
@@ -109,6 +119,47 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
     return getFullCaseStudyTemplate('New Case Study');
   });
 
+  const currentDraftUrls = useMemo(
+    () =>
+      collectProjectMediaUrls({
+        heroImage: { url: heroImageUrl },
+        coverImage,
+        seo: { image: seoImage },
+        sections
+      }),
+    [heroImageUrl, coverImage, seoImage, sections]
+  );
+
+  const pendingRemovalCount = useMemo(() => {
+    let count = 0;
+    initialProjectUrlsRef.current.forEach((url) => {
+      if (isManagedUploadUrl(url) && !currentDraftUrls.has(url)) count += 1;
+    });
+    return count;
+  }, [currentDraftUrls]);
+
+  // Immediately delete any session-uploaded slot files that get replaced or removed before save
+  useEffect(() => {
+    for (const url of Array.from(pendingSessionUrlsRef.current)) {
+      if (currentDraftUrls.has(url)) {
+        pendingSessionUrlsRef.current.delete(url);
+        activeSessionUrlsRef.current.add(url);
+      }
+    }
+
+    const toDiscard: string[] = [];
+    for (const url of Array.from(activeSessionUrlsRef.current)) {
+      if (!currentDraftUrls.has(url) && !initialProjectUrlsRef.current.has(url)) {
+        activeSessionUrlsRef.current.delete(url);
+        toDiscard.push(url);
+      }
+    }
+
+    if (toDiscard.length > 0 && onDiscardMedia) {
+      void onDiscardMedia(toDiscard);
+    }
+  }, [currentDraftUrls, onDiscardMedia]);
+
   const handleTitleChange = (val: string) => {
     setTitle(val);
     if (!isEditing && !slugManuallyEdited) {
@@ -123,6 +174,14 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   const uploadProjectMedia = async (file: File, isThumbnail?: boolean): Promise<MediaAsset> => {
     const asset = await onUploadMedia(file, isThumbnail);
     setProjectMedia((current) => [asset, ...current.filter((item) => item.id !== asset.id)]);
+    return asset;
+  };
+
+  const uploadProjectSlotMedia = async (file: File, isThumbnail?: boolean): Promise<MediaAsset> => {
+    const asset = await uploadProjectMedia(file, isThumbnail);
+    if (asset.url) {
+      pendingSessionUrlsRef.current.add(asset.url);
+    }
     return asset;
   };
 
@@ -256,14 +315,36 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
     const payload = getCleanFormData();
     payload.status = targetStatus;
+    const savedUrls = collectProjectMediaUrls(payload);
+    const removedUrls = [
+      ...Array.from(initialProjectUrlsRef.current),
+      ...Array.from(activeSessionUrlsRef.current),
+      ...Array.from(pendingSessionUrlsRef.current)
+    ].filter((url) => !savedUrls.has(url));
+
     setSavingProject(true);
     try {
-      await onSave(payload);
+      await onSave(payload, removedUrls);
+      activeSessionUrlsRef.current.clear();
+      pendingSessionUrlsRef.current.clear();
     } catch (error) {
       setValidationError(error instanceof Error ? error.message : 'Could not save the case study to Supabase.');
     } finally {
       setSavingProject(false);
     }
+  };
+
+  const handleCancelEditor = () => {
+    const abandonedUrls = [
+      ...Array.from(activeSessionUrlsRef.current),
+      ...Array.from(pendingSessionUrlsRef.current)
+    ].filter((url) => !initialProjectUrlsRef.current.has(url));
+    activeSessionUrlsRef.current.clear();
+    pendingSessionUrlsRef.current.clear();
+    if (abandonedUrls.length > 0 && onDiscardMedia) {
+      void onDiscardMedia(abandonedUrls);
+    }
+    onCancel();
   };
 
   // Preview project mock
@@ -323,7 +404,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
 
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleCancelEditor}
             disabled={savingProject}
             className="px-3.5 py-2 rounded bg-transparent hover:bg-white/5 text-zinc-400 hover:text-white text-xs cursor-pointer"
           >
@@ -331,6 +412,14 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
           </button>
         </div>
       </div>
+
+      {pendingRemovalCount > 0 && (
+        <div className="px-3.5 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-center justify-between gap-2">
+          <span>
+            {pendingRemovalCount} replaced or removed media {pendingRemovalCount === 1 ? 'file' : 'files'} will be permanently deleted from Storage when you save.
+          </span>
+        </div>
+      )}
 
       {/* Validation Banner */}
       {validationError && (
@@ -770,7 +859,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             sections={sections}
             onChange={(newSections) => setSections(newSections)}
             mediaLibrary={projectMedia}
-            onUploadMedia={uploadProjectMedia}
+            onUploadMedia={uploadProjectSlotMedia}
           />
         </div>
       )}
@@ -820,7 +909,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <MediaUploadField
                 value={heroImageUrl}
                 onChange={setHeroImageUrl}
-                onUploadMedia={uploadProjectMedia}
+                onUploadMedia={uploadProjectSlotMedia}
                 mediaLibrary={projectMedia}
                 label="hero image"
                 cropAspectRatio={previewHeroAspect}
@@ -939,7 +1028,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               <MediaUploadField
                 value={coverImage}
                 onChange={setCoverImage}
-                onUploadMedia={uploadProjectMedia}
+                onUploadMedia={uploadProjectSlotMedia}
                 mediaLibrary={projectMedia}
                 label="cover image"
                 cropAspectRatio={previewCoverAspect}
@@ -1097,7 +1186,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
               const fileName = `${target || 'asset'}-${Date.now()}${ext}`;
               const file = new File([blob], fileName, { type: fileType });
               try {
-                const asset = await uploadProjectMedia(file, isThumb);
+                const asset = await uploadProjectSlotMedia(file, isThumb);
                 if (target === 'hero') {
                   setHeroImageUrl(asset.url);
                 } else {
@@ -1150,7 +1239,7 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
               Social share image
             </label>
-            <MediaUploadField value={seoImage} onChange={setSeoImage} onUploadMedia={uploadProjectMedia} mediaLibrary={projectMedia} label="social preview image" />
+            <MediaUploadField value={seoImage} onChange={setSeoImage} onUploadMedia={uploadProjectSlotMedia} mediaLibrary={projectMedia} label="social preview image" />
           </div>
         </div>
       )}

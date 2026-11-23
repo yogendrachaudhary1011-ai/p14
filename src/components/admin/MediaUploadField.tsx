@@ -237,6 +237,7 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
             <button
               type="button"
               onClick={() => onChange('')}
+              title="Remove image (uploaded files no longer used are permanently deleted)"
               className="rounded-md bg-black/80 hover:bg-red-600 px-2 py-1 text-[10px] text-zinc-300 hover:text-white transition-colors cursor-pointer border border-white/10 hover:border-transparent"
             >
               Remove
@@ -260,7 +261,7 @@ export const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
         </div>
       ) : (
         <p className="text-[11px] text-zinc-500">
-          No image selected. Click &ldquo;Adjust &amp; Upload&rdquo; to pan, zoom, and check crop cut-offs before publishing.
+          No image selected. Upload a file, click &ldquo;Crop / Frame&rdquo; to pan and zoom, or choose from your library.
         </p>
       )}
 

@@ -22,7 +22,7 @@ export const DecisionBlock: React.FC<DecisionBlockProps> = ({ block, copy }) => 
         </div>
       )}
 
-      <div data-cols="2" className="w-full case-study-card-grid grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+      <div data-cols="1" className="w-full case-study-card-grid grid grid-cols-1 gap-4 sm:gap-6">
         {block.decisions.map((decision, idx) => {
           const details = decision.details ?? [
             { label: decision.constraintLabel ?? copy.decisionConstraint, text: decision.constraint || '' },
