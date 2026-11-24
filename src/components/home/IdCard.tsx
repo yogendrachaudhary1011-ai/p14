@@ -178,8 +178,15 @@ export const IdCard: React.FC = () => {
       updateLanyard();
     };
 
+    const scheduleTick = () => {
+      if (isDisposed || physicsFrame !== null) return;
+      lastFrame = performance.now();
+      physicsFrame = requestAnimationFrame(tick);
+    };
+
     const tick = (now: number) => {
       if (isDisposed) return;
+      physicsFrame = null;
       const dt = Math.min(32, now - lastFrame) / 16.6667;
       lastFrame = now;
       if (!reduceMotion) {
@@ -209,7 +216,24 @@ export const IdCard: React.FC = () => {
       backTwo.rotation += (cardState.rotation - 6 - backTwo.rotation) * 0.055;
 
       renderCard();
-      physicsFrame = requestAnimationFrame(tick);
+
+      const isSettled =
+        !cardState.dragging &&
+        cardState.started &&
+        Math.abs(cardState.targetX - cardState.x) < 0.05 &&
+        Math.abs(cardState.targetY - cardState.y) < 0.05 &&
+        Math.abs(cardState.vx) < 0.02 &&
+        Math.abs(cardState.vy) < 0.02 &&
+        Math.abs(cardState.vr) < 0.02 &&
+        Math.abs(cardState.rotation) < 0.05 &&
+        Math.abs(cardState.x - backOne.x) < 0.05 &&
+        Math.abs(cardState.y - backOne.y) < 0.05 &&
+        Math.abs(cardState.x - backTwo.x) < 0.05 &&
+        Math.abs(cardState.y - backTwo.y) < 0.05;
+
+      if (!reduceMotion && !isSettled) {
+        physicsFrame = requestAnimationFrame(tick);
+      }
     };
 
     // Pointer events for dragging
@@ -226,6 +250,7 @@ export const IdCard: React.FC = () => {
       };
       pointerVelocity = { x: 0, y: 0 };
       lastPointerAt = performance.now();
+      scheduleTick();
       event.preventDefault();
     };
 
@@ -257,6 +282,38 @@ export const IdCard: React.FC = () => {
       cardState.vy += pointerVelocity.y * 0.34;
       cardState.targetX = 0;
       cardState.targetY = 0;
+      scheduleTick();
+    };
+
+    const onCardKeyDown = (event: KeyboardEvent) => {
+      if (reduceMotion) return;
+      const impulse = 14;
+      if (event.key === 'ArrowLeft') {
+        cardState.vx -= impulse;
+        scheduleTick();
+        event.preventDefault();
+      } else if (event.key === 'ArrowRight') {
+        cardState.vx += impulse;
+        scheduleTick();
+        event.preventDefault();
+      } else if (event.key === 'ArrowUp') {
+        cardState.vy -= impulse;
+        scheduleTick();
+        event.preventDefault();
+      } else if (event.key === 'ArrowDown') {
+        cardState.vy += impulse;
+        scheduleTick();
+        event.preventDefault();
+      } else if (event.key === 'Enter' || event.key === ' ') {
+        cardState.vx += (Math.random() > 0.5 ? 1 : -1) * 16;
+        cardState.vy += 10;
+        scheduleTick();
+        event.preventDefault();
+      } else if (event.key === 'Escape') {
+        cardState.targetX = 0;
+        cardState.targetY = 0;
+        scheduleTick();
+      }
     };
 
     card.addEventListener('pointerdown', onCardDown);
@@ -264,6 +321,7 @@ export const IdCard: React.FC = () => {
     card.addEventListener('pointerup', onCardUp);
     card.addEventListener('pointercancel', onCardUp);
     card.addEventListener('lostpointercapture', onCardUp);
+    card.addEventListener('keydown', onCardKeyDown);
 
     // Hero mouse parallax effect
     const hero = document.getElementById('home');
@@ -299,8 +357,7 @@ export const IdCard: React.FC = () => {
       cardState.started = true;
     }, 330);
 
-    lastFrame = performance.now();
-    physicsFrame = requestAnimationFrame(tick);
+    scheduleTick();
 
     return () => {
       isDisposed = true;
@@ -311,6 +368,7 @@ export const IdCard: React.FC = () => {
       card.removeEventListener('pointerup', onCardUp);
       card.removeEventListener('pointercancel', onCardUp);
       card.removeEventListener('lostpointercapture', onCardUp);
+      card.removeEventListener('keydown', onCardKeyDown);
       if (hero) {
         hero.removeEventListener('pointermove', onHeroPointerMove as EventListener);
         hero.removeEventListener('pointerleave', onHeroPointerLeave);
@@ -442,7 +500,7 @@ export const IdCard: React.FC = () => {
               fill="currentColor"
             />
           </svg>
-          <small>ChatGPT</small>
+          <small>{copy.orbitChatGPT || 'ChatGPT'}</small>
         </div>
         <div className="app-tile pr">
           <svg
@@ -461,7 +519,7 @@ export const IdCard: React.FC = () => {
               fill="currentColor"
             />
           </svg>
-          <small>Canva</small>
+          <small>{copy.orbitCanva || 'Canva'}</small>
         </div>
         <div className="app-tile fr">
           <svg
@@ -478,7 +536,7 @@ export const IdCard: React.FC = () => {
               fill="currentColor"
             />
           </svg>
-          <small>Claude</small>
+          <small>{copy.orbitClaude || 'Claude'}</small>
         </div>
       </div>
     </>

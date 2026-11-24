@@ -4,7 +4,7 @@ export interface ThemePresetDefinition {
   id: 'default' | 'cyberpunk' | 'amber' | 'emerald' | 'minimal' | 'rose' | 'light';
   name: string;
   tagline: string;
-  theme: Required<Omit<ProjectTheme, 'preset'>>;
+  theme: Omit<ProjectTheme, 'preset'>;
 }
 
 export const DEFAULT_THEME: Required<Omit<ProjectTheme, 'preset'>> = {
@@ -282,11 +282,11 @@ export const QUICK_BG_COLORS = [
 export function resolveProjectTheme(theme?: ProjectTheme): Required<Omit<ProjectTheme, 'preset'>> {
   if (!theme) return { ...DEFAULT_THEME };
 
-  let base = { ...DEFAULT_THEME };
+  let base: Required<Omit<ProjectTheme, 'preset'>> = { ...DEFAULT_THEME };
   if (theme.preset && theme.preset !== 'custom') {
     const foundPreset = THEME_PRESETS.find((p) => p.id === theme.preset);
     if (foundPreset) {
-      base = { ...foundPreset.theme };
+      base = { ...DEFAULT_THEME, ...foundPreset.theme };
     }
   }
 

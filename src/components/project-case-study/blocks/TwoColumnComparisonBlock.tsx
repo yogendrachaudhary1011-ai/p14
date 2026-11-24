@@ -24,7 +24,7 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
             className="text-base sm:text-lg font-medium leading-[1.35]"
             style={{ color: 'var(--cs-card-title, #ffffff)' }}
           >
-            {copy.comparisonFirstAttempt}
+            {block.firstAttemptTitle || copy.comparisonFirstAttempt}
           </div>
           <div
             className="text-sm sm:text-[15px] font-normal leading-[1.6] break-words"
@@ -47,7 +47,7 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
             className="text-base sm:text-lg font-medium leading-[1.35]"
             style={{ color: 'var(--cs-card-title, #ffffff)' }}
           >
-            {copy.comparisonProblem}
+            {block.problemTitle || copy.comparisonProblem}
           </div>
           <div
             className="text-sm sm:text-[15px] font-normal leading-[1.6] break-words"
@@ -72,7 +72,7 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
             className="text-base sm:text-lg font-medium leading-[1.35]"
             style={{ color: 'var(--cs-card-title, #ffffff)' }}
           >
-            {copy.comparisonFix}
+            {block.fixTitle || copy.comparisonFix}
           </div>
           <div
             className="text-sm sm:text-[15px] font-normal leading-[1.6] break-words"
@@ -95,7 +95,7 @@ export const TwoColumnComparisonBlock: React.FC<TwoColumnComparisonBlockProps> =
             className="text-base sm:text-lg font-medium leading-[1.35]"
             style={{ color: 'var(--cs-card-title, #ffffff)' }}
           >
-            {copy.comparisonLearning}
+            {block.learningTitle || copy.comparisonLearning}
           </div>
           <div
             className="text-sm sm:text-[15px] font-normal leading-[1.6] break-words"

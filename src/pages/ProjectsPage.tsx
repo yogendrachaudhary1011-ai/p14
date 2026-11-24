@@ -2,6 +2,36 @@ import React, { useState, useMemo } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { initialSiteSettings } from '../data/initialData';
 import { getInstantFallbackSvg } from '../utils/media';
+import { useCompressedLandingImage } from '../utils/landingMediaCompression';
+
+const ProjectGridCover: React.FC<{
+  src?: string;
+  title: string;
+  coverClass?: string;
+  index: number;
+}> = ({ src, title, coverClass, index }) => {
+  const compressedSrc = useCompressedLandingImage(src, 900);
+  return (
+    <img
+      alt={title}
+      className={`project-cover ${coverClass || ''}`}
+      decoding="async"
+      loading={index < 2 ? 'eager' : 'lazy'}
+      fetchPriority="auto"
+      width={900}
+      height={1200}
+      src={compressedSrc || getInstantFallbackSvg(title)}
+      onError={(e) => {
+        if (src && e.currentTarget.src !== src && !e.currentTarget.dataset.originalTried) {
+          e.currentTarget.dataset.originalTried = '1';
+          e.currentTarget.src = src;
+          return;
+        }
+        e.currentTarget.src = getInstantFallbackSvg(title);
+      }}
+    />
+  );
+};
 
 interface ProjectsPageProps {
   onNavigate: (path: string) => void;
@@ -136,18 +166,11 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onNavigate }) => {
                       <span aria-hidden="true" className="media-action material-symbols-rounded material-arrow-icon">
                         arrow_outward
                       </span>
-                      <img
-                        alt={project.title}
-                        className={`project-cover ${project.coverClass || ''}`}
-                        decoding="auto"
-                        loading={index < 2 ? 'eager' : 'lazy'}
-                        fetchPriority="auto"
-                        width={900}
-                        height={1200}
-                        src={project.coverImage || getInstantFallbackSvg(project.title)}
-                        onError={(e) => {
-                          e.currentTarget.src = getInstantFallbackSvg(project.title);
-                        }}
+                      <ProjectGridCover
+                        src={project.coverImage}
+                        title={project.title}
+                        coverClass={project.coverClass}
+                        index={index}
                       />
                     </div>
                     <div className="project-copy">

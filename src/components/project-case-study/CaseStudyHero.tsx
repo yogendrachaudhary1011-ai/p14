@@ -11,6 +11,7 @@ interface CaseStudyHeroProps {
   titleSize?: ProjectTheme['titleSize'];
   heroLayout?: ProjectTheme['heroLayout'];
   copy: Record<string, string>;
+  onNavigate?: (path: string) => void;
 }
 
 export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
@@ -21,7 +22,8 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
   backButtonText,
   titleSize = 'normal',
   heroLayout = 'stacked',
-  copy
+  copy,
+  onNavigate
 }) => {
   const sizeClasses = TITLE_SIZE_CLASSES[titleSize] || TITLE_SIZE_CLASSES.normal;
   const isSplit = heroLayout === 'split';
@@ -32,6 +34,12 @@ export const CaseStudyHero: React.FC<CaseStudyHeroProps> = ({
       <div className="shell pt-2 sm:pt-4 pb-4 sm:pb-6 flex justify-between items-center gap-2 box-border animate-cs-fade-in">
         <a
           href="/#work"
+          onClick={(event) => {
+            if (onNavigate) {
+              event.preventDefault();
+              onNavigate('/#work');
+            }
+          }}
           className="inline-flex items-center gap-1.5 sm:gap-2 transition-all duration-200 text-xs sm:text-sm font-medium leading-[1.4] py-1.5 px-2.5 sm:px-3 -ml-2.5 sm:-ml-3 rounded hover:bg-white/5 hover:-translate-x-1 cursor-pointer"
           style={{ color: 'var(--cs-back-btn, var(--cs-muted, #a1a1aa))' }}
         >

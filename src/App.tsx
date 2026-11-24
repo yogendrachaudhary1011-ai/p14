@@ -18,7 +18,7 @@ const PageFallback = () => (
 );
 
 export const App: React.FC = () => {
-  const { projects } = usePortfolio();
+  const { projects, settings } = usePortfolio();
   const [currentPath, setCurrentPath] = useState<string>(() => {
     return window.location.pathname || '/';
   });
@@ -149,6 +149,48 @@ export const App: React.FC = () => {
     void recordVisitorPageVisit(fullRoute, pageLabel);
   }, [normalized, scrollTarget, navigationVersion, matchedProject?.title, isAdminView]);
 
+  const isKnownRoute =
+    isAdminView ||
+    isCaseStudy ||
+    normalized === '/' ||
+    normalized === '/projects' ||
+    normalized === '/work' ||
+    normalized === '/about';
+
+  useEffect(() => {
+    const defaultTitle = settings.seo?.title || settings.siteTitle || 'Yogendra Chaudhary — UI/UX & Product Designer Portfolio';
+    const defaultDesc = settings.seo?.description || 'UI/UX and Product Designer creating clear software interfaces, reusable components, user-centered workflows, and implementation-ready product experiences.';
+
+    let pageTitle = defaultTitle;
+    let pageDescription = defaultDesc;
+
+    if (isAdminView) {
+      pageTitle = `Portfolio Studio · ${settings.brandName || 'Admin'}`;
+    } else if (matchedProject) {
+      pageTitle = matchedProject.seo?.title || `${matchedProject.title} — ${settings.brandName || 'Yogendra Chaudhary'}`;
+      pageDescription = matchedProject.seo?.description || matchedProject.heroSubtitle || matchedProject.shortSummary || defaultDesc;
+    } else if (normalized === '/projects' || normalized === '/work') {
+      pageTitle = `Projects — ${settings.brandName || 'Yogendra Chaudhary'}`;
+    } else if (normalized === '/about') {
+      pageTitle = `About — ${settings.brandName || 'Yogendra Chaudhary'}`;
+    } else if (!isKnownRoute) {
+      pageTitle = `Page Not Found — ${settings.brandName || 'Yogendra Chaudhary'}`;
+    }
+
+    document.title = pageTitle;
+
+    const setMeta = (selector: string, content: string) => {
+      const el = document.querySelector<HTMLMetaElement>(selector);
+      if (el) el.setAttribute('content', content);
+    };
+
+    setMeta('meta[name="description"]', pageDescription);
+    setMeta('meta[property="og:title"]', pageTitle);
+    setMeta('meta[property="og:description"]', pageDescription);
+    setMeta('meta[name="twitter:title"]', pageTitle);
+    setMeta('meta[name="twitter:description"]', pageDescription);
+  }, [isAdminView, isKnownRoute, matchedProject, normalized, settings.brandName, settings.seo?.description, settings.seo?.title, settings.siteTitle]);
+
   const renderRoute = () => {
     if (isAdminView) {
       return (
@@ -176,6 +218,35 @@ export const App: React.FC = () => {
         <Suspense fallback={<PageFallback />}>
           <AboutPage onNavigate={navigate} />
         </Suspense>
+      );
+    }
+    if (!isKnownRoute) {
+      return (
+        <main className="min-h-[70vh] flex flex-col items-center justify-center px-6 py-28 text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#f37021] mb-3">404 · Not Found</p>
+          <h1 className="text-3xl sm:text-5xl font-bold text-white tracking-tight mb-4">
+            This page doesn&apos;t exist.
+          </h1>
+          <p className="text-zinc-400 text-sm sm:text-base max-w-md mb-8 leading-relaxed">
+            The link <span className="font-mono text-zinc-300">{normalized}</span> could not be found. It may have been moved or unpublished.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="px-5 py-2.5 rounded-lg bg-[#f37021] hover:bg-[#ff7e33] text-white text-sm font-semibold cursor-pointer transition-colors"
+            >
+              Back to Home
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/projects')}
+              className="px-5 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-zinc-200 text-sm font-medium cursor-pointer transition-colors"
+            >
+              View All Projects
+            </button>
+          </div>
+        </main>
       );
     }
 

@@ -20,7 +20,7 @@ export const initialSiteSettings: SiteSettings = {
     heroDescription: 'A UI/UX and Product Designer focused on intuitive software interfaces and reusable components — turning complex product requirements into clear workflows and usable experiences people can navigate with confidence.',
     heroAboutButton: 'Get to Know Me', heroWorkButton: 'Work Overview',
     idCardName: 'Yogendra Chaudhary', idCardTopline: 'Design practice / 2026', idCardRole: 'Product Designer', idCardMicroline: 'Flows → Interfaces → Products', idCardDescription: 'Designing clear, usable product experiences.',
-    orbitFigma: 'Figma', orbitPhotoshop: 'Photoshop', orbitIllustrator: 'Illustrator', orbitPremiere: 'Premiere', orbitFramer: 'Framer',
+    orbitFigma: 'Figma', orbitPhotoshop: 'Photoshop', orbitIllustrator: 'Illustrator', orbitPremiere: 'Premiere', orbitFramer: 'Framer', orbitChatGPT: 'ChatGPT', orbitCanva: 'Canva', orbitClaude: 'Claude',
     orbitPhotoshopMark: 'Ps', orbitIllustratorMark: 'Ai', orbitPremiereMark: 'Pr', orbitFramerMark: 'Fr',
     workHeading: 'SELECTED WORK', workDescription: 'Product design work across business software, web experiences, and service platforms.',
     filterAll: 'All', filterProduct: 'Product Design', filterArchive: 'Design Practice',

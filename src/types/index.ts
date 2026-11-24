@@ -83,9 +83,13 @@ export interface BulletListBlock extends BaseBlock {
 
 export interface TwoColumnComparisonBlock extends BaseBlock {
   type: 'twoColumnComparison';
+  firstAttemptTitle?: string;
   firstAttempt: string;
+  problemTitle?: string;
   problem: string;
+  fixTitle?: string;
   fix: string;
+  learningTitle?: string;
   learning: string;
 }
 
@@ -291,7 +295,7 @@ export interface WhatNeededWorkSection {
 
 export interface DesignSystemSection {
   headline?: string;
-  desc: string;
+  desc?: string;
   images: string[];
 }
 

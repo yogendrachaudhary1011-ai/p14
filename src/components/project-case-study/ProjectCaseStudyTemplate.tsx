@@ -113,7 +113,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
             This project case study is currently saved as a draft and is undergoing refinement.
           </p>
           <button
-            onClick={() => window.location.assign('/#work')}
+            onClick={() => (onNavigate ? onNavigate('/#work') : window.location.assign('/#work'))}
             className="px-6 py-2.5 rounded bg-white text-black font-medium text-sm hover:bg-zinc-200 cursor-pointer"
           >
             Back to All Projects
@@ -238,6 +238,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
           titleSize={resolvedTheme.titleSize}
           heroLayout={resolvedTheme.heroLayout}
           copy={copy}
+          onNavigate={onNavigate}
         />
 
         {/* Project Overview (Hero Image + Metadata + Links) */}
@@ -279,7 +280,7 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
               style={{ borderColor: 'var(--cs-divider, rgba(255, 255, 255, 0.2))' }}
             >
               <button
-                onClick={() => window.location.assign('/#work')}
+                onClick={() => (onNavigate ? onNavigate('/#work') : window.location.assign('/#work'))}
                 className="inline-flex items-center gap-2 transition-all duration-200 hover:-translate-x-1.5 text-sm sm:text-base font-medium leading-[1.4] cursor-pointer group"
                 style={{ color: 'var(--cs-back-btn, #ffffff)' }}
               >
