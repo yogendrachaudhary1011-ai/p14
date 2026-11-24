@@ -429,7 +429,9 @@ export interface Project {
   deliverableGroups?: DeliverableGroup[];
   figmaUrl?: string;
   figmaButtonText?: string;
+  showFigmaButton?: boolean;
   externalProjectUrl?: string;
+  showExternalProjectButton?: boolean;
 
   // Case Study Sections
   sections?: CaseStudySection[];

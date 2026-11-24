@@ -251,7 +251,9 @@ export const ProjectCaseStudyTemplate: React.FC<ProjectCaseStudyTemplateProps> =
           deliverableGroups={project.deliverableGroups}
           figmaUrl={project.figmaUrl}
           figmaButtonText={project.figmaButtonText}
+          showFigmaButton={project.showFigmaButton}
           externalProjectUrl={project.externalProjectUrl}
+          showExternalProjectButton={project.showExternalProjectButton}
           copy={copy}
         />
 

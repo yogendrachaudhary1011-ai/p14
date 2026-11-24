@@ -689,7 +689,9 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       deliverableGroups: projectData.deliverableGroups,
       figmaUrl: projectData.figmaUrl || 'https://www.figma.com',
       figmaButtonText: projectData.figmaButtonText || 'View Figma File',
+      showFigmaButton: projectData.showFigmaButton !== undefined ? projectData.showFigmaButton : true,
       externalProjectUrl: projectData.externalProjectUrl || '',
+      showExternalProjectButton: projectData.showExternalProjectButton !== undefined ? projectData.showExternalProjectButton : true,
       sections: projectData.sections || normalizeProjectSections({
         ...projectData,
         id,

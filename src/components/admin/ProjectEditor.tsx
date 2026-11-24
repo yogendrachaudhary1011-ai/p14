@@ -83,7 +83,9 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
   });
   const [figmaUrl, setFigmaUrl] = useState(initialProject?.figmaUrl || 'https://www.figma.com');
   const [figmaButtonText, setFigmaButtonText] = useState(initialProject?.figmaButtonText || 'View Figma File');
+  const [showFigmaButton, setShowFigmaButton] = useState<boolean>(initialProject?.showFigmaButton !== false);
   const [externalProjectUrl, setExternalProjectUrl] = useState(initialProject?.externalProjectUrl || '');
+  const [showExternalProjectButton, setShowExternalProjectButton] = useState<boolean>(initialProject?.showExternalProjectButton !== false);
 
   // Media
   const [coverImage, setCoverImage] = useState(
@@ -255,7 +257,9 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
       deliverableGroups: cleanDeliverableGroups,
       figmaUrl: figmaUrl.trim(),
       figmaButtonText: figmaButtonText.trim() || 'View Figma File',
+      showFigmaButton,
       externalProjectUrl: externalProjectUrl.trim(),
+      showExternalProjectButton,
       coverImage: coverImage.trim(),
       coverClass: coverClass.trim() || undefined,
       heroImage: {
@@ -752,45 +756,132 @@ export const ProjectEditor: React.FC<ProjectEditorProps> = ({
             })}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-white/5">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
-                Figma Prototype / File URL
-              </label>
-              <BufferedTextInput
-                type="url"
-                value={figmaUrl}
-                onCommit={setFigmaUrl}
-                className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
-                placeholder="https://www.figma.com/design/..."
-              />
-            </div>
-
+          <div className="space-y-4 pt-3 border-t border-white/5">
             <div>
-              <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
-                Figma Button Label
-              </label>
-              <BufferedTextInput
-                type="text"
-                value={figmaButtonText}
-                onCommit={setFigmaButtonText}
-                className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
-                placeholder="View Figma File"
-              />
+              <label className="block text-xs font-mono uppercase text-zinc-400">Overview Action Buttons</label>
+              <p className="mt-1 text-xs text-zinc-500">Enable or disable the action buttons shown beneath the project overview without losing your saved links.</p>
             </div>
 
-            <div className="md:col-span-3">
-              <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
-                External Live Project URL (Optional)
-              </label>
-              <BufferedTextInput
-                type="url"
-                value={externalProjectUrl}
-                onCommit={setExternalProjectUrl}
-                className="w-full px-3 py-2 rounded bg-zinc-950 border border-white/10 text-white text-sm"
-                placeholder="https://somtu.edu.np"
-              />
-            </div>
+            {/* Figma Action Button */}
+            <section
+              className={`rounded-lg border p-3 sm:p-4 space-y-3 transition-all ${
+                showFigmaButton
+                  ? 'border-white/10 bg-zinc-950/70'
+                  : 'border-dashed border-amber-500/30 bg-zinc-950/40 opacity-75'
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-xs font-mono uppercase text-zinc-200 font-semibold">Figma Prototype / File Button</h4>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">Shows the outline button linking to your Figma file or prototype.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFigmaButton((prev) => !prev)}
+                  title={showFigmaButton ? 'Disable Figma button (hide from project overview without deleting URL)' : 'Enable Figma button (show on project overview)'}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 rounded text-xs font-medium cursor-pointer transition-colors border ${
+                    showFigmaButton
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20'
+                      : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700'
+                  }`}
+                  aria-pressed={showFigmaButton}
+                  aria-label={showFigmaButton ? 'Disable Figma button' : 'Enable Figma button'}
+                >
+                  <span className="material-symbols-rounded text-sm">
+                    {showFigmaButton ? 'visibility' : 'visibility_off'}
+                  </span>
+                  <span>{showFigmaButton ? 'Enabled' : 'Disabled'}</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
+                    Figma Prototype / File URL
+                  </label>
+                  <BufferedTextInput
+                    type="url"
+                    value={figmaUrl}
+                    onCommit={setFigmaUrl}
+                    className="w-full px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-sm"
+                    placeholder="https://www.figma.com/design/..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
+                    Figma Button Label
+                  </label>
+                  <BufferedTextInput
+                    type="text"
+                    value={figmaButtonText}
+                    onCommit={setFigmaButtonText}
+                    className="w-full px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-sm"
+                    placeholder="View Figma File"
+                  />
+                </div>
+              </div>
+
+              {!showFigmaButton && (
+                <div className="text-[11px] text-amber-400 font-medium flex items-center gap-1">
+                  <span className="material-symbols-rounded text-xs">visibility_off</span>
+                  Hidden on live project
+                </div>
+              )}
+            </section>
+
+            {/* External Live Project Button */}
+            <section
+              className={`rounded-lg border p-3 sm:p-4 space-y-3 transition-all ${
+                showExternalProjectButton
+                  ? 'border-white/10 bg-zinc-950/70'
+                  : 'border-dashed border-amber-500/30 bg-zinc-950/40 opacity-75'
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-xs font-mono uppercase text-zinc-200 font-semibold">External Live Project Button</h4>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">Shows the primary CTA button linking to the live deployed project.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowExternalProjectButton((prev) => !prev)}
+                  title={showExternalProjectButton ? 'Disable live project button (hide from project overview without deleting URL)' : 'Enable live project button (show on project overview)'}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 rounded text-xs font-medium cursor-pointer transition-colors border ${
+                    showExternalProjectButton
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20'
+                      : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700'
+                  }`}
+                  aria-pressed={showExternalProjectButton}
+                  aria-label={showExternalProjectButton ? 'Disable live project button' : 'Enable live project button'}
+                >
+                  <span className="material-symbols-rounded text-sm">
+                    {showExternalProjectButton ? 'visibility' : 'visibility_off'}
+                  </span>
+                  <span>{showExternalProjectButton ? 'Enabled' : 'Disabled'}</span>
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-zinc-400 mb-1">
+                  External Live Project URL (Optional)
+                </label>
+                <BufferedTextInput
+                  type="url"
+                  value={externalProjectUrl}
+                  onCommit={setExternalProjectUrl}
+                  className="w-full px-3 py-2 rounded bg-zinc-900 border border-white/10 text-white text-sm"
+                  placeholder="https://somtu.edu.np"
+                />
+              </div>
+
+              {!showExternalProjectButton && (
+                <div className="text-[11px] text-amber-400 font-medium flex items-center gap-1">
+                  <span className="material-symbols-rounded text-xs">visibility_off</span>
+                  Hidden on live project
+                </div>
+              )}
+            </section>
           </div>
         </div>
       )}

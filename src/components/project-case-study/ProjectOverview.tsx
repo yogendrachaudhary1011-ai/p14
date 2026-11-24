@@ -12,7 +12,9 @@ interface ProjectOverviewProps {
   deliverableGroups?: DeliverableGroup[];
   figmaUrl?: string;
   figmaButtonText?: string;
+  showFigmaButton?: boolean;
   externalProjectUrl?: string;
+  showExternalProjectButton?: boolean;
   copy: Record<string, string>;
 }
 
@@ -26,9 +28,13 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   deliverableGroups,
   figmaUrl,
   figmaButtonText,
+  showFigmaButton = true,
   externalProjectUrl,
+  showExternalProjectButton = true,
   copy
 }) => {
+  const canShowFigma = showFigmaButton !== false && Boolean(figmaUrl?.trim());
+  const canShowExternal = showExternalProjectButton !== false && Boolean(externalProjectUrl?.trim());
   return (
     <div className="shell flex flex-col justify-center items-center gap-8 sm:gap-12 md:gap-16 relative z-10 box-border">
       {/* Big Hero Image with reveal and hover depth */}
@@ -124,43 +130,45 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
           </div>
 
           {/* Action Buttons: Figma & External Project with micro-interaction hover */}
-          <div className="w-full flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4 pt-1">
-            {figmaUrl && (
-              <a
-                href={figmaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-4 border-[1.60px] text-sm sm:text-base font-medium leading-[1.4] hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group"
-                style={{
-                  backgroundColor: 'var(--cs-btn-secondary-bg, transparent)',
-                  borderColor: 'var(--cs-btn-secondary-border, var(--cs-divider, rgba(255, 255, 255, 0.4)))',
-                  color: 'var(--cs-btn-secondary-text, var(--cs-heading, #ffffff))',
-                  borderRadius: 'var(--cs-card-radius, 4px)'
-                }}
-              >
-                <span>{figmaButtonText || copy.figmaButton}</span>
-                <span className="material-symbols-rounded text-sm ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">open_in_new</span>
-              </a>
-            )}
+          {(canShowFigma || canShowExternal) && (
+            <div className="w-full flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4 pt-1">
+              {canShowFigma && (
+                <a
+                  href={figmaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-6 py-4 border-[1.60px] text-sm sm:text-base font-medium leading-[1.4] hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group"
+                  style={{
+                    backgroundColor: 'var(--cs-btn-secondary-bg, transparent)',
+                    borderColor: 'var(--cs-btn-secondary-border, var(--cs-divider, rgba(255, 255, 255, 0.4)))',
+                    color: 'var(--cs-btn-secondary-text, var(--cs-heading, #ffffff))',
+                    borderRadius: 'var(--cs-card-radius, 4px)'
+                  }}
+                >
+                  <span>{figmaButtonText || copy.figmaButton}</span>
+                  <span className="material-symbols-rounded text-sm ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">open_in_new</span>
+                </a>
+              )}
 
-            {externalProjectUrl && (
-              <a
-                href={externalProjectUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-4 border text-sm sm:text-base font-medium leading-[1.4] hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group shadow-md"
-                style={{
-                  backgroundColor: 'var(--cs-btn-primary-bg, var(--cs-accent, #ffffff))',
-                  color: 'var(--cs-btn-primary-text, var(--cs-btn-text, #000000))',
-                  borderColor: 'var(--cs-btn-primary-border, transparent)',
-                  borderRadius: 'var(--cs-card-radius, 4px)'
-                }}
-              >
-                <span>{copy.liveProjectButton}</span>
-                <span className="material-symbols-rounded text-sm ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">arrow_outward</span>
-              </a>
-            )}
-          </div>
+              {canShowExternal && (
+                <a
+                  href={externalProjectUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-6 py-4 border text-sm sm:text-base font-medium leading-[1.4] hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer text-center group shadow-md"
+                  style={{
+                    backgroundColor: 'var(--cs-btn-primary-bg, var(--cs-accent, #ffffff))',
+                    color: 'var(--cs-btn-primary-text, var(--cs-btn-text, #000000))',
+                    borderColor: 'var(--cs-btn-primary-border, transparent)',
+                    borderRadius: 'var(--cs-card-radius, 4px)'
+                  }}
+                >
+                  <span>{copy.liveProjectButton}</span>
+                  <span className="material-symbols-rounded text-sm ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">arrow_outward</span>
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
